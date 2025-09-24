@@ -1,3 +1,7 @@
+ultralytics
+google-generativeai
 opencv-python
-mediapipe
+Pillow
+python-dotenv
 numpy
+
