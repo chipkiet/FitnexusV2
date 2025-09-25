@@ -7,6 +7,10 @@ build/
 .env.*
 !.env.example
 venv/
+outputs/
+images/
+processed_images/
+
 .idea/
 .vscode/
 .DS_Store
