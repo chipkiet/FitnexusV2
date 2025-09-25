@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
+import AiTrainer from './components/AiTrainer'
 
 function App() {
     const [message, setMessage] = useState('Loading...')
 
     useEffect(() => {
-        // Test connection to backend
         axios.get('http://localhost:3001')
             .then(response => {
                 setMessage(response.data.message)
@@ -16,10 +16,8 @@ function App() {
     }, [])
 
     return (
-        <div className="flex items-center justify-center h-screen bg-slate-800">
-            <h1 className="text-3xl font-bold text-sky-400">
-                {message}
-            </h1>
+        <div className="min-h-screen bg-slate-900 text-white font-sans">
+            <AiTrainer />
         </div>
     )
 }
