@@ -13,6 +13,7 @@ import authRouter from './routes/auth.routes.js';
 import adminRouter from './routes/admin.routes.js';
 import trainerRouter from './routes/trainer.routes.js';
 import exerciseRouter from './routes/exercise.routes.js';
+import planRouter from './routes/plan.routes.js';
 
 import onboardingRouter from './routes/onboarding.routes.js';
 import nutritionRouter from './routes/nutrition.routes.js';
@@ -91,7 +92,7 @@ app.use('/auth', googleAuthRoutes);
 app.use('/api/onboarding', onboardingRouter);
 app.use('/api/nutrition', nutritionRouter);
 
-// 🟢 Theo dõi hoạt động người dùng (cập nhật lastActiveAt)
+// Theo dõi hoạt động người dùng (cập nhật lastActiveAt)
 app.use("/api", activityTracker);
 
 // Sau middleware này, mọi request có token hợp lệ sẽ tự cập nhật lastActiveAt
@@ -99,6 +100,7 @@ app.use('/api/admin', adminRouter);
 app.use('/api/trainer', trainerRouter);
 app.use('/api/onboarding', onboardingRouter);
 app.use('/api/exercises', exerciseRouter);
+app.use('/api/plans', planRouter);
 
 /* -------------------- Health & Root -------------------- */
 app.get('/api/health', (_req, res) => {

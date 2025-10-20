@@ -119,9 +119,7 @@ function App() {
           <Route
             path="/exercises/:id"
             element={
-              <PrivateRoute>
-                <ExerciseDetail />
-              </PrivateRoute>
+                <ExerciseDetail />             
             }
           />
 
