@@ -1,7 +1,7 @@
 // packages/frontend/src/pages/boardings/OnboardingBody.jsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../../lib/api";
+import { api } from "../../lib/api";
 import { useAuth } from "../../context/auth.context";
 import OnboardingProgress from "../../components/OnboardingProgress.jsx";
 
@@ -35,10 +35,10 @@ export default function OnboardingBody() {
       const completed = !!(data.completed || data.complete || !next);
 
       if (completed) {
-        // Hết tất cả bước -> refresh, đánh dấu đã onboard và về Home
+        // Hết tất cả bước -> refresh, đánh dấu đã onboard và vào Dashboard
         try { await refreshUser(); } catch {}
         try { markOnboarded(); } catch {}
-        navigate("/", { replace: true });
+        navigate("/dashboard", { replace: true });
       } else {
         // Còn bước -> đi tiếp bước đang dở
         navigate(`/onboarding/${next}`, { replace: true });

@@ -51,7 +51,7 @@ export default function OnboardingWeight() {
       const next = data.nextStepKey;
       const completed = !!(data.completed || data.complete || !next);
       if (completed) {
-        navigate("/", { replace: true });
+        navigate("/dashboard", { replace: true });
       } else {
         navigate(`/onboarding/${next}`, { replace: true });
       }

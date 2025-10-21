@@ -1,47 +1,90 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 function ExerciseList({ exercises, loading, error }) {
+  const navigate = useNavigate();
+
   if (loading) {
-    return <div className="p-4">Loading exercises...</div>;
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="text-gray-600">Đang tải danh sách bài tập...</div>
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="p-4 text-red-500">Error: {error}</div>;
+    return (
+      <div className="p-4 border border-red-200 rounded-lg bg-red-50">
+        <p className="text-red-600">Lỗi: {error}</p>
+      </div>
+    );
   }
 
   if (!exercises || exercises.length === 0) {
-    return <div className="p-4">No exercises found. Select a muscle group to see exercises.</div>;
+    return (
+      <div className="p-8 text-center text-gray-500 border border-gray-200 rounded-lg bg-gray-50">
+        Không tìm thấy bài tập phù hợp. Hãy thử thay đổi bộ lọc hoặc tìm kiếm.
+      </div>
+    );
   }
 
+  const handleExerciseClick = (exercise) => {
+    navigate(`/exercises/${exercise.id}`, { state: exercise });
+  };
+
   return (
-    <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">Exercises</h2>
-      <div className="space-y-4">
+    <div>
+      <div className="mb-3 text-sm text-gray-600">
+        Tìm thấy {exercises.length} bài tập
+      </div>
+      
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {exercises.map((exercise) => (
-          <div key={exercise.id} className="border rounded p-4">
-            <h3 className="font-semibold">{exercise.name}</h3>
+          <div
+            key={exercise.id}
+            onClick={() => handleExerciseClick(exercise)}
+            className="overflow-hidden transition-shadow border border-gray-200 rounded-lg cursor-pointer hover:shadow-lg"
+          >
             {exercise.imageUrl && (
-              <img 
-                src={exercise.imageUrl} 
-                alt={exercise.name} 
-                className="w-full h-48 object-cover my-2 rounded"
-              />
-            )}
-            <p className="text-gray-600 mt-2">{exercise.description}</p>
-            <div className="mt-2">
-              <span className="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded mr-2">
-                {exercise.difficulty}
-              </span>
-              <span className="text-sm bg-gray-100 text-gray-800 px-2 py-1 rounded">
-                {exercise.equipment}
-              </span>
-            </div>
-            {exercise.instructions && (
-              <div className="mt-4">
-                <h4 className="font-semibold">Instructions:</h4>
-                <p className="text-gray-700">{exercise.instructions}</p>
+              <div className="relative w-full bg-gray-100" style={{ paddingBottom: '75%' }}>
+                <img
+                  src={exercise.imageUrl}
+                  alt={exercise.name}
+                  className="absolute inset-0 object-cover w-full h-full"
+                  loading="lazy"
+                />
               </div>
             )}
+            
+            <div className="p-4">
+              <h3 className="mb-2 text-lg font-semibold text-gray-900 line-clamp-2">
+                {exercise.name}
+              </h3>
+              
+              {exercise.description && (
+                <p className="mb-3 text-sm text-gray-600 line-clamp-2">
+                  {exercise.description}
+                </p>
+              )}
+              
+              <div className="flex flex-wrap gap-2">
+                {exercise.difficulty && (
+                  <span className="px-2 py-1 text-xs font-medium text-blue-700 rounded bg-blue-50">
+                    {exercise.difficulty}
+                  </span>
+                )}
+                {exercise.equipment && (
+                  <span className="px-2 py-1 text-xs font-medium text-gray-700 bg-gray-100 rounded">
+                    {exercise.equipment}
+                  </span>
+                )}
+                {exercise.impact && (
+                  <span className="px-2 py-1 text-xs font-medium text-green-700 rounded bg-green-50">
+                    {exercise.impact}
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
         ))}
       </div>

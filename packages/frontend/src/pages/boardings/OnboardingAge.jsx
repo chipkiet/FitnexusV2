@@ -6,6 +6,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 import api from "../../lib/api";
 import { useAuth } from "../../context/auth.context";
 import OnboardingProgress from "../../components/OnboardingProgress.jsx";
+import { submitOnboardingAnswer } from "../../lib/onboarding";
+import { useOnboardingGuard } from "../../hooks/useOnboardingGuard";
 
 
 export default function OnboardingAge() {
@@ -19,6 +21,9 @@ export default function OnboardingAge() {
   const location = useLocation();
   const { refreshUser, markOnboarded } = useAuth();
   const returnTo = location.state?.from?.pathname || "/";
+
+  // Đồng bộ route với bước đang dở; tránh redirect về home khi chưa xong
+  useOnboardingGuard("age");
 
 
   const OPTIONS = [
@@ -41,11 +46,13 @@ export default function OnboardingAge() {
     setLoi(null);
     setDangLuu(true);
     try {
-      await api.post("/api/onboarding/steps/age/answer", {
+      await submitOnboardingAnswer({
+        stepKey: "age",
         answers: { age_group: ageGroup, marketing: nhanMarketing },
+        navigate,
+        refreshUser,
+        markOnboarded,
       });
-      // ➜ bước 2 (code cũ)
-      navigate("/onboarding/body", { replace: true });
     } catch (err) {
       const status = err?.response?.status;
       const msg =

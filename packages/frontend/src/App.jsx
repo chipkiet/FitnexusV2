@@ -10,11 +10,13 @@ import ForgotPassword from "./pages/authentication/ForgotPassword.jsx";
 import VerifyCode from "./pages/authentication/VerifyCode.jsx";
 import ResetPassword from "./pages/authentication/ResetPassword.jsx";
 import Landing from "./pages/landing/Landing.jsx";
-import NutritionAI from "./pages/landing/NutritionAI.jsx";
-import NutritionPersonalize from "./pages/landing/NutritionPersonalize.jsx";
+import NutritionAI from "./pages/nutrition/NutritionAI.jsx";
+import NutritionPersonalize from "./pages/nutrition/NutritionPersonalize.jsx";
 import Dashboard from "./pages/user/Dashboard.jsx";
-import ModelingPage from "./components/ModelingPage.jsx";
-import MainLayout from "./layouts/MainLayout.jsx";
+import Modeling from "./pages/model3D/Modeling.jsx";
+import ModelingPreview from "./pages/model3D/ModelingPreview.jsx";
+import ExerciseDetail from "./pages/exercises/ExerciseDetail.jsx";
+import Exercises from "./pages/exercises/Exercises.jsx";
 
 // Onboarding
 import OnboardingAge from "./pages/boardings/OnboardingAge.jsx";
@@ -109,18 +111,37 @@ function App() {
           <Route path="/" element={<Landing />} />
           <Route path="/nutrition-ai" element={<NutritionAI />} />
           <Route path="/nutrition-ai/personalize" element={<NutritionPersonalize />} />
+          {/* Public 3D modeling preview */}
+          <Route path="/modeling-preview" element={<ModelingPreview />} />
+          <Route path="/exercises" element={<Exercises/>}/>
 
-          {/* Main layout with protected routes */}
+          {/* Protected route: exercise detail (no MainLayout) */}
           <Route
+            path="/exercises/:id"
+            element={
+                <ExerciseDetail />             
+            }
+          />
+
+          {/* Protected route without MainLayout (dashboard full control) */}
+          <Route
+            path="/dashboard"
             element={
               <PrivateRoute>
-                <MainLayout />
+                <Dashboard />
               </PrivateRoute>
             }
-          >
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/modeling" element={<ModelingPage />} />
-          </Route>
+          />
+
+          {/* Protected route without MainLayout (full control) */}
+          <Route
+            path="/modeling"
+            element={
+              <PrivateRoute>
+                <Modeling />
+              </PrivateRoute>
+            }
+          />
 
 
 
@@ -155,4 +176,3 @@ function App() {
 
 
 export default App;
-

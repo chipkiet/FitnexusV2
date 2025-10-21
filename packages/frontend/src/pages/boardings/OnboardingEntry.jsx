@@ -1,7 +1,7 @@
 // packages/frontend/src/pages/boardings/OnboardingEntry.jsx
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../../lib/api";
+import { api } from "../../lib/api";
 
 export default function OnboardingEntry() {
   const navigate = useNavigate();
@@ -24,8 +24,8 @@ export default function OnboardingEntry() {
         const step = String(d?.nextStepKey || d?.currentStepKey || "age").toLowerCase();
 
         if (completed) {
-          // ✅ Đã hoàn tất tất cả onboarding → về trang chủ
-          navigate("/", { replace: true });
+          // ✅ Đã hoàn tất tất cả onboarding → vào Dashboard
+          navigate("/dashboard", { replace: true });
         } else {
           // 🚀 Còn bước dở → chuyển sang đúng bước đang dở
           navigate(`/onboarding/${step}`, { replace: true });

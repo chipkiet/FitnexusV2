@@ -2,9 +2,11 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/auth.context.jsx";
 import loginImg from "../../assets/login.png";
+import logo from "../../assets/logo.png";
 import { FcGoogle } from "react-icons/fc";
 import { FaApple } from "react-icons/fa";
-import Alert from "../../components/common/Alert.jsx";import api, { endpoints } from "../../lib/api.js";
+import Alert from "../../components/common/Alert.jsx";
+import api, { endpoints } from "../../lib/api.js";
 import { setTokens } from "../../lib/tokenManager.js";
 import openOAuthPopup from "../../lib/openOAuthPopup.js";
 
@@ -14,15 +16,18 @@ function OAuthNotFoundModal({ email, onClose, onSignup }) {
       <div className="bg-white rounded-xl p-6 w-[420px] text-center">
         <h2 className="mb-2 text-lg font-semibold">Không tìm thấy tài khoản</h2>
         <p className="mb-4 text-sm text-gray-600">
-          Tài khoản Google {email ? <b>{email}</b> : "vừa dùng"} chưa liên kết với FITNEXUS.
+          Tài khoản Google {email ? <b>{email}</b> : "vừa dùng"} chưa liên kết
+          với FITNEXUS.
         </p>
         <div className="flex gap-3">
-          <button className="flex-1 py-2 border rounded-lg hover:bg-gray-50" onClick={onClose}>
+          <button
+            className="flex-1 py-2 border rounded-lg hover:bg-gray-50"
+            onClick={onClose}
+          >
             Đăng nhập bằng cách khác
           </button>
           <button
             className="flex-1 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700"
-
             onClick={onSignup}
           >
             Đăng ký
@@ -60,7 +65,10 @@ function LockedAccountModal({ email, reason, lockedAt, onClose }) {
         </p>
 
         <div className="mt-4 text-right">
-          <button className="px-4 py-2 border rounded-lg hover:bg-gray-50" onClick={onClose}>
+          <button
+            className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+            onClick={onClose}
+          >
             Đóng
           </button>
         </div>
@@ -69,9 +77,12 @@ function LockedAccountModal({ email, reason, lockedAt, onClose }) {
   );
 }
 
-
 export default function Login() {
-  const [form, setForm] = useState({ identifier: "", password: "", remember: false });
+  const [form, setForm] = useState({
+    identifier: "",
+    password: "",
+    remember: false,
+  });
   const [oauthLoading, setOauthLoading] = useState(false);
 
   const { login, loading, error, oauthLogin, redirectAfterAuth } = useAuth();
@@ -89,7 +100,8 @@ export default function Login() {
     lockedAt: "",
   });
   const openLocked = (info) => setLockedInfo({ open: true, ...info });
-  const closeLocked = () => setLockedInfo({ open: false, email: "", reason: "", lockedAt: "" });
+  const closeLocked = () =>
+    setLockedInfo({ open: false, email: "", reason: "", lockedAt: "" });
 
   const location = useLocation();
   useEffect(() => {
@@ -142,11 +154,12 @@ export default function Login() {
     return () => window.removeEventListener("message", onMessage);
   }, [navigate]);
 
-
   const closeNotFound = () => setShowNotFound(false);
   const goSignup = () => {
     setShowNotFound(false);
-    navigate(`/register${nfEmail ? `?email=${encodeURIComponent(nfEmail)}` : ""}`);
+    navigate(
+      `/register${nfEmail ? `?email=${encodeURIComponent(nfEmail)}` : ""}`
+    );
   };
 
   const handleChange = (e) => {
@@ -155,36 +168,17 @@ export default function Login() {
   };
 
   // ====== Submit bằng email/username + password ======
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  try {
-    await login(
-      {
-        identifier: form.identifier,
-        password: form.password,
-        rememberMe: form.remember,
-
-      }, navigate);
-
-      // Lưu token vào tokenManager
-      const accessToken =
-        result?.data?.accessToken ||
-        result?.data?.token ||
-        result?.accessToken ||
-        result?.token;
-      const refreshToken = result?.data?.refreshToken || result?.refreshToken || null;
-
-
-      if (accessToken) {
-        setTokens(accessToken, refreshToken, !!form.remember);
-      }
-
-      const role = result?.data?.user?.role;
-      if (role === "ADMIN") {
-        navigate("/admin", { replace: true });
-      } else {
-        navigate("/dashboard", { replace: true });
-      }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await login(
+        {
+          identifier: form.identifier,
+          password: form.password,
+          rememberMe: form.remember,
+        },
+        navigate
+      );
     } catch (e) {
       // ⬇️ Nếu BE trả 423 Locked, mở modal kèm lý do
       const st = e?.response?.status;
@@ -208,8 +202,10 @@ const handleSubmit = async (e) => {
     const be = import.meta.env.VITE_BACKEND_URL || "http://localhost:3001";
 
     // chuyển tab hiện tại sang BE để bắt đầu OAuth
-    const from = location.state?.from?.pathname;   // ⬅️ lấy from nếu có
-  const url = `${be}/auth/google${from ? `?from=${encodeURIComponent(from)}` : ""}`;
+    const from = location.state?.from?.pathname; // ⬅️ lấy from nếu có
+    const url = `${be}/auth/google${
+      from ? `?from=${encodeURIComponent(from)}` : ""
+    }`;
 
     window.location.href = `${be}/auth/google`;
   };
@@ -219,10 +215,12 @@ const handleSubmit = async (e) => {
       <div className="flex w-full max-w-4xl p-8 bg-white shadow-xl rounded-xl">
         {/* Left */}
         <div className="w-1/2 pr-8">
-          <h1 className="mb-6 text-xl font-semibold text-center text-gray-800">
-            Your Logo
-          </h1>
-          <h2 className="text-2xl font-bold text-center text-gray-800">Login</h2>
+          <div className="text-base/6 text-zinc-950 dark:text-white hover:underline -m-1.5 p-1.5 shrink-0">
+            <img src={logo} alt="Fitnexus logo" className="h-48" />
+          </div>
+          <h2 className="text-2xl font-bold text-center text-gray-800">
+            Login
+          </h2>
 
           {error && (
             <div className="mt-4">
@@ -300,7 +298,10 @@ const handleSubmit = async (e) => {
 
           <p className="mt-4 text-sm text-center text-gray-500">
             Don’t have an account?{" "}
-            <span className="text-blue-600 cursor-pointer hover:underline" onClick={() => navigate("/register")}>
+            <span
+              className="text-blue-600 cursor-pointer hover:underline"
+              onClick={() => navigate("/register")}
+            >
               Sign up
             </span>
           </p>
@@ -313,7 +314,11 @@ const handleSubmit = async (e) => {
       </div>
 
       {showNotFound && (
-        <OAuthNotFoundModal email={nfEmail} onClose={closeNotFound} onSignup={goSignup} />
+        <OAuthNotFoundModal
+          email={nfEmail}
+          onClose={closeNotFound}
+          onSignup={goSignup}
+        />
       )}
 
       {lockedInfo.open && (
@@ -322,7 +327,6 @@ const handleSubmit = async (e) => {
           reason={lockedInfo.reason}
           lockedAt={lockedInfo.lockedAt}
           onClose={closeLocked}
- 
         />
       )}
     </div>

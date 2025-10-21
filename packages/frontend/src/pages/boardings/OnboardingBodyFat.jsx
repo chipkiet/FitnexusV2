@@ -35,7 +35,7 @@ export default function OnboardingBodyFat() {
         // Hết bước -> refresh + mark + về Home
         await refreshUser();
         try { markOnboarded(); } catch {}
-        navigate("/", { replace: true });
+        navigate("/dashboard", { replace: true });
       }
     } catch (err) {
       const status = err?.response?.status;
