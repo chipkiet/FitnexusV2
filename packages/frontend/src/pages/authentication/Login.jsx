@@ -179,26 +179,6 @@ export default function Login() {
         },
         navigate
       );
-
-      // Lưu token vào tokenManager
-      const accessToken =
-        result?.data?.accessToken ||
-        result?.data?.token ||
-        result?.accessToken ||
-        result?.token;
-      const refreshToken =
-        result?.data?.refreshToken || result?.refreshToken || null;
-
-      if (accessToken) {
-        setTokens(accessToken, refreshToken, !!form.remember);
-      }
-
-      const role = result?.data?.user?.role;
-      if (role === "ADMIN") {
-        navigate("/admin", { replace: true });
-      } else {
-        navigate("/dashboard", { replace: true });
-      }
     } catch (e) {
       // ⬇️ Nếu BE trả 423 Locked, mở modal kèm lý do
       const st = e?.response?.status;

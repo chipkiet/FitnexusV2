@@ -36,7 +36,7 @@ export default function OnboardingGoal() {
       const completed = !!(data.completed || data.complete || !next);
 
       if (completed) {
-        navigate("/", { replace: true });
+        navigate("/dashboard", { replace: true });
       } else {
         navigate(`/onboarding/${next}`, { replace: true });
       }

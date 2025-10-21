@@ -5,7 +5,7 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import api, { endpoints } from "../lib/api.js";
+import { api, endpoints } from "../lib/api.js";
 import {
   setTokens,
   clearAllTokens,
@@ -53,11 +53,11 @@ export function AuthProvider({ children }) {
       if (d?.required && d?.nextStepKey) {
         navigate(`/onboarding/${d.nextStepKey}`, { replace: true });
       } else {
-        navigate("/", { replace: true });
+        navigate("/dashboard", { replace: true });
       }
     } catch {
-      // lỗi hiếm: cứ về Home
-      navigate("/", { replace: true });
+      // lỗi hiếm: đưa người dùng về Dashboard mặc định
+      navigate("/dashboard", { replace: true });
     }
   };
 

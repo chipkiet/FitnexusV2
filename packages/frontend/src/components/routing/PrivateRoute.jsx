@@ -1,7 +1,7 @@
 import React from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/auth.context.jsx";
-import api from "../../lib/api";
+import { api } from "../../lib/api";
 
 export default function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
