@@ -31,7 +31,7 @@ export function AuthProvider({ children }) {
   /**
    * Sau khi có token/user -> hỏi BE xem còn Onboarding không để điều hướng.
    * - Nếu còn: nhảy tới /onboarding/<nextStepKey>
-   * - Nếu xong: về "/"
+   * - Nếu xong: vào "/dashboard" (không quay về landing)
    * Gọi hàm này từ màn Login/Register (truyền navigate)
    */
   const redirectAfterAuth = async (navigate) => {
@@ -53,11 +53,11 @@ export function AuthProvider({ children }) {
       if (d?.required && d?.nextStepKey) {
         navigate(`/onboarding/${d.nextStepKey}`, { replace: true });
       } else {
-        navigate("/", { replace: true });
+        navigate("/dashboard", { replace: true });
       }
     } catch {
-      // lỗi hiếm: cứ về Home
-      navigate("/", { replace: true });
+      // lỗi hiếm: cứ vào Dashboard
+      navigate("/dashboard", { replace: true });
     }
   };
 

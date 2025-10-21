@@ -22,7 +22,7 @@ function readJson(p){ return JSON.parse(fs.readFileSync(p, 'utf8')); }
 
 async function upsertExercise(client, row, t) {
   const fields = [
-    'slug','name','name_en','description','gif_demo_url','primary_video_url','thumbnail_url','equipment_needed'
+    'slug','name','name_en','description','gif_demo_url','primary_video_url','thumbnail_url','equipment_needed','popularity_score'
   ];
   const values = fields.map(f => row[f] ?? null);
 
@@ -35,11 +35,12 @@ async function upsertExercise(client, row, t) {
     'primary_video_url = EXCLUDED.primary_video_url',
     'thumbnail_url = EXCLUDED.thumbnail_url',
     'equipment_needed = EXCLUDED.equipment_needed',
+    'popularity_score = COALESCE(EXCLUDED.popularity_score, exercises.popularity_score)',
     'updated_at = NOW()'
   ].join(',');
 
   const sql = `
-    INSERT INTO exercises (slug, name, name_en, description, gif_demo_url, primary_video_url, thumbnail_url, equipment_needed, created_at, updated_at)
+    INSERT INTO exercises (slug, name, name_en, description, gif_demo_url, primary_video_url, thumbnail_url, equipment_needed, popularity_score, created_at, updated_at)
     VALUES (${placeholders}, NOW(), NOW())
     ON CONFLICT (slug) DO UPDATE SET ${updates}
     RETURNING exercise_id;
@@ -132,4 +133,3 @@ main().catch((e) => {
   console.error(e);
   process.exit(1);
 });
-

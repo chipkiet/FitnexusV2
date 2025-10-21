@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-function ExerciseList({ exercises, loading, error }) {
+function ExerciseList({ exercises, loading, error, total }) {
   const navigate = useNavigate();
 
   if (loading) {
@@ -35,7 +35,7 @@ function ExerciseList({ exercises, loading, error }) {
   return (
     <div>
       <div className="mb-3 text-sm text-gray-600">
-        Tìm thấy {exercises.length} bài tập
+        Tìm thấy {typeof total === 'number' ? total : (exercises?.length || 0)} bài tập
       </div>
       
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
