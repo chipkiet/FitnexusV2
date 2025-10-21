@@ -1,4 +1,9 @@
 import express from 'express';
+import authOrSession from '../middleware/authOrSession.guard.js';
+import OnboardingSession from '../models/onboarding.session.model.js';
+import OnboardingAnswer from '../models/onboarding.answer.model.js';
+import OnboardingStep from '../models/onboarding.step.model.js';
+import User from '../models/user.model.js';
 
 const router = express.Router();
 
@@ -176,6 +181,133 @@ router.post('/plan', async (req, res) => {
     // Graceful fallback so FE still gets a plan
     const fallback = `Kế hoạch (fallback do lỗi gọi AI)\n\n- Mục tiêu: ${String(req.body?.goal || '')}\n- Gợi ý: ăn cân bằng, ưu tiên thực phẩm tươi, tránh đồ siêu chế biến.\n- Bữa sáng/trưa/tối kèm snack tuỳ ngân sách.\n\n(Thiết lập GEMINI_API_KEY và đảm bảo model hợp lệ để nhận gợi ý chi tiết từ AI.)`;
     dbg('fallback-used', { message: err?.message });
+    return res.json({ success: true, data: { text: fallback }, meta: { fallback: true, error: err?.message || 'unknown' } });
+  }
+});
+
+// Build a structured prompt from onboarding answers
+async function buildPromptFromOnboarding(userId, extraText = '') {
+  const user = await User.findByPk(userId);
+
+  // Prefer the latest completed session; fall back to the latest created
+  let session = await OnboardingSession.findOne({
+    where: { user_id: userId, is_completed: true },
+    order: [["completed_at", "DESC"]],
+  });
+  if (!session) {
+    session = await OnboardingSession.findOne({
+      where: { user_id: userId },
+      order: [["created_at", "DESC"]],
+    });
+  }
+  if (!session) {
+    const err = new Error('No onboarding session found');
+    err.status = 400;
+    throw err;
+  }
+
+  const answers = await OnboardingAnswer.findAll({
+    where: { session_id: session.session_id },
+    include: [{ model: OnboardingStep, as: 'step', attributes: ['step_key'] }],
+    order: [["created_at", "ASC"]],
+  });
+
+  const byStep = {};
+  for (const a of answers) {
+    const key = a?.step?.step_key;
+    if (key) byStep[key] = a.answers || {};
+  }
+
+  const pick = (stepKey, field) => (byStep?.[stepKey] ? byStep[stepKey][field] : undefined);
+
+  const goalRaw = pick('goal', 'goal');
+  const bodyTypeRaw = pick('body_type', 'body_type');
+  const bodyFatRaw = pick('level_body_fat', 'body_fat_level');
+  const expLevelRaw = pick('experience_level', 'experience_level');
+  const ageGroupRaw = pick('age', 'age_group');
+  const heightCm = Number(pick('height', 'height_cm')) || null;
+  const weightKg = Number(pick('weight', 'weight_kg')) || null;
+  const wpf = pick('workout_frequency', 'workout_days_per_week');
+  const workoutDays = wpf != null ? Number(wpf) : null;
+
+  const toLabel = {
+    goal: (g) => ({ LOSE_FAT: 'giảm mỡ', BUILD_MUSCLE: 'tăng cơ', MAINTAIN: 'duy trì' }[String(g || '').toUpperCase()] || null),
+    bodyType: (v) => ({ SKINNY: 'gầy', NORMAL: 'bình thường', OVERWEIGHT: 'thừa cân', MUSCULAR: 'cơ bắp' }[String(v || '').toUpperCase()] || null),
+    bodyFat: (v) => ({ VERY_LOW: 'rất thấp', LOW: 'thấp', NORMAL: 'bình thường', HIGH: 'cao' }[String(v || '').toUpperCase()] || null),
+    exp: (v) => ({ BEGINNER: 'mới bắt đầu', INTERMEDIATE: 'trung cấp', ADVANCED: 'nâng cao' }[String(v || '').toUpperCase()] || null),
+    ageGroup: (v) => ({ AGE_16_29: '16–29', AGE_30_39: '30–39', AGE_40_49: '40–49', AGE_50_PLUS: '50+' }[String(v || '').toUpperCase()] || null),
+    gender: (v) => ({ MALE: 'Nam', FEMALE: 'Nữ', OTHER: 'Khác' }[String(v || '').toUpperCase()] || null),
+  };
+
+  const genderRaw = user?.gender || null;
+  const profile = {
+    goal: goalRaw || null,
+    goal_label: toLabel.goal(goalRaw),
+    age_group: ageGroupRaw || null,
+    age_group_label: toLabel.ageGroup(ageGroupRaw),
+    gender: genderRaw || null,
+    gender_label: toLabel.gender(genderRaw),
+    height_cm: heightCm,
+    weight_kg: weightKg,
+    body_type: bodyTypeRaw || null,
+    body_type_label: toLabel.bodyType(bodyTypeRaw),
+    body_fat_level: bodyFatRaw || null,
+    body_fat_label: toLabel.bodyFat(bodyFatRaw),
+    experience_level: expLevelRaw || null,
+    experience_label: toLabel.exp(expLevelRaw),
+    workout_days_per_week: workoutDays,
+  };
+
+  let bmi = null;
+  if (profile.height_cm && profile.weight_kg) {
+    const m = profile.height_cm / 100;
+    bmi = +(profile.weight_kg / (m * m)).toFixed(1);
+  }
+
+  // Build a concise, structured prompt for Gemini
+  const lines = [];
+  const goalTxt = profile.goal_label || 'cá nhân hoá dinh dưỡng';
+  lines.push(`Hãy đóng vai chuyên gia dinh dưỡng và đề xuất kế hoạch ăn uống phù hợp cho mục tiêu: ${goalTxt}.`);
+  lines.push('Dưới đây là hồ sơ người dùng:');
+  if (profile.age_group_label) lines.push(`- Độ tuổi: ${profile.age_group_label}`);
+  if (profile.gender_label) lines.push(`- Giới tính: ${profile.gender_label}`);
+  if (profile.height_cm) lines.push(`- Chiều cao: ${profile.height_cm} cm`);
+  if (profile.weight_kg) lines.push(`- Cân nặng: ${profile.weight_kg} kg`);
+  if (bmi) lines.push(`- BMI: ${bmi}`);
+  if (profile.body_type_label) lines.push(`- Thể trạng: ${profile.body_type_label}`);
+  if (profile.body_fat_label) lines.push(`- Mỡ cơ thể: ${profile.body_fat_label}`);
+  if (profile.experience_label) lines.push(`- Kinh nghiệm tập luyện: ${profile.experience_label}`);
+  if (profile.workout_days_per_week != null) lines.push(`- Số buổi tập/tuần: ${profile.workout_days_per_week}`);
+  if (extraText && isNutritionRelated(extraText)) lines.push(`- Ràng buộc/ưu tiên thêm: ${extraText.trim()}`);
+
+  lines.push('Yêu cầu phản hồi:');
+  lines.push('- Tính/ước lượng tổng calo khuyến nghị mỗi ngày (nêu rõ giả định).');
+  lines.push('- Đề xuất phân bổ macro (protein/carb/fat) theo gram mỗi ngày.');
+  lines.push('- Gợi ý thực đơn mẫu 1–3 ngày theo bữa (sáng/trưa/tối + snack) với khẩu phần gần đúng.');
+  lines.push('- Nếu có dị ứng/ưu tiên, điều chỉnh món cho phù hợp.');
+  lines.push('- Trình bày ngắn gọn, có bullet, đơn vị quen thuộc (g, ml, kcal).');
+
+  return { prompt: lines.join('\n'), profile, bmi };
+}
+
+// New: generate plan using latest onboarding answers of the authenticated user
+router.post('/plan/from-onboarding', authOrSession, async (req, res) => {
+  try {
+    const extra = String(req.body?.extra || '').trim();
+    const { prompt, profile } = await buildPromptFromOnboarding(req.userId, extra);
+    dbg('prompt[from-onboarding]', { userId: req.userId, promptLen: prompt.length });
+    const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '';
+    const text = await callGemini(prompt, apiKey);
+    return res.json({ success: true, data: { text, usedProfile: profile } });
+  } catch (err) {
+    console.error('nutrition plan from onboarding error:', err);
+    const safe = (m) => (typeof m === 'string' && m.trim() ? m.trim() : 'Không xác định');
+    let extra = '';
+    try {
+      const { profile } = await buildPromptFromOnboarding(req.userId).catch(() => ({ profile: {} }));
+      extra = `\n\nHồ sơ tóm tắt: mục tiêu=${safe(profile?.goal_label)}, cân nặng=${safe(profile?.weight_kg)}kg, chiều cao=${safe(profile?.height_cm)}cm.`;
+    } catch (_) {}
+    const fallback = `Kế hoạch (fallback do lỗi gọi AI)${extra}\n- Gợi ý: ăn cân bằng, ưu tiên thực phẩm tươi, tránh đồ siêu chế biến.\n- Bữa sáng/trưa/tối kèm snack, khẩu phần vừa đủ.\n(Thiết lập GEMINI_API_KEY và đảm bảo model hợp lệ để nhận gợi ý chi tiết.)`;
     return res.json({ success: true, data: { text: fallback }, meta: { fallback: true, error: err?.message || 'unknown' } });
   }
 });

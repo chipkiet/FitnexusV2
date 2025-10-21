@@ -27,12 +27,6 @@ Table UserProgress {
   date_recorded DATE [not null]
   weight_kg DECIMAL(5, 2)
   height_cm DECIMAL(5, 1)
-  chest_cm DECIMAL(5, 1) [null]
-  waist_cm DECIMAL(5, 1) [null]
-  biceps_cm DECIMAL(5, 1) [null]
-  thigh_cm DECIMAL(5, 1) [null]
-  body_fat_percentage DECIMAL(4, 2) [null]
-  notes TEXT
   created_at TIMESTAMP [default: `now()`]
 }
 
