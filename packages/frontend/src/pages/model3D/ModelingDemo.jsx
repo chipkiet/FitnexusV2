@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import ModelViewer from "../../components/ModelViewer.jsx";
 import logo from "../../assets/logo.png";
 import useModelingController from "../../features/modeling/useModelingController.js";
+import HeaderDemo from "../../components/header/HeaderDemo.jsx";
 
 function ModelingDemo() {
   const navigate = useNavigate();
@@ -25,39 +26,7 @@ function ModelingDemo() {
 
   return (
     <div className="flex flex-col h-screen text-black">
-      <header className="flex items-center justify-between px-6 py-3 bg-white border-b">
-        <button className="shrink-0" onClick={() => navigate("/")}>
-          <img src={logo} alt="logo" className="h-36" />
-        </button>
-        <div className="gap-3">
-          <button
-            onClick={() => navigate("/")}
-            className="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50"
-          >
-            Trang chủ
-          </button>
-          <button
-            onClick={() => navigate("/exercises-demo")}
-            className="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50"
-          >
-            Thư viện bài tập
-          </button>
-          <button
-            onClick={() => navigate("/nutrition-ai")}
-            className="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50"
-          >
-            Dinh dưỡng
-          </button>
-
-          <button
-            onClick={() => navigate("/login")}
-            className="px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700"
-          >
-            Đăng nhập để trải nghiệm đầy đủ
-          </button>
-        </div>
-      </header>
-
+      <HeaderDemo/>
       {/* Main content */}
       <div className="flex flex-1 overflow-hidden">
         {/* Left side - 3D Model (40%) */}

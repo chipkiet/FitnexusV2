@@ -1,149 +1,235 @@
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/auth.context";
+// src/components/layout/HeaderApp.jsx
 import React, { useEffect, useRef, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../../context/auth.context.jsx";
 import logo from "../../assets/logo.png";
 
-const HeaderDemo = () => {
+export default function HeaderDemo() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const isAuthenticated = !!user;
 
-  const [showWorkoutDropdown, setShowWorkoutDropdown] = useState(false);
-  const dropdownRef = useRef(null);
+  const [openMobile, setOpenMobile] = useState(false);
+  const [openWorkout, setOpenWorkout] = useState(false);
+  const workoutRef = useRef(null);
+
+  // Đóng menu khi đổi route / click ngoài / ESC
+  useEffect(() => {
+    setOpenMobile(false);
+    setOpenWorkout(false);
+  }, [location.pathname]);
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setShowWorkoutDropdown(false);
+    const onDown = (e) => {
+      if (workoutRef.current && !workoutRef.current.contains(e.target)) {
+        setOpenWorkout(false);
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    const onKey = (e) => {
+      if (e.key === "Escape") {
+        setOpenMobile(false);
+        setOpenWorkout(false);
+      }
+    };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
   }, []);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 border-b border-gray-200 bg-white/90 backdrop-blur-xl">
-            <div className="flex items-center justify-between py-0 mx-auto px-7 max-w-7xl">
-              <button
-                onClick={() => navigate("/")}
-                className="text-base/6 text-zinc-950 hover:opacity-80 transition -m-1.5 p-1.5 shrink-0"
+    <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/85 backdrop-blur-xl">
+      <div className="flex items-center justify-between px-4 py-2 mx-auto max-w-7xl">
+       
+        <button
+          onClick={() => navigate("/")}
+          className="-m-2.5 p-2.5 shrink-0"
+          aria-label="Trang chủ"
+        >
+          <img src={logo} alt="Fitnexus" className="w-auto h-24 md:h-11" />
+        </button>
+
+        {/* Mobile toggle */}
+        <button
+          className="inline-flex items-center justify-center p-2 rounded-lg md:hidden hover:bg-gray-100"
+          aria-label="Mở menu"
+          aria-expanded={openMobile}
+          onClick={() => setOpenMobile((v) => !v)}
+        >
+          <svg width="24" height="24" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M3 5h14M3 10h14M3 15h14" />
+          </svg>
+        </button>
+
+        {/* NAV phẳng (form eDoctor): chữ nhỏ, hover xanh, không gradient */}
+        <nav className="items-center hidden gap-5 md:flex">
+          
+
+          <div className="relative" ref={workoutRef}>
+            <button
+              onClick={() => setOpenWorkout((v) => !v)}
+              aria-haspopup="true"
+              aria-expanded={openWorkout}
+              className="inline-flex items-center text-sm text-gray-800 hover:text-blue-600"
+            >
+              Luyện tập
+              <svg className="w-4 h-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z"/>
+              </svg>
+            </button>
+
+            {openWorkout && (
+              <div
+                role="menu"
+                aria-label="Menu luyện tập"
+                className="absolute left-0 p-2 mt-2 bg-white border border-gray-200 shadow-xl top-full w-72 rounded-xl"
               >
-                <img src={logo} alt="Fitnexus logo" className="h-36" />
-              </button>
-              <nav className="items-center hidden gap-6 md:flex">
                 <button
-                  className="text-base text-gray-800 transition hover:text-blue-500"
-                  onClick={() => navigate("/modeling-demo")}
+                  role="menuitem"
+                  onClick={() => navigate("/exercises-demo")}
+                  className="w-full px-3 py-2 text-left rounded-lg hover:bg-gray-50"
                 >
-                  Mô hình hoá
+                  <div className="text-sm font-semibold text-gray-900">Xem tất cả bài tập</div>
+                  <div className="text-xs text-gray-500">1000+ bài tập theo nhóm cơ</div>
                 </button>
-    
-                <div className="relative" ref={dropdownRef}>
-                  <button
-                    onClick={() => setShowWorkoutDropdown(!showWorkoutDropdown)}
-                    className="text-base text-gray-800 transition hover:text-blue-500"
-                  >
-                    Luyện tập
-                  </button>
-    
-                  {showWorkoutDropdown && (
-                    <div className="absolute left-0 z-50 py-2 mt-2 bg-white border border-gray-200 shadow-xl top-full w-72 rounded-xl animate-fadeIn">
-                      <div className="px-3 py-2">
-                        <div className="mb-2 text-xs font-semibold tracking-wide text-gray-400 uppercase">
-                          Thư viện bài tập
-                        </div>
-                        <button
-                          onClick={() => {
-                            navigate("/exercises-demo");
-                            setShowWorkoutDropdown(false);
-                          }}
-                          className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-gray-50 transition"
-                        >
-                          <div className="text-sm font-semibold text-gray-900">
-                            Xem tất cả bài tập
-                          </div>
-                          <div className="text-xs text-gray-500">
-                            1000+ bài tập theo nhóm cơ
-                          </div>
-                        </button>
-                      </div>
-    
-                      <div className="h-px my-2 bg-gray-200" />
-    
-                      <div className="px-3 py-2">
-                        <div className="mb-2 text-xs font-semibold tracking-wide text-gray-400 uppercase">
-                          Kế hoạch tập luyện
-                        </div>
-                        <button
-                          onClick={() => {
-                            if (!isAuthenticated) {
-                              navigate("/login", { state: { from: "/plans" } });
-                            } else {
-                              navigate("/plans");
-                            }
-                            setShowWorkoutDropdown(false);
-                          }}
-                          className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-gray-50 transition"
-                        >
-                          <div className="text-sm font-semibold text-gray-900">
-                            Kế hoạch của tôi
-                          </div>
-                          <div className="text-xs text-gray-500">
-                            Quản lý các plan đã tạo
-                          </div>
-                        </button>
-    
-                        <button
-                          onClick={() => {
-                            if (!isAuthenticated) {
-                              navigate("/login", { state: { from: "/plans/new" } });
-                            } else {
-                              navigate("/plans/new");
-                            }
-                            setShowWorkoutDropdown(false);
-                          }}
-                          className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-gray-50 transition mt-1"
-                        >
-                          <div className="text-sm font-semibold text-gray-900">
-                            Tạo plan mới
-                          </div>
-                          <div className="text-xs text-gray-500">
-                            Lên kế hoạch tập luyện riêng
-                          </div>
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-    
+
+                <div className="h-px my-2 bg-gray-200" />
+
                 <button
-                  type="button"
-                  onClick={() => navigate("/nutrition-ai")}
-                  className="text-base text-gray-800 transition hover:text-blue-500"
+                  role="menuitem"
+                  onClick={() =>
+                    !isAuthenticated
+                      ? navigate("/login", { state: { from: "/plans" } })
+                      : navigate("/plans")
+                  }
+                  className="w-full px-3 py-2 text-left rounded-lg hover:bg-gray-50"
                 >
-                  Khám phá Nutrition AI
+                  Kế hoạch của tôi
                 </button>
-                <a
-                  href="#blog"
-                  className="text-base text-gray-800 transition hover:text-blue-500"
-                >
-                  Cộng đồng
-                </a>
-              </nav>
-              <div className="flex items-center gap-4">
                 <button
-                  className="font-extrabold text-gray-700 transition text-pretty hover:text-blue-600"
-                  onClick={() => navigate("/login")}
+                  role="menuitem"
+                  onClick={() =>
+                    !isAuthenticated
+                      ? navigate("/login", { state: { from: "/plans/new" } })
+                      : navigate("/plans/new")
+                  }
+                  className="w-full px-3 py-2 mt-1 text-left rounded-lg hover:bg-gray-50"
                 >
-                  Đăng nhập
-                </button>
-                <button className="px-6 py-2.5 font-semibold text-white bg-gradient-to-r from-blue-600 to-blue-500 rounded-full hover:shadow-lg transition">
-                  Bắt đầu ngay
+                  Tạo plan mới
                 </button>
               </div>
-            </div>
-          </header>
-  )
-};
+            )}
+          </div>
 
-export default HeaderDemo;
+          <button
+            onClick={() => navigate("/modeling-demo")}
+            className="text-sm text-gray-800 hover:text-blue-600"
+          >
+            Mô hình hoá
+          </button>
+          <button
+            onClick={() => navigate("/nutrition-ai")}
+            className="text-sm text-gray-800 hover:text-blue-600"
+          >
+            Dinh dưỡng
+          </button>
+          <button
+            onClick={() => navigate("/community")}
+            className="text-sm text-gray-800 hover:text-blue-600"
+          >
+            Cộng đồng
+          </button>
+        </nav>
+
+        {/* CTA phải: “Tải ứng dụng” + Đăng nhập (theo form eDoctor) */}
+        <div className="items-center hidden gap-3 md:flex">
+          <a
+            href="https://example.com/download-app" // TODO: thay link store/app thực tế
+            target="_blank"
+            rel="noreferrer"
+            className="px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-full hover:shadow-lg"
+          >
+            Tải ứng dụng
+          </a>
+
+          <button
+            onClick={() => navigate("/login")}
+            className="text-sm font-semibold text-gray-700 hover:text-blue-600"
+          >
+            {isAuthenticated ? (user?.name ?? "Tài khoản") : "Đăng nhập"}
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile sheet theo form eDoctor (danh mục phẳng + nhóm Luyện tập) */}
+      {openMobile && (
+        <div className="bg-white border-t border-gray-200 md:hidden">
+          <div className="px-4 py-3 space-y-2">
+            <button className="block w-full py-2 text-left" onClick={() => navigate("/")}>
+              Trang chủ
+            </button>
+
+            <details className="border rounded-lg">
+              <summary className="flex items-center justify-between w-full px-3 py-2 list-none cursor-pointer">
+                <span>Luyện tập</span>
+                <span className="select-none">▼</span>
+              </summary>
+              <div className="px-2 pb-2">
+                <button
+                  className="block w-full px-3 py-2 text-left rounded-md hover:bg-gray-50"
+                  onClick={() => navigate("/exercises-demo")}
+                >
+                  Xem tất cả bài tập
+                </button>
+                <button
+                  className="block w-full px-3 py-2 text-left rounded-md hover:bg-gray-50"
+                  onClick={() =>
+                    !isAuthenticated ? navigate("/login", { state: { from: "/plans" } }) : navigate("/plans")
+                  }
+                >
+                  Kế hoạch của tôi
+                </button>
+                <button
+                  className="block w-full px-3 py-2 text-left rounded-md hover:bg-gray-50"
+                  onClick={() =>
+                    !isAuthenticated ? navigate("/login", { state: { from: "/plans/new" } }) : navigate("/plans/new")
+                  }
+                >
+                  Tạo plan mới
+                </button>
+              </div>
+            </details>
+
+            <button className="block w-full py-2 text-left" onClick={() => navigate("/modeling-demo")}>
+              Mô hình hoá
+            </button>
+            <button className="block w-full py-2 text-left" onClick={() => navigate("/nutrition-ai")}>
+              Dinh dưỡng
+            </button>
+            <button className="block w-full py-2 text-left" onClick={() => navigate("/community")}>
+              Cộng đồng
+            </button>
+
+            <a
+              href="https://example.com/download-app" // TODO: thay link store/app thực tế
+              target="_blank"
+              rel="noreferrer"
+              className="block w-full py-2 font-semibold text-left text-blue-600"
+            >
+              Tải ứng dụng
+            </a>
+
+            <div className="pt-2 border-t">
+              <button className="w-full px-4 py-2 border rounded-full" onClick={() => navigate("/login")}>
+                {isAuthenticated ? (user?.name ?? "Tài khoản") : "Đăng nhập"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </header>
+  );
+}

@@ -17,6 +17,7 @@ import lowerLegsIcon from "../../assets/body/lowerLegsIcon.svg";
 
 import ExerciseList from "../../components/exercise/ExerciseList.jsx";
 import { useAuth } from "../../context/auth.context.jsx";
+import HeaderDemo from "../../components/header/HeaderDemo.jsx";
 
 export default function ExercisesDemo() {
   const navigate = useNavigate();
@@ -212,108 +213,7 @@ export default function ExercisesDemo() {
 
   return (
     <div className="min-h-screen text-black bg-white">
-      <header className="border-b border-gray-200">
-        <div className="flex items-center justify-between mx-auto max-w-7xl">
-          <button className="shrink-0" onClick={() => navigate("/")}> 
-            <img src={logo} alt="logo" className="h-36" />
-          </button>
-          <nav className="items-center hidden gap-6 text-sm text-gray-700 md:flex">
-            <button onClick={() => navigate("/")} className="hover:underline">
-              Trang chủ
-            </button>
-
-            <div className="relative" ref={dropdownRef}>
-              <button
-                onClick={() => setShowWorkoutDropdown(!showWorkoutDropdown)}
-                className="text-base text-gray-800 transition hover:text-blue-500"
-              >
-                Luyện tập
-              </button>
-
-              {showWorkoutDropdown && (
-                <div className="absolute left-0 z-50 py-2 mt-2 bg-white border border-gray-200 shadow-xl top-full w-72 rounded-xl animate-fadeIn">
-                  <div className="px-3 py-2">
-                    <div className="mb-2 text-xs font-semibold tracking-wide text-gray-400 uppercase">
-                      Thư viện bài tập
-                    </div>
-                    <button
-                      onClick={() => {
-                        navigate("/exercises-demo");
-                        setShowWorkoutDropdown(false);
-                      }}
-                      className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-gray-50 transition"
-                    >
-                      <div className="text-sm font-semibold text-gray-900">
-                        Xem tất cả bài tập
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        1000+ bài tập theo nhóm cơ
-                      </div>
-                    </button>
-                  </div>
-
-                  <div className="h-px my-2 bg-gray-200" />
-
-                  <div className="px-3 py-2">
-                    <div className="mb-2 text-xs font-semibold tracking-wide text-gray-400 uppercase">
-                      Kế hoạch tập luyện
-                    </div>
-                    <button
-                      onClick={() => {
-                        if (!isAuthenticated) {
-                          navigate("/login", { state: { from: "/plans" } });
-                        } else {
-                          navigate("/plans");
-                        }
-                        setShowWorkoutDropdown(false);
-                      }}
-                      className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-gray-50 transition"
-                    >
-                      <div className="text-sm font-semibold text-gray-900">
-                        Kế hoạch của tôi
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        Quản lý các plan đã tạo
-                      </div>
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        if (!isAuthenticated) {
-                          navigate("/login", { state: { from: "/plans/new" } });
-                        } else {
-                          navigate("/plans/new");
-                        }
-                        setShowWorkoutDropdown(false);
-                      }}
-                      className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-gray-50 transition mt-1"
-                    >
-                      <div className="text-sm font-semibold text-gray-900">
-                        Tạo plan mới
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        Lên kế hoạch tập luyện riêng
-                      </div>
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-            <button onClick={() => navigate("/modeling-demo")} className="hover:underline">
-              Mô hình hoá
-            </button>
-            <button onClick={() => navigate("/nutrition-ai")} className="hover:underline">
-              Dinh dưỡng
-            </button>
-          </nav>
-          <div className="flex items-center gap-4">
-            <button onClick={() => navigate("/login")} className="text-sm hover:underline">
-              Đăng nhập
-            </button>
-          </div>
-        </div>
-      </header>
-
+      <HeaderDemo/>
       <main className="px-4 py-6 mx-auto max-w-7xl">
         <h1 className="mb-4 text-2xl font-semibold">Thư viện bài tập</h1>
 
