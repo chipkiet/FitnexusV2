@@ -1,5 +1,5 @@
 // packages/frontend/src/lib/onboarding.js
-import api, { endpoints } from "./api";
+import { api, endpoints } from "./api";
 
 /**
  * Gửi câu trả lời 1 step và điều hướng theo phản hồi BE:
@@ -21,8 +21,9 @@ export async function submitOnboardingAnswer({
   if (completed) {
     try { await refreshUser?.(); } catch {}
     try { markOnboarded?.(); } catch {}
-    navigate("/", { replace: true });
+    navigate("/dashboard", { replace: true });
   } else {
-    navigate(`/onboarding/${next}`, { replace: true });
+    // Đặt cờ để bỏ qua guard một lần sau submit nhằm tránh loop
+    navigate(`/onboarding/${next}`, { replace: true, state: { skipGuardOnce: true } });
   }
 }

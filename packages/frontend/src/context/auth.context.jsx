@@ -5,7 +5,7 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import api, { endpoints } from "../lib/api.js";
+import { api, endpoints } from "../lib/api.js";
 import {
   setTokens,
   clearAllTokens,
@@ -56,7 +56,6 @@ export function AuthProvider({ children }) {
         navigate("/dashboard", { replace: true });
       }
     } catch {
-      // lỗi hiếm: cứ vào Dashboard
       navigate("/dashboard", { replace: true });
     }
   };

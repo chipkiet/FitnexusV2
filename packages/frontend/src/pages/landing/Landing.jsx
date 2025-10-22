@@ -42,6 +42,35 @@ const Fitnexus3DLanding = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const handleStartOnboarding = async () => {
+    // Require authentication for onboarding. If not authenticated, redirect to login
+    if (!isAuthenticated()) {
+      // pass the original destination so Login can redirect back after success
+      navigate("/login", { state: { from: "/onboarding/age" } });
+      return;
+    }
+
+    try {
+      // Check current onboarding session and navigate accordingly
+      const response = await api.get("/api/onboarding/session", {
+        params: { t: Date.now() },
+        headers: { "Cache-Control": "no-cache", Pragma: "no-cache" },
+        withCredentials: true,
+      });
+
+      const data = response?.data?.data || {};
+      if (data.required && !data.completed) {
+        const nextStep = String(data.nextStepKey || data.currentStepKey || "age").toLowerCase();
+        navigate(`/onboarding/${nextStep}`);
+      } else {
+        navigate("/dashboard");
+      }
+    } catch (error) {
+      console.error("Error starting onboarding:", error);
+      navigate("/onboarding/age");
+    }
+  };
+
   // Bam ESC de thoat dieu kien
   useEffect(() => {
     const onKey = (e) => {
@@ -246,12 +275,12 @@ const Fitnexus3DLanding = () => {
               Fitnexus kết hợp sức mạnh của AI và chuyên môn của các nhà khoa
               học thể thao để tạo ra kế hoạch luyện tập tốt nhất cho bạn.
             </p>
-            <button className="inline-flex items-center gap-3 px-10 py-5 text-lg font-semibold text-black transition bg-white rounded-full hover:bg-gray-200 group">
+            <button 
+              onClick={handleStartOnboarding}
+              className="inline-flex items-center gap-3 px-10 py-5 text-lg font-semibold text-black transition bg-white rounded-full hover:bg-gray-200 group"
+            >
               Nhận kế hoạch luyện tập cá nhân hóa
-              <ChevronRight
-                className="transition-transform group-hover:translate-x-1"
-                size={24}
-              />
+              <ChevronRight className="transition-transform group-hover:translate-x-1" size={24} />
             </button>
 
             {/* Feature Pills */}
