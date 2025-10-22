@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
@@ -15,10 +15,17 @@ import tricepsIcon from "../../assets/body/tricepsIcon.svg";
 import upperLegsIcon from "../../assets/body/upperLegsIcon.svg";
 import lowerLegsIcon from "../../assets/body/lowerLegsIcon.svg";
 
-import ExerciseList from "../../components/ExerciseList.jsx";
+import ExerciseList from "../../components/exercise/ExerciseList.jsx";
+import { useAuth } from "../../context/auth.context.jsx";
 
-export default function Exercises() {
+export default function ExercisesDemo() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isAuthenticated = !!user;
+
+  const [showWorkoutDropdown, setShowWorkoutDropdown] = useState(false);
+  const dropdownRef = useRef(null);
+
 
   const muscleGroups = [
     { id: "abs", label: "Abs", icon: absIcon },
@@ -43,12 +50,20 @@ export default function Exercises() {
   const pageSize = 15;
   const [total, setTotal] = useState(0);
   
-  // API state
   const [rawExercises, setRawExercises] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch exercises on mount and when selectedGroup or page changes
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if(dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowWorkoutDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, []);
+
   useEffect(() => {
     let isMounted = true;
     const fetchExercises = async () => {
@@ -57,13 +72,13 @@ export default function Exercises() {
       try {
         let res;
         if (!selectedGroup) {
-          // default list with pagination
+
           res = await axios.get('/api/exercises', { params: { page, pageSize } });
         } else if (selectedGroup === 'cardio') {
-          // exercise type with pagination
+
           res = await axios.get('/api/exercises/type/cardio', { params: { page, pageSize } });
         } else {
-          // fetch by muscle group with pagination
+
           res = await axios.get(`/api/exercises/muscle/${selectedGroup}`, { params: { page, pageSize } });
         }
         if (isMounted) {
@@ -164,7 +179,6 @@ export default function Exercises() {
     const synonyms = groupSynonyms[groupId] || [groupId];
     const tokens = ex.parts || [];
     
-    // Check trong parts hoặc tên bài tập
     const nameNorm = normalizeStr(ex.name);
     for (const s of synonyms) {
       const ss = normalizeStr(s).replace(/-/g, " ");
@@ -179,7 +193,6 @@ export default function Exercises() {
   const filtered = useMemo(() => {
     const q = normalizeStr(search);
     return normalized.filter((ex) => {
-      // Khi đã fetch theo nhóm cơ ở BE, không cần lọc nhóm ở FE nữa
       if (level && normalizeStr(ex.difficulty) !== normalizeStr(level)) return false;
       if (impact && normalizeStr(ex.impact) !== normalizeStr(impact)) return false;
       if (population && normalizeStr(ex.population) !== normalizeStr(population)) return false;
@@ -208,7 +221,85 @@ export default function Exercises() {
             <button onClick={() => navigate("/")} className="hover:underline">
               Trang chủ
             </button>
-            <button onClick={() => navigate("/modeling-preview")} className="hover:underline">
+
+            <div className="relative" ref={dropdownRef}>
+              <button
+                onClick={() => setShowWorkoutDropdown(!showWorkoutDropdown)}
+                className="text-base text-gray-800 transition hover:text-blue-500"
+              >
+                Luyện tập
+              </button>
+
+              {showWorkoutDropdown && (
+                <div className="absolute left-0 z-50 py-2 mt-2 bg-white border border-gray-200 shadow-xl top-full w-72 rounded-xl animate-fadeIn">
+                  <div className="px-3 py-2">
+                    <div className="mb-2 text-xs font-semibold tracking-wide text-gray-400 uppercase">
+                      Thư viện bài tập
+                    </div>
+                    <button
+                      onClick={() => {
+                        navigate("/exercises-demo");
+                        setShowWorkoutDropdown(false);
+                      }}
+                      className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-gray-50 transition"
+                    >
+                      <div className="text-sm font-semibold text-gray-900">
+                        Xem tất cả bài tập
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        1000+ bài tập theo nhóm cơ
+                      </div>
+                    </button>
+                  </div>
+
+                  <div className="h-px my-2 bg-gray-200" />
+
+                  <div className="px-3 py-2">
+                    <div className="mb-2 text-xs font-semibold tracking-wide text-gray-400 uppercase">
+                      Kế hoạch tập luyện
+                    </div>
+                    <button
+                      onClick={() => {
+                        if (!isAuthenticated) {
+                          navigate("/login", { state: { from: "/plans" } });
+                        } else {
+                          navigate("/plans");
+                        }
+                        setShowWorkoutDropdown(false);
+                      }}
+                      className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-gray-50 transition"
+                    >
+                      <div className="text-sm font-semibold text-gray-900">
+                        Kế hoạch của tôi
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        Quản lý các plan đã tạo
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        if (!isAuthenticated) {
+                          navigate("/login", { state: { from: "/plans/new" } });
+                        } else {
+                          navigate("/plans/new");
+                        }
+                        setShowWorkoutDropdown(false);
+                      }}
+                      className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-gray-50 transition mt-1"
+                    >
+                      <div className="text-sm font-semibold text-gray-900">
+                        Tạo plan mới
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        Lên kế hoạch tập luyện riêng
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+            <button onClick={() => navigate("/modeling-demo")} className="hover:underline">
               Mô hình hoá
             </button>
             <button onClick={() => navigate("/nutrition-ai")} className="hover:underline">

@@ -4,7 +4,7 @@ import ModelViewer from "../../components/ModelViewer.jsx";
 import logo from "../../assets/logo.png";
 import useModelingController from "../../features/modeling/useModelingController.js";
 
-function ModelingPreview() {
+function ModelingDemo() {
   const navigate = useNavigate();
   const {
     selectedMuscleGroup,
@@ -25,7 +25,6 @@ function ModelingPreview() {
 
   return (
     <div className="flex flex-col h-screen text-black">
-      {/* Top bar */}
       <header className="flex items-center justify-between px-6 py-3 bg-white border-b">
         <button className="shrink-0" onClick={() => navigate("/")}>
           <img src={logo} alt="logo" className="h-36" />
@@ -38,7 +37,7 @@ function ModelingPreview() {
             Trang chủ
           </button>
           <button
-            onClick={() => navigate("/exercises")}
+            onClick={() => navigate("/exercises-demo")}
             className="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50"
           >
             Thư viện bài tập
@@ -79,7 +78,7 @@ function ModelingPreview() {
           </div>
         </div>
 
-        {/* Right side - Exercises (60%) */}
+        {/* Right side - ExercisesDemo (60%) */}
         <div className="flex flex-col w-3/5">
           {/* Filters (preview disabled) */}
           <div className="p-4 bg-white border-b">
@@ -185,7 +184,7 @@ function ModelingPreview() {
 
                 {isPanelOpen && (
                   <>
-                    {/* Primary group */}
+            
                     <button
                       type="button"
                       onClick={togglePrimary}
@@ -271,7 +270,7 @@ function ModelingPreview() {
                       </div>
                     )}
 
-                    {/* Secondary group */}
+     
                     <button
                       type="button"
                       onClick={toggleSecondary}
@@ -354,4 +353,4 @@ function ModelingPreview() {
   );
 }
 
-export default ModelingPreview;
+export default ModelingDemo;

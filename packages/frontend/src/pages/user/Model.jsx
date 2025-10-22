@@ -42,7 +42,6 @@ export default function Home() {
 
   return (
     <div className="h-screen bg-gradient-to-br from-[#2D1B69] via-[#351C7A] to-[#7B2574]">
-      {/* Header */}
       <div className="px-6 py-4 flex items-center justify-between bg-gradient-to-b from-[#2D1B69]/50 to-transparent backdrop-blur-sm">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
@@ -58,7 +57,7 @@ export default function Home() {
         <div className="flex items-center gap-3">
           {/* Profile Button */}
           <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm">
-            <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center">
+            <div className="flex items-center justify-center w-8 h-8 bg-purple-600 rounded-full">
               <span className="text-sm font-medium text-white">
                 {user?.username?.[0]?.toUpperCase()}
               </span>
@@ -69,7 +68,7 @@ export default function Home() {
           {/* Homepage Button */}
           <button
             onClick={() => navigate('/')}
-            className="flex items-center gap-2 px-4 py-2 rounded-full bg-purple-600 text-white hover:bg-purple-700 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 text-white transition-colors bg-purple-600 rounded-full hover:bg-purple-700"
           >
             <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
               <path d="M12 2L2 12h3v8h6v-6h2v6h6v-8h3L12 2z"/>
@@ -80,7 +79,7 @@ export default function Home() {
           {/* Logout Button */}
           <button
             onClick={handleLogout}
-            className="flex items-center gap-2 px-4 py-2 rounded-full bg-red-600 text-white hover:bg-red-700 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 text-white transition-colors bg-red-600 rounded-full hover:bg-red-700"
           >
             <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
               <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
@@ -93,10 +92,10 @@ export default function Home() {
       {/* Main Content */}
       <div className="h-[calc(100vh-5rem)] p-6 grid grid-cols-3 gap-6">
         {/* Left: 3D Model */}
-        <div className="col-span-2 relative rounded-3xl overflow-hidden bg-white/5 backdrop-blur-sm">
-          <div className="absolute top-6 left-6 z-10">
-            <h2 className="text-2xl font-bold text-white mb-2">3D Human Body Model</h2>
-            <p className="text-purple-200 text-sm">
+        <div className="relative col-span-2 overflow-hidden rounded-3xl bg-white/5 backdrop-blur-sm">
+          <div className="absolute z-10 top-6 left-6">
+            <h2 className="mb-2 text-2xl font-bold text-white">3D Human Body Model</h2>
+            <p className="text-sm text-purple-200">
               Click on body parts to select them and explore exercises
             </p>
           </div>
@@ -125,14 +124,14 @@ export default function Home() {
           {/* Info Card */}
           <div className="p-6 rounded-3xl bg-white/5 backdrop-blur-sm">
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 rounded-xl bg-purple-600">
+              <div className="p-2 bg-purple-600 rounded-xl">
                 <svg viewBox="0 0 24 24" fill="white" className="w-6 h-6">
                   <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
                 </svg>
               </div>
               <h2 className="text-xl font-bold text-white">Body Part Information</h2>
             </div>
-            <p className="text-purple-200 text-sm">
+            <p className="text-sm text-purple-200">
               {selectedPart ? (
                 `Selected: ${selectedPart}`
               ) : (
@@ -142,13 +141,13 @@ export default function Home() {
           </div>
 
           {/* Exercise List */}
-          <div className="flex-1 rounded-3xl overflow-hidden bg-white/5 backdrop-blur-sm">
+          <div className="flex-1 overflow-hidden rounded-3xl bg-white/5 backdrop-blur-sm">
             <div className="p-6 border-b border-white/10">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold text-white">Exercises</h2>
                 {loading && (
                   <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+                    <div className="w-4 h-4 border-2 border-purple-500 rounded-full border-t-transparent animate-spin"></div>
                     <span className="text-sm text-purple-200">Loading...</span>
                   </div>
                 )}

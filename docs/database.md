@@ -57,7 +57,7 @@ Table WorkoutPlans {
 Table Plan_Exercise_Details {
   plan_exercise_id INT [pk, increment]
   plan_id INT [ref: > WorkoutPlans.plan_id, not null]
-  exercise_id INT [ref: > Exercises.exercise_id, not null]
+  exercise_id INT [ref: > ExercisesDemo.exercise_id, not null]
   session_order INT 
   sets_recommended INT 
   reps_recommended VARCHAR(50)
@@ -76,7 +76,7 @@ Table UserWorkoutLogs {
 Table UserWorkoutLog_Details {
   log_detail_id INT [pk, increment]
   log_id INT [ref: > UserWorkoutLogs.log_id, not null]
-  exercise_id INT [ref: > Exercises.exercise_id, not null]
+  exercise_id INT [ref: > ExercisesDemo.exercise_id, not null]
   set_number INT [not null]
   reps_achieved INT
   weight_kg DECIMAL(6, 2)
@@ -149,7 +149,7 @@ Table OnboardingAnswers {
 
 
 // ==== Bảng Thư viện & Giải phẫu ====
-Table Exercises {
+Table ExercisesDemo {
   exercise_id INT [pk, increment]
   name VARCHAR(255) [not null]
   name_en VARCHAR(255) 
@@ -213,7 +213,7 @@ Table MuscleGroups {
 // Bảng trung gian - Cầu nối quan trọng nhất
 Table Exercise_MuscleGroup {
   id INT [pk, increment]
-  exercise_id INT [ref: > Exercises.exercise_id] // Mối quan hệ 5
+  exercise_id INT [ref: > ExercisesDemo.exercise_id] // Mối quan hệ 5
   muscle_group_id INT [ref: > MuscleGroups.muscle_group_id] // Mối quan hệ 5
 
   // Mức độ tác dụng
@@ -230,7 +230,7 @@ Table Exercise_MuscleGroup {
 
 Table ExerciseMuscleCombinations {
   combination_id INT [pk, increment]
-  exercise_id INT [ref: > Exercises.exercise_id]
+  exercise_id INT [ref: > ExercisesDemo.exercise_id]
 
   // Lưu trữ tổ hợp để nhanh chóng lấy bài tập
   muscle_group_ids_array INT[] [not null]  // PostgreSQL array: {1,5,7}
@@ -257,7 +257,7 @@ Table ExerciseMuscleCombinations {
 
 Table ExerciseSteps {
   step_id INT [pk, increment]
-  exercise_id INT [ref: > Exercises.exercise_id, not null] // Mối quan hệ 3
+  exercise_id INT [ref: > ExercisesDemo.exercise_id, not null] // Mối quan hệ 3
   step_number INT [not null]
 
   title VARCHAR(150)            // "Vị trí khởi đầu"
@@ -276,7 +276,7 @@ Table ExerciseSteps {
 // ==== BẢNG LƯU Ý/TIPS ====
 Table ExerciseTips {
   tip_id INT [pk, increment]
-  exercise_id INT [ref: > Exercises.exercise_id, not null]
+  exercise_id INT [ref: > ExercisesDemo.exercise_id, not null]
   
   tip_type VARCHAR(30)                      // common_mistake, pro_tip, safety, breathing
   title VARCHAR(150)

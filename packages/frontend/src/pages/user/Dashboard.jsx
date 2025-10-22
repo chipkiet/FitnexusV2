@@ -22,7 +22,6 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col min-h-screen text-black bg-white">
-      {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-10 shadow-sm backdrop-blur-xl bg-blend-saturation bg-bg-secondary/90">
         <div className="flex items-center justify-between px-6 py-4 mx-auto max-w-7xl">
           {/* Logo → chỉ reload trang dashboard */}
@@ -36,11 +35,10 @@ export default function Dashboard() {
             </span>
           </div>
 
-          {/* Navigation */}
           <nav className="hidden gap-8 md:flex">
             <button
               className="text-base text-gray-800 hover:underline"
-              onClick={() => navigate("/modeling-preview")}
+              onClick={() => navigate("/modeling-demo")}
             >
               Mô hình hoá
             </button>
@@ -213,7 +211,7 @@ export default function Dashboard() {
                 </li>
                 <li>
                   <button
-                    onClick={() => navigate("/exercises")}
+                    onClick={() => navigate("/exercises-demo")}
                     className="hover:text-white"
                   >
                     Thư viện
