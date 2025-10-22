@@ -29,6 +29,13 @@ export const endpoints = {
     forgot: "/api/auth/forgot-password",
   },
 
+  // Plans
+  plans: {
+    base: "/api/plans",
+    byId: (id) => `/api/plans/${id}`,
+    items: (id) => `/api/plans/${id}/exercises`,
+  },
+
   // OAuth session-based (Passport)
   oauth: {
     me: "/auth/me",
@@ -294,6 +301,33 @@ export const createSubAdmin = async ({ email, username, password }) => {
     email,
     username,
     password,
+  });
+  return res.data;
+};
+
+// ===== Plans convenience APIs =====
+export const createPlanApi = async ({ name, description, difficulty_level, is_public }) => {
+  const res = await api.post(endpoints.plans.base, {
+    name,
+    description,
+    difficulty_level,
+    is_public,
+  });
+  return res.data;
+};
+
+export const getPlanByIdApi = async (planId) => {
+  const res = await api.get(endpoints.plans.byId(planId));
+  return res.data;
+};
+
+export const addExerciseToPlanApi = async ({ planId, exercise_id, session_order, sets_recommended, reps_recommended, rest_period_seconds }) => {
+  const res = await api.post(endpoints.plans.items(planId), {
+    exercise_id,
+    session_order,
+    sets_recommended,
+    reps_recommended,
+    rest_period_seconds,
   });
   return res.data;
 };

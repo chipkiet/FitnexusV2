@@ -17,6 +17,7 @@ import Modeling from "./pages/model3D/Modeling.jsx";
 import ModelingPreview from "./pages/model3D/ModelingPreview.jsx";
 import ExerciseDetail from "./pages/exercises/ExerciseDetail.jsx";
 import Exercises from "./pages/exercises/Exercises.jsx";
+import PlanNew from "./pages/plans/PlanNew.jsx";
 
 // Onboarding
 import OnboardingAge from "./pages/boardings/OnboardingAge.jsx";
@@ -114,6 +115,14 @@ function App() {
           {/* Public 3D modeling preview */}
           <Route path="/modeling-preview" element={<ModelingPreview />} />
           <Route path="/exercises" element={<Exercises/>}/>
+          <Route
+            path="/plans/new"
+            element={
+              <PrivateRoute>
+                <PlanNew />
+              </PrivateRoute>
+            }
+          />
 
           {/* Protected route: exercise detail (no MainLayout) */}
           <Route

@@ -93,11 +93,11 @@ const Fitnexus3DLanding = () => {
             onClick={() => navigate("/")}
             className="text-base/6 text-zinc-950 hover:opacity-80 transition -m-1.5 p-1.5 shrink-0"
           >
-            <img src={logo} alt="Fitnexus logo" className="h-12" />
+            <img src={logo} alt="Fitnexus logo" className="h-36" />
           </button>
           <nav className="items-center hidden gap-6 md:flex">
             <button
-              className="text-base font-medium text-gray-700 transition hover:text-blue-600"
+              className="inline-flex items-center gap-2 px-6 py-3 font-semibold text-white transition rounded-full bg-gradient-to-r from-gray-200 to-gray-400 hover:opacity-90"
               onClick={() => navigate("/modeling-preview")}
             >
               Mô hình hoá
@@ -107,8 +107,8 @@ const Fitnexus3DLanding = () => {
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setShowWorkoutDropdown(!showWorkoutDropdown)}
-                className="text-base font-medium text-gray-700 transition hover:text-blue-600"
-              >
+                className="inline-flex items-center gap-2 px-6 py-3 font-semibold text-white transition rounded-full bg-gradient-to-r from-gray-200 to-gray-400 hover:opacity-90"
+                >
                 Luyện tập
               </button>
 
@@ -174,23 +174,25 @@ const Fitnexus3DLanding = () => {
               )}
             </div>
 
-            <a
-              href="#testimonials"
-              className="text-base font-medium text-gray-700 transition hover:text-blue-600"
+            <button
+              type="button"
+              onClick={() => navigate("/nutrition-ai")}
+              className="inline-flex items-center gap-2 px-6 py-3 font-semibold text-white transition rounded-full bg-gradient-to-r from-gray-200 to-gray-400 hover:opacity-90"
             >
-              Dinh dưỡng
-            </a>
+              Khám phá Nutrition AI
+              <ChevronRight size={20} />
+            </button>
             <a
               href="#blog"
-              className="text-base font-medium text-gray-700 transition hover:text-blue-600"
-            >
+              className="inline-flex items-center gap-2 px-6 py-3 font-semibold text-white transition rounded-full bg-gradient-to-r from-gray-200 to-gray-400 hover:opacity-90"
+              >
               Cộng đồng
             </a>
           </nav>
           <div className="flex items-center gap-4">
             <button
-              className="text-base font-medium text-gray-700 transition hover:text-blue-600"
-              onClick={() => navigate("/login")}
+                className="font-extrabold text-gray-700 transition text-pretty hover:text-blue-600"
+                onClick={() => navigate("/login")}
             >
               Đăng nhập
             </button>
