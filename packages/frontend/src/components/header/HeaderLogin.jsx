@@ -4,10 +4,10 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/auth.context.jsx";
 import logo from "../../assets/logo.png";
 
-export default function HeaderDemo() {
+export default function HeaderLogin() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const isAuthenticated = !!user;
 
   const [openMobile, setOpenMobile] = useState(false);
@@ -17,7 +17,20 @@ export default function HeaderDemo() {
   const [openCommunity, setOpenCommunity] = useState(false);
   const communityRef = useRef(null);
 
-  // Đóng menu khi đổi route / click ngoài / ESC
+  const [showAvatarMenu, setShowAvatarMenu] = useState(false);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate("/login", { replace: true });
+    } catch (error) {
+      console.error("Logout failed:", error);
+      navigate("/login", { replace: true });
+    }
+  };
+  const displayName = (user?.username || "").replaceAll("_", " ");
+
+
   useEffect(() => {
     setOpenMobile(false);
     setOpenWorkout(false);
@@ -69,11 +82,11 @@ export default function HeaderDemo() {
       <div className="flex items-center justify-between px-4 py-2 mx-auto max-w-7xl">
        
         <button
-          onClick={() => navigate("/")}
+          onClick={() => navigate("/dashboard")}
           className="-m-2.5 p-2.5 shrink-0"
           aria-label="Trang chủ"
         >
-          <img src={logo} alt="Fitnexus" className="w-auto h-24 md:h-11" />
+          <img src={logo} alt="Fitnexus" className="w-auto h-16 " />
         </button>
 
         {/* Mobile toggle */}
@@ -112,7 +125,7 @@ export default function HeaderDemo() {
               >
                 <button
                   role="menuitem"
-                  onClick={() => navigate("/exercises-demo")}
+                  onClick={() => navigate("/exercise")}
                   className="w-full px-3 py-2 text-left rounded-lg hover:bg-gray-50"
                 >
                   <div className="text-sm font-semibold text-gray-900">Xem tất cả bài tập</div>
@@ -203,17 +216,6 @@ export default function HeaderDemo() {
                   >
                   Fitness Trainer
                 </button>
-                {/* <button
-                  role="menuitem"
-                  onClick={() =>
-                    !isAuthenticated
-                      ? navigate("/login", { state: { from: "/plans/new" } })
-                      : navigate("/plans/new")
-                  }
-                  className="w-full px-3 py-2 mt-1 text-left rounded-lg hover:bg-gray-50"
-                >
-                  Diễn đàn
-                </button> */}
               </div>
             )}
           </div>
@@ -222,6 +224,67 @@ export default function HeaderDemo() {
 
         {/* CTA phải: “Tải ứng dụng” + Đăng nhập (theo form eDoctor) */}
         <div className="items-center hidden gap-3 md:flex">
+
+        <div className="flex items-center gap-4">
+            {user ? (
+              <div className="relative">
+                <button
+                  onClick={() => setShowAvatarMenu(!showAvatarMenu)}
+                  className="flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                  <div className="flex items-center justify-center w-10 h-10 font-medium text-white rounded-full bg-gradient-to-r from-blue-400 to-blue-600">
+                    {user?.username?.[0]?.toUpperCase() || "U"}
+                  </div>
+                </button>
+                {showAvatarMenu && (
+                  <div className="absolute right-0 z-50 w-48 mt-2 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5">
+                    <button
+                      onClick={() => {
+                        setShowAvatarMenu(false);
+                        navigate("/profile");
+                      }}
+                      className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
+                    >
+                      Hồ sơ
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowAvatarMenu(false);
+                        navigate("/settings");
+                      }}
+                      className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
+                    >
+                      Cài đặt
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowAvatarMenu(false);
+                        handleLogout();
+                      }}
+                      className="block w-full px-4 py-2 text-sm text-left text-red-600 hover:bg-gray-100"
+                    >
+                      Đăng xuất
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <>
+                <button
+                  className="transition hover:text-blue-400"
+                  onClick={() => navigate("/login")}
+                >
+                  Đăng nhập
+                </button>
+                <button
+                  className="px-6 py-3 font-semibold text-black transition bg-white rounded-full hover:bg-gray-200"
+                  onClick={() => navigate("/register")}
+                >
+                  Bắt đầu ngay
+                </button>
+              </>
+            )}
+          </div>
           <a
             href="https://example.com/download-app" // TODO: thay link store/app thực tế
             target="_blank"
@@ -231,12 +294,7 @@ export default function HeaderDemo() {
             Tải ứng dụng
           </a>
 
-          <button
-            onClick={() => navigate("/login")}
-            className="text-sm font-semibold text-gray-700 hover:text-blue-600"
-          >
-            {isAuthenticated ? (user?.name ?? "Tài khoản") : "Đăng nhập"}
-          </button>
+          
         </div>
       </div>
 

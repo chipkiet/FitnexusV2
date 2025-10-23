@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../../context/auth.context.jsx";
 import { createPlanApi, addExerciseToPlanApi } from "../../lib/api.js";
 import logo from "../../assets/logo.png";
-import HeaderDemo from "../../components/header/HeaderDemo.jsx";
+import HeaderLogin from "../../components/header/HeaderLogin.jsx";
 
 export default function PlanNew() {
   const navigate = useNavigate();
@@ -88,7 +88,7 @@ export default function PlanNew() {
 
   return (
     <div>
-      <HeaderDemo/>
+      <HeaderLogin/>
 
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-2xl px-4 py-10 mx-auto">
