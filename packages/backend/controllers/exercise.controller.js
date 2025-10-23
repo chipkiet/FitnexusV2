@@ -442,3 +442,135 @@ export const getExerciseStepsBySlug = async (req, res) => {
     return res.status(500).json({ success: false, message: 'Error fetching steps', error: error.message });
   }
 };
+
+// Related exercises by overlap of muscle groups + tie-breakers
+export const getRelatedExercisesById = async (req, res) => {
+  try {
+    const exerciseId = parseInt(req.params.exerciseId, 10);
+    if (!Number.isFinite(exerciseId) || exerciseId <= 0) {
+      return res.status(422).json({ success: false, message: 'Invalid exercise id' });
+    }
+
+    const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 16, 1), 50);
+
+    const [rows] = await sequelize.query(
+      `WITH my_ex AS (
+          SELECT exercise_id, exercise_type, equipment_needed
+          FROM exercises WHERE exercise_id = $1
+        ),
+        my_groups AS (
+          SELECT emg.muscle_group_id AS mg_id,
+                 CASE emg.impact_level WHEN 'primary' THEN 3.0 WHEN 'secondary' THEN 1.0 WHEN 'stabilizer' THEN 0.5 ELSE 0 END AS w,
+                 mg.parent_id AS parent_id
+          FROM exercise_muscle_group emg
+          JOIN muscle_groups mg ON mg.muscle_group_id = emg.muscle_group_id
+          WHERE emg.exercise_id = $1
+        ),
+        my_parents AS (
+          SELECT DISTINCT parent_id FROM my_groups WHERE parent_id IS NOT NULL
+        ),
+        cand_groups AS (
+          SELECT e.exercise_id AS cand_id,
+                 e.name, e.slug, e.difficulty_level, e.exercise_type, e.equipment_needed, e.popularity_score,
+                 e.thumbnail_url, e.gif_demo_url,
+                 emg.muscle_group_id AS mg_id,
+                 CASE emg.impact_level WHEN 'primary' THEN 3.0 WHEN 'secondary' THEN 1.0 WHEN 'stabilizer' THEN 0.5 ELSE 0 END AS w,
+                 mg.parent_id AS parent_id
+          FROM exercises e
+          JOIN exercise_muscle_group emg ON emg.exercise_id = e.exercise_id
+          JOIN muscle_groups mg ON mg.muscle_group_id = emg.muscle_group_id
+          WHERE e.exercise_id <> $1
+        ),
+        overlap AS (
+          SELECT c.cand_id,
+                 SUM(LEAST(m.w, c.w)) AS w_overlap,
+                 COUNT(*) AS shared_children_count
+          FROM my_groups m
+          JOIN cand_groups c ON c.mg_id = m.mg_id
+          GROUP BY c.cand_id
+        ),
+        parent_overlap AS (
+          SELECT c.cand_id,
+                 COUNT(DISTINCT c.parent_id) AS parents_shared
+          FROM (SELECT DISTINCT cand_id, parent_id FROM cand_groups WHERE parent_id IS NOT NULL) c
+          JOIN my_parents mp ON mp.parent_id = c.parent_id
+          GROUP BY c.cand_id
+        )
+        SELECT c.cand_id AS exercise_id,
+               MAX(c.name) AS name,
+               MAX(c.slug) AS slug,
+               MAX(c.difficulty_level) AS difficulty_level,
+               MAX(c.exercise_type) AS exercise_type,
+               MAX(c.equipment_needed) AS equipment_needed,
+               MAX(c.popularity_score) AS popularity_score,
+               MAX(c.thumbnail_url) AS thumbnail_url,
+               MAX(c.gif_demo_url) AS gif_demo_url,
+               o.w_overlap,
+               o.shared_children_count,
+               COALESCE(po.parents_shared, 0) AS parents_shared,
+               (CASE WHEN MAX(c.exercise_type) = (SELECT exercise_type FROM my_ex) AND MAX(c.exercise_type) IS NOT NULL THEN 1.0 ELSE 0 END) AS same_type,
+               (CASE WHEN MAX(c.equipment_needed) = (SELECT equipment_needed FROM my_ex) AND MAX(c.equipment_needed) IS NOT NULL THEN 0.5 ELSE 0 END) AS same_equipment,
+               (o.w_overlap
+                + (CASE WHEN COALESCE(po.parents_shared, 0) > 0 THEN 0.5 ELSE 0 END)
+                + (CASE WHEN MAX(c.exercise_type) = (SELECT exercise_type FROM my_ex) AND MAX(c.exercise_type) IS NOT NULL THEN 1.0 ELSE 0 END)
+                + (CASE WHEN MAX(c.equipment_needed) = (SELECT equipment_needed FROM my_ex) AND MAX(c.equipment_needed) IS NOT NULL THEN 0.5 ELSE 0 END)
+               ) AS score,
+               (CASE WHEN COALESCE(po.parents_shared, 0) > 0 THEN 1 ELSE 0 END) AS parent_priority
+        FROM cand_groups c
+        JOIN overlap o ON o.cand_id = c.cand_id
+        LEFT JOIN parent_overlap po ON po.cand_id = c.cand_id
+        GROUP BY c.cand_id, o.w_overlap, o.shared_children_count, po.parents_shared
+      `,
+      { bind: [exerciseId] }
+    );
+
+    // Dynamic thresholding: start strict, relax until we have enough
+    const thresholds = [5.5, 5.0, 4.0, 0];
+
+    // Sort by parent priority then score then popularity then name
+    rows.sort((a, b) => {
+      if ((b.parent_priority || 0) !== (a.parent_priority || 0)) return (b.parent_priority || 0) - (a.parent_priority || 0);
+      if ((b.score || 0) !== (a.score || 0)) return (b.score || 0) - (a.score || 0);
+      if ((b.popularity_score || 0) !== (a.popularity_score || 0)) return (b.popularity_score || 0) - (a.popularity_score || 0);
+      return String(a.name || '').localeCompare(String(b.name || ''));
+    });
+
+    // Require at least one shared child group
+    const withChildOverlap = rows.filter(r => (r.w_overlap || 0) > 0 && (r.shared_children_count || 1) >= 1);
+
+    // Resolve best images (do not filter out when missing images)
+    const ids = withChildOverlap.map(r => r.exercise_id);
+    const imgMap = await fetchBestImagesForIds(ids);
+
+    function bestImage(r) {
+      return imgMap.get(r.exercise_id) || r.thumbnail_url || r.gif_demo_url || null;
+    }
+
+    let chosen = [];
+    for (const th of thresholds) {
+      const candidate = withChildOverlap
+        .filter(r => (r.score || 0) >= th)
+        .map(r => ({ ...r, imageUrl: bestImage(r) }))
+        .slice(0, limit);
+      if (candidate.length >= Math.min(limit, 8)) { // ensure decent fill for UI
+        chosen = candidate;
+        break;
+      }
+      if (!chosen.length && candidate.length) chosen = candidate; // keep best attempt
+    }
+
+    const data = chosen.map(r => ({
+      id: r.exercise_id,
+      slug: r.slug,
+      name: r.name,
+      difficulty: r.difficulty_level,
+      equipment: r.equipment_needed,
+      imageUrl: r.imageUrl,
+    }));
+
+    return res.status(200).json({ success: true, data, total: data.length });
+  } catch (error) {
+    console.error('getRelatedExercisesById error:', error);
+    return res.status(500).json({ success: false, message: 'Error fetching related exercises', error: error.message });
+  }
+};
