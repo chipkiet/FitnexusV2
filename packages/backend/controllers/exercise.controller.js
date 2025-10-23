@@ -8,6 +8,23 @@ function normalize(str = "") {
     .trim();
 }
 
+async function fetchBestImagesForIds(ids) {
+  const list = Array.from(new Set((ids || []).filter((x) => Number.isFinite(Number(x)))));
+  if (!list.length) return new Map();
+  const [rows] = await sequelize.query(
+    `SELECT exercise_id, image_url
+     FROM (
+       SELECT exercise_id, image_url,
+              ROW_NUMBER() OVER (PARTITION BY exercise_id ORDER BY is_primary DESC, display_order ASC, image_id ASC) AS rn
+       FROM image_exercise
+       WHERE exercise_id = ANY($1)
+     ) s
+     WHERE rn = 1`,
+    { bind: [list] }
+  );
+  return new Map(rows.map(r => [r.exercise_id, r.image_url]));
+}
+
 const CANONICAL_CHILD = new Set([
   'upper-chest','mid-chest','lower-chest',
   'latissimus-dorsi','trapezius','rhomboids','erector-spinae','teres-major',
@@ -264,14 +281,15 @@ export const getExercisesByMuscleGroup = async (req, res) => {
       }
     }
 
-    // Map DB fields to FE shape minimally
+    // Prefer image from image_exercise if available
+    const imgMap = await fetchBestImagesForIds(rows.map(r => r.exercise_id));
     const data = rows.map(r => ({
       id: r.exercise_id,
       name: r.name || r.name_en,
       description: r.description,
       difficulty: r.difficulty_level,
       equipment: r.equipment_needed,
-      imageUrl: r.thumbnail_url || r.gif_demo_url || null,
+      imageUrl: imgMap.get(r.exercise_id) || r.thumbnail_url || r.gif_demo_url || null,
       instructions: null,
       impact_level: r.impact_level || null,
     }));
@@ -291,13 +309,14 @@ export const getAllExercises = async (_req, res) => {
   try {
     const { limit, offset, page, pageSize } = parsePaging(_req.query);
     const { count, rows } = await Exercise.findAndCountAll({ limit, offset, order: [["popularity_score", "DESC"], ["name", "ASC"]] });
+    const imgMap = await fetchBestImagesForIds(rows.map(r => r.exercise_id));
     const data = rows.map((r) => ({
       id: r.exercise_id,
       name: r.name || r.name_en,
       description: r.description,
       difficulty: r.difficulty_level,
       equipment: r.equipment_needed,
-      imageUrl: r.thumbnail_url || r.gif_demo_url || null,
+      imageUrl: imgMap.get(r.exercise_id) || r.thumbnail_url || r.gif_demo_url || null,
       instructions: null,
       impact_level: r.impact_level || null,
     }));
@@ -337,13 +356,14 @@ export const getExercisesByType = async (req, res) => {
       { bind: [t, limit, offset] }
     );
 
+    const imgMap = await fetchBestImagesForIds(rows.map(r => r.exercise_id));
     const data = rows.map((r) => ({
       id: r.exercise_id,
       name: r.name || r.name_en,
       description: r.description,
       difficulty: r.difficulty_level,
       equipment: r.equipment_needed,
-      imageUrl: r.thumbnail_url || r.gif_demo_url || null,
+      imageUrl: imgMap.get(r.exercise_id) || r.thumbnail_url || r.gif_demo_url || null,
       instructions: null,
       impact_level: null,
     }));

@@ -10,6 +10,7 @@ import WorkoutPlan from "./workout.plan.model.js";
 import PlanExerciseDetail from "./plan.exercise.detail.model.js";
 import UserWorkoutLog from "./user.workout.log.model.js";
 import UserWorkoutLogDetail from "./user.workout.log.detail.model.js";
+import ExerciseImage from "./exercise.image.model.js";
 
 export function initModels() {
   // Khai báo quan hệ 1-n: User hasMany PasswordReset
@@ -55,6 +56,10 @@ export function initModels() {
   Exercise.hasMany(PlanExerciseDetail, { foreignKey: 'exercise_id', sourceKey: 'exercise_id', as: 'planItems' });
   PlanExerciseDetail.belongsTo(Exercise, { foreignKey: 'exercise_id', targetKey: 'exercise_id', as: 'exercise' });
 
+  // Exercises ↔ ExerciseImages
+  Exercise.hasMany(ExerciseImage, { foreignKey: 'exercise_id', sourceKey: 'exercise_id', as: 'images' });
+  ExerciseImage.belongsTo(Exercise, { foreignKey: 'exercise_id', targetKey: 'exercise_id', as: 'exercise' });
+
   // Users ↔ UserWorkoutLogs
   User.hasMany(UserWorkoutLog, { foreignKey: 'user_id', sourceKey: 'user_id', as: 'workoutLogs' });
   UserWorkoutLog.belongsTo(User, { foreignKey: 'user_id', targetKey: 'user_id', as: 'user' });
@@ -80,6 +85,7 @@ export function initModels() {
     OnboardingSession,
     OnboardingAnswer,
     Exercise,
+    ExerciseImage,
     WorkoutPlan,
     PlanExerciseDetail,
     UserWorkoutLog,

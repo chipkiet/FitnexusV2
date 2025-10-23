@@ -2,6 +2,7 @@ import { Op } from "sequelize";
 import WorkoutPlan from "../models/workout.plan.model.js";
 import PlanExerciseDetail from "../models/plan.exercise.detail.model.js";
 import Exercise from "../models/exercise.model.js";
+import { sequelize } from "../config/database.js";
 
 function normalizeDifficulty(v) {
   const s = String(v || "").toLowerCase().trim();
@@ -75,6 +76,23 @@ export async function getPlanById(req, res) {
       }],
     });
 
+    // Prefer primary image from image_exercise if available
+    const exIds = items.map(it => it.exercise_id).filter((v, i, a) => a.indexOf(v) === i);
+    let imgMap = new Map();
+    if (exIds.length) {
+      const [rows] = await sequelize.query(
+        `SELECT exercise_id, image_url
+         FROM (
+           SELECT exercise_id, image_url,
+                  ROW_NUMBER() OVER (PARTITION BY exercise_id ORDER BY is_primary DESC, display_order ASC, image_id ASC) AS rn
+           FROM image_exercise
+           WHERE exercise_id = ANY($1)
+         ) s WHERE rn = 1`,
+        { bind: [exIds] }
+      );
+      imgMap = new Map(rows.map(r => [r.exercise_id, r.image_url]));
+    }
+
     const payloadItems = items.map(it => ({
       plan_exercise_id: it.plan_exercise_id,
       plan_id: it.plan_id,
@@ -88,7 +106,7 @@ export async function getPlanById(req, res) {
         name: it.exercise.name,
         difficulty: it.exercise.difficulty_level,
         equipment: it.exercise.equipment_needed,
-        imageUrl: it.exercise.thumbnail_url || it.exercise.gif_demo_url || null,
+        imageUrl: imgMap.get(it.exercise_id) || it.exercise.thumbnail_url || it.exercise.gif_demo_url || null,
       } : null,
     }));
 

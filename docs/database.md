@@ -290,6 +290,23 @@ Table ExerciseTips {
 }
 
 
+// ==== HÌNH ẢNH BÀI TẬP ====
+Table image_exercise {
+  image_id INT [pk, increment]
+  exercise_id INT [ref: > ExercisesDemo.exercise_id, not null]
+  image_url VARCHAR(255) [not null]
+  image_type VARCHAR(30) // cover | gallery | gif | thumbnail
+  alt_text VARCHAR(255)
+  width INT
+  height INT
+  display_order INT [default: 0]
+  is_primary BOOLEAN [default: false]
+  created_at TIMESTAMP [default: `now()`]
+  updated_at TIMESTAMP
+
+  Note: 'INDEX(exercise_id); INDEX(exercise_id, display_order)'
+}
+
 
 
 
