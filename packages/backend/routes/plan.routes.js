@@ -7,7 +7,6 @@ const router = Router();
 // List my plans with ?mine=1
 router.get("/", authGuard, listMyPlans);
 
-// Create a new workout plan
 router.post("/", authGuard, createPlan);
 
 router.get("/:planId", authGuard, getPlanById);
