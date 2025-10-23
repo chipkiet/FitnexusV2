@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../../context/auth.context.jsx";
 import { createPlanApi, addExerciseToPlanApi } from "../../lib/api.js";
 import logo from "../../assets/logo.png";
+import HeaderLogin from "../../components/header/HeaderLogin.jsx";
 
 export default function PlanNew() {
   const navigate = useNavigate();
@@ -87,26 +88,7 @@ export default function PlanNew() {
 
   return (
     <div>
-      <header className="flex items-center justify-between px-6 py-3 bg-white border-b">
-        <button className="shrink-0" onClick={() => navigate("/")}>
-          <img src={logo} alt="logo" className="h-36" />
-        </button>
-        <div className="gap-3">
-          <button
-            onClick={() => navigate("/")}
-            className="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50"
-          >
-            Trang chủ
-          </button>
-          <button
-            onClick={() => navigate("/exercises")}
-            className="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50"
-          >
-            Thư viện bài tập
-          </button>
-          
-        </div>
-      </header>
+      <HeaderLogin/>
 
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-2xl px-4 py-10 mx-auto">
@@ -228,7 +210,7 @@ export default function PlanNew() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => navigate(`/exercises`)}
+                  onClick={() => navigate(`/exercises-demo`)}
                   className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
                 >
                   Thêm bài tập khác

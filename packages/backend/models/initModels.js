@@ -10,6 +10,7 @@ import WorkoutPlan from "./workout.plan.model.js";
 import PlanExerciseDetail from "./plan.exercise.detail.model.js";
 import UserWorkoutLog from "./user.workout.log.model.js";
 import UserWorkoutLogDetail from "./user.workout.log.detail.model.js";
+import ExerciseImage from "./exercise.image.model.js";
 
 export function initModels() {
   // Khai báo quan hệ 1-n: User hasMany PasswordReset
@@ -51,9 +52,13 @@ export function initModels() {
   WorkoutPlan.hasMany(PlanExerciseDetail, { foreignKey: 'plan_id', sourceKey: 'plan_id', as: 'items' });
   PlanExerciseDetail.belongsTo(WorkoutPlan, { foreignKey: 'plan_id', targetKey: 'plan_id', as: 'plan' });
 
-  // Exercises ↔ PlanExerciseDetails
+  // ExercisesDemo ↔ PlanExerciseDetails
   Exercise.hasMany(PlanExerciseDetail, { foreignKey: 'exercise_id', sourceKey: 'exercise_id', as: 'planItems' });
   PlanExerciseDetail.belongsTo(Exercise, { foreignKey: 'exercise_id', targetKey: 'exercise_id', as: 'exercise' });
+
+  // Exercises ↔ ExerciseImages
+  Exercise.hasMany(ExerciseImage, { foreignKey: 'exercise_id', sourceKey: 'exercise_id', as: 'images' });
+  ExerciseImage.belongsTo(Exercise, { foreignKey: 'exercise_id', targetKey: 'exercise_id', as: 'exercise' });
 
   // Users ↔ UserWorkoutLogs
   User.hasMany(UserWorkoutLog, { foreignKey: 'user_id', sourceKey: 'user_id', as: 'workoutLogs' });
@@ -67,7 +72,7 @@ export function initModels() {
   UserWorkoutLog.hasMany(UserWorkoutLogDetail, { foreignKey: 'log_id', sourceKey: 'log_id', as: 'sets' });
   UserWorkoutLogDetail.belongsTo(UserWorkoutLog, { foreignKey: 'log_id', targetKey: 'log_id', as: 'log' });
 
-  // Exercises ↔ UserWorkoutLogDetails
+  // ExercisesDemo ↔ UserWorkoutLogDetails
   Exercise.hasMany(UserWorkoutLogDetail, { foreignKey: 'exercise_id', sourceKey: 'exercise_id', as: 'performedSets' });
   UserWorkoutLogDetail.belongsTo(Exercise, { foreignKey: 'exercise_id', targetKey: 'exercise_id', as: 'exercise' });
   
@@ -80,6 +85,7 @@ export function initModels() {
     OnboardingSession,
     OnboardingAnswer,
     Exercise,
+    ExerciseImage,
     WorkoutPlan,
     PlanExerciseDetail,
     UserWorkoutLog,

@@ -36,8 +36,30 @@ if not GEMINI_API_KEY or GEMINI_API_KEY == "DÁN_KHÓA_API_HỢP_LỆ_CỦA_BẠ
     print("LỖI: Bạn chưa cấu hình khóa API cho Gemini trong file api.py.")
     sys.exit(1)
 genai.configure(api_key=GEMINI_API_KEY)
-gemini_model = genai.GenerativeModel('gemini-1.5-flash')
-print("Đã kết nối Gemini API.")
+print("Khởi tạo cấu hình Gemini API...")
+# Chuẩn bị danh sách model fallback để tương thích nhiều phiên bản API
+GEMINI_MODELS = [
+    os.getenv("GEMINI_MODEL") or "gemini-2.0-flash",
+    "gemini-1.5-flash-latest",
+    "gemini-1.5-flash",
+    "gemini-1.5-flash-001",
+]
+
+def _gemini_generate_json(prompt: str, timeout_sec: int = 120):
+    last_err = None
+    for model_name in GEMINI_MODELS:
+        try:
+            print(f"[Gemini] Trying model: {model_name}")
+            model = genai.GenerativeModel(model_name)
+            resp = model.generate_content(prompt, request_options={'timeout': timeout_sec})
+            return resp
+        except Exception as e:
+            # Lưu lỗi và thử model tiếp theo (đặc biệt fix lỗi v1beta 404)
+            print(f"[Gemini] model {model_name} failed: {e}")
+            last_err = e
+            continue
+    # Không model nào chạy được => ném lỗi cuối cùng
+    raise last_err if last_err else RuntimeError("Gemini API call failed for all models")
 
 yolo_model = YOLO('yolov8n-pose.pt')
 print("Đã tải YOLOv8 model.")
@@ -74,8 +96,8 @@ def get_gemini_recommendations(shoulder_to_waist_ratio):
     Chỉ trả về đối tượng JSON, không có bất kỳ văn bản nào khác.
     """
     try:
-        response = gemini_model.generate_content(prompt, request_options={'timeout': 120})
-        text_response = response.text
+        response = _gemini_generate_json(prompt, timeout_sec=120)
+        text_response = getattr(response, 'text', None) or ''
         json_start = text_response.find('{')
         json_end = text_response.rfind('}') + 1
         if json_start != -1 and json_end != -1 and json_start < json_end:

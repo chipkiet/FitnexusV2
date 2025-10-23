@@ -87,6 +87,7 @@ const PASS_THROUGH = [
   // Passport callback (nếu dùng)
   "/auth/google/callback",
   "/api/nutrition/plan",
+  "/api/trainer/upload",
 ];
 
 const isPassThroughUrl = (u = "") => PASS_THROUGH.some((p) => u.startsWith(p));
@@ -330,6 +331,11 @@ export const addExerciseToPlanApi = async ({ planId, exercise_id, session_order,
     rest_period_seconds,
   });
   return res.data;
+};
+
+export const getMyPlansApi = async ({ limit = 50, offset = 0 } = {}) => {
+  const res = await api.get(endpoints.plans.base, { params: { mine: 1, limit, offset } });
+  return res.data; // expect { success, data: { items, total } } or similar
 };
 
 export default api;

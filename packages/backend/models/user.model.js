@@ -59,7 +59,6 @@ const User = sequelize.define(
       field: "onboarding_completed_at",
     },
 
-    // 🔒 Lock/Unlock
     isLocked: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
@@ -77,9 +76,6 @@ const User = sequelize.define(
       field: "lock_reason",
     },
 
-    // 🧩 Sub-admin
-    // Admin chính: role=ADMIN & isSuperAdmin=true
-    // Admin phụ:   role=ADMIN & isSuperAdmin=false & parentAdminId = user_id của admin chính
     isSuperAdmin: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
@@ -117,20 +113,17 @@ const User = sequelize.define(
   }
 );
 
-// Instance method
 User.prototype.comparePassword = async function (candidatePassword) {
   if (!this.passwordHash) return false;
   return bcrypt.compare(candidatePassword, this.passwordHash);
 };
 
-// Ẩn passwordHash khi serialize
 User.prototype.toJSON = function () {
   const values = { ...this.get() };
   delete values.passwordHash;
   return values;
 };
 
-// Static helpers
 User.findByEmail = function (email) {
   return this.findOne({ where: { email } });
 };

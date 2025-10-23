@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
@@ -15,10 +15,18 @@ import tricepsIcon from "../../assets/body/tricepsIcon.svg";
 import upperLegsIcon from "../../assets/body/upperLegsIcon.svg";
 import lowerLegsIcon from "../../assets/body/lowerLegsIcon.svg";
 
-import ExerciseList from "../../components/ExerciseList.jsx";
+import ExerciseList from "../../components/exercise/ExerciseList.jsx";
+import { useAuth } from "../../context/auth.context.jsx";
+import HeaderDemo from "../../components/header/HeaderDemo.jsx";
 
-export default function Exercises() {
+export default function ExercisesDemo() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isAuthenticated = !!user;
+
+  const [showWorkoutDropdown, setShowWorkoutDropdown] = useState(false);
+  const dropdownRef = useRef(null);
+
 
   const muscleGroups = [
     { id: "abs", label: "Abs", icon: absIcon },
@@ -43,12 +51,20 @@ export default function Exercises() {
   const pageSize = 15;
   const [total, setTotal] = useState(0);
   
-  // API state
   const [rawExercises, setRawExercises] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch exercises on mount and when selectedGroup or page changes
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if(dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowWorkoutDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, []);
+
   useEffect(() => {
     let isMounted = true;
     const fetchExercises = async () => {
@@ -57,13 +73,13 @@ export default function Exercises() {
       try {
         let res;
         if (!selectedGroup) {
-          // default list with pagination
+
           res = await axios.get('/api/exercises', { params: { page, pageSize } });
         } else if (selectedGroup === 'cardio') {
-          // exercise type with pagination
+
           res = await axios.get('/api/exercises/type/cardio', { params: { page, pageSize } });
         } else {
-          // fetch by muscle group with pagination
+
           res = await axios.get(`/api/exercises/muscle/${selectedGroup}`, { params: { page, pageSize } });
         }
         if (isMounted) {
@@ -164,7 +180,6 @@ export default function Exercises() {
     const synonyms = groupSynonyms[groupId] || [groupId];
     const tokens = ex.parts || [];
     
-    // Check trong parts hoặc tên bài tập
     const nameNorm = normalizeStr(ex.name);
     for (const s of synonyms) {
       const ss = normalizeStr(s).replace(/-/g, " ");
@@ -179,7 +194,6 @@ export default function Exercises() {
   const filtered = useMemo(() => {
     const q = normalizeStr(search);
     return normalized.filter((ex) => {
-      // Khi đã fetch theo nhóm cơ ở BE, không cần lọc nhóm ở FE nữa
       if (level && normalizeStr(ex.difficulty) !== normalizeStr(level)) return false;
       if (impact && normalizeStr(ex.impact) !== normalizeStr(impact)) return false;
       if (population && normalizeStr(ex.population) !== normalizeStr(population)) return false;
@@ -199,30 +213,7 @@ export default function Exercises() {
 
   return (
     <div className="min-h-screen text-black bg-white">
-      <header className="border-b border-gray-200">
-        <div className="flex items-center justify-between mx-auto max-w-7xl">
-          <button className="shrink-0" onClick={() => navigate("/")}> 
-            <img src={logo} alt="logo" className="h-36" />
-          </button>
-          <nav className="items-center hidden gap-6 text-sm text-gray-700 md:flex">
-            <button onClick={() => navigate("/")} className="hover:underline">
-              Trang chủ
-            </button>
-            <button onClick={() => navigate("/modeling-preview")} className="hover:underline">
-              Mô hình hoá
-            </button>
-            <button onClick={() => navigate("/nutrition-ai")} className="hover:underline">
-              Dinh dưỡng
-            </button>
-          </nav>
-          <div className="flex items-center gap-4">
-            <button onClick={() => navigate("/login")} className="text-sm hover:underline">
-              Đăng nhập
-            </button>
-          </div>
-        </div>
-      </header>
-
+      <HeaderDemo/>
       <main className="px-4 py-6 mx-auto max-w-7xl">
         <h1 className="mb-4 text-2xl font-semibold">Thư viện bài tập</h1>
 

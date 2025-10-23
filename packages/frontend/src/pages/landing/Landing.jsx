@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../../assets/logo.png";
-// Muscle icons for library section
+
 import absIcon from "../../assets/body/coreIcon.svg";
 import backIcon from "../../assets/body/backIcon.svg";
 import bicepsIcon from "../../assets/body/bicepsIcon.svg";
@@ -17,41 +17,22 @@ import { Target, Star, ChevronRight, Play } from "lucide-react";
 import { Canvas } from "@react-three/fiber";
 import { HumanModel } from "../../components/3d/HumanModel";
 import { Bounds, OrbitControls } from "@react-three/drei";
-import { useAuth } from "../../context/auth.context.jsx";
+import HeaderDemo from "../../components/header/HeaderDemo.jsx";
+import api from "../../lib/api";
 
 const Fitnexus3DLanding = () => {
   const navigate = useNavigate();
-  const [hoveredPart, setHoveredPart] = useState(null);
   const [controlsActive, setControlsActive] = useState(false);
   const canvasWrapRef = useRef(null);
-  const { user } = useAuth();
-  const isAuthenticated = !!user;
-
-  // Dropdown state for Workout (Exercises + Plans)
-  const [showWorkoutDropdown, setShowWorkoutDropdown] = useState(false);
-  const dropdownRef = useRef(null);
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setShowWorkoutDropdown(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  
 
   const handleStartOnboarding = async () => {
-    // Require authentication for onboarding. If not authenticated, redirect to login
     if (!isAuthenticated()) {
-      // pass the original destination so Login can redirect back after success
       navigate("/login", { state: { from: "/onboarding/age" } });
       return;
     }
 
     try {
-      // Check current onboarding session and navigate accordingly
       const response = await api.get("/api/onboarding/session", {
         params: { t: Date.now() },
         headers: { "Cache-Control": "no-cache", Pragma: "no-cache" },
@@ -60,7 +41,9 @@ const Fitnexus3DLanding = () => {
 
       const data = response?.data?.data || {};
       if (data.required && !data.completed) {
-        const nextStep = String(data.nextStepKey || data.currentStepKey || "age").toLowerCase();
+        const nextStep = String(
+          data.nextStepKey || data.currentStepKey || "age"
+        ).toLowerCase();
         navigate(`/onboarding/${nextStep}`);
       } else {
         navigate("/dashboard");
@@ -71,7 +54,6 @@ const Fitnexus3DLanding = () => {
     }
   };
 
-  // Bam ESC de thoat dieu kien
   useEffect(() => {
     const onKey = (e) => {
       if (e.key == "Escape") setControlsActive(false);
@@ -80,7 +62,6 @@ const Fitnexus3DLanding = () => {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  // Danh sách nhóm cơ hiển thị theo mockup
   const muscleGroups = [
     { id: "abs", label: "Abs", icon: absIcon },
     { id: "back", label: "Back", icon: backIcon },
@@ -95,7 +76,6 @@ const Fitnexus3DLanding = () => {
     { id: "lower-legs", label: "Lower Legs", icon: lowerLegsIcon },
   ];
 
-  // Trạng thái chọn nhiều để mô phỏng viền xanh như ảnh mẫu
   const [selectedGroups, setSelectedGroups] = useState([
     "shoulders",
     "triceps",
@@ -115,135 +95,8 @@ const Fitnexus3DLanding = () => {
 
   return (
     <div className="min-h-screen text-black bg-white">
-      {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 border-b border-gray-200 bg-white/90 backdrop-blur-xl">
-        <div className="flex items-center justify-between px-6 py-4 mx-auto max-w-7xl">
-          <button
-            onClick={() => navigate("/")}
-            className="text-base/6 text-zinc-950 hover:opacity-80 transition -m-1.5 p-1.5 shrink-0"
-          >
-            <img src={logo} alt="Fitnexus logo" className="h-36" />
-          </button>
-          <nav className="items-center hidden gap-6 md:flex">
-            <button
-              className="text-base text-gray-800 transition hover:text-blue-500"
-              onClick={() => navigate("/modeling-preview")}
-            >
-              Mô hình hoá
-            </button>
+      <HeaderDemo/>
 
-            {/* Workout Dropdown (Exercises + Plans) */}
-            <div className="relative" ref={dropdownRef}>
-              <button
-                onClick={() => setShowWorkoutDropdown(!showWorkoutDropdown)}
-                className="text-base text-gray-800 transition hover:text-blue-500"
-              >
-                Luyện tập
-              </button>
-
-              {showWorkoutDropdown && (
-                <div className="absolute left-0 z-50 py-2 mt-2 bg-white border border-gray-200 shadow-xl top-full w-72 rounded-xl animate-fadeIn">
-                  {/* Exercises Section */}
-                  <div className="px-3 py-2">
-                    <div className="mb-2 text-xs font-semibold tracking-wide text-gray-400 uppercase">
-                      Thư viện bài tập
-                    </div>
-                    <button
-                      onClick={() => {
-                        navigate("/exercises");
-                        setShowWorkoutDropdown(false);
-                      }}
-                      className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-gray-50 transition"
-                    >
-                      <div className="text-sm font-semibold text-gray-900">
-                        Xem tất cả bài tập
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        1000+ bài tập theo nhóm cơ
-                      </div>
-                    </button>
-                  </div>
-
-                  <div className="h-px my-2 bg-gray-200" />
-
-                  {/* Plans Section */}
-                  <div className="px-3 py-2">
-                    <div className="mb-2 text-xs font-semibold tracking-wide text-gray-400 uppercase">
-                      Kế hoạch tập luyện
-                    </div>
-                    {/* My Plans */}
-                    <button
-                      onClick={() => {
-                        if (!isAuthenticated) {
-                          navigate("/login", { state: { from: "/plans" } });
-                        } else {
-                          navigate("/plans");
-                        }
-                        setShowWorkoutDropdown(false);
-                      }}
-                      className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-gray-50 transition"
-                    >
-                      <div className="text-sm font-semibold text-gray-900">
-                        Kế hoạch của tôi
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        Quản lý các plan đã tạo
-                      </div>
-                    </button>
-
-                    {/* Create New Plan */}
-                    <button
-                      onClick={() => {
-                        if (!isAuthenticated) {
-                          navigate("/login", { state: { from: "/plans/new" } });
-                        } else {
-                          navigate("/plans/new");
-                        }
-                        setShowWorkoutDropdown(false);
-                      }}
-                      className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-gray-50 transition mt-1"
-                    >
-                      <div className="text-sm font-semibold text-gray-900">
-                        Tạo plan mới
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        Lên kế hoạch tập luyện riêng
-                      </div>
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <button
-              type="button"
-              onClick={() => navigate("/nutrition-ai")}
-              className="text-base text-gray-800 transition hover:text-blue-500"
-            >
-              Khám phá Nutrition AI
-            </button>
-            <a
-              href="#blog"
-              className="text-base text-gray-800 transition hover:text-blue-500"
-            >
-              Cộng đồng
-            </a>
-          </nav>
-          <div className="flex items-center gap-4">
-            <button
-              className="font-extrabold text-gray-700 transition text-pretty hover:text-blue-600"
-              onClick={() => navigate("/login")}
-            >
-              Đăng nhập
-            </button>
-            <button className="px-6 py-2.5 font-semibold text-white bg-gradient-to-r from-blue-600 to-blue-500 rounded-full hover:shadow-lg transition">
-              Bắt đầu ngay
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* Hero Section - Freeletics Style */}
       <section className="relative flex items-center min-h-screen px-6 pt-32 pb-20 overflow-hidden">
         {/* Video Background */}
         <div className="absolute inset-0 z-0">
@@ -275,12 +128,15 @@ const Fitnexus3DLanding = () => {
               Fitnexus kết hợp sức mạnh của AI và chuyên môn của các nhà khoa
               học thể thao để tạo ra kế hoạch luyện tập tốt nhất cho bạn.
             </p>
-            <button 
+            <button
               onClick={handleStartOnboarding}
               className="inline-flex items-center gap-3 px-10 py-5 text-lg font-semibold text-black transition bg-white rounded-full hover:bg-gray-200 group"
             >
               Nhận kế hoạch luyện tập cá nhân hóa
-              <ChevronRight className="transition-transform group-hover:translate-x-1" size={24} />
+              <ChevronRight
+                className="transition-transform group-hover:translate-x-1"
+                size={24}
+              />
             </button>
 
             {/* Feature Pills */}
@@ -427,7 +283,7 @@ const Fitnexus3DLanding = () => {
           <div className="mt-16 text-center">
             <button
               className="inline-flex items-center gap-3 px-10 py-5 text-lg font-semibold transition rounded-full bg-gradient-to-r from-gray-500 to-black-200 hover:scale-105"
-              onClick={() => navigate("/modeling-preview")}
+              onClick={() => navigate("/modeling-demo")}
             >
               Khám phá ngay
               <ChevronRight size={24} />
@@ -487,7 +343,7 @@ const Fitnexus3DLanding = () => {
             </div>
           </div>
 
-          <button onClick={() => navigate("/exercises")}>
+          <button onClick={() => navigate("/exercises-demo")}>
             Xem thêm nhiều bài tập
           </button>
         </div>

@@ -1,4 +1,5 @@
 import { Router } from "express";
+import rateLimit from "express-rate-limit";
 import axios from "axios";
 import multer from "multer";
 import FormData from "form-data";
@@ -6,6 +7,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import authGuard from "../middleware/auth.guard.js";
+import authOrSession from "../middleware/authOrSession.guard.js";
 import { requireTrainer } from "../middleware/role.guard.js";
 const router = Router();
 // Resolve a stable uploads directory next to backend root
@@ -30,18 +32,29 @@ const upload = multer({
 const AI_API_URL =
   process.env.AI_API_URL || "http://127.0.0.1:8000/analyze-image/";
 // Health/feature probe for trainers
-router.get("/tools", authGuard, requireTrainer, (_req, res) => {
+router.get("/tools", authOrSession, requireTrainer, (_req, res) => {
   res.json({
     success: true,
     message: "Trainer tools accessible",
     timestamp: new Date().toISOString(),
   });
 });
+// Limit uploads to avoid abuse
+const uploadLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  limit: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: "Too many upload requests, please try again later.",
+  },
+});
 // POST /api/trainer/upload - forward image to AI service
 router.post(
   "/upload",
-  authGuard,
-  requireTrainer,
+  authOrSession,
+  uploadLimiter,
   upload.single("image"),
   async (req, res, next) => {
     if (!req.file) {

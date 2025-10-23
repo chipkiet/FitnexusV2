@@ -8,6 +8,23 @@ function normalize(str = "") {
     .trim();
 }
 
+async function fetchBestImagesForIds(ids) {
+  const list = Array.from(new Set((ids || []).filter((x) => Number.isFinite(Number(x)))));
+  if (!list.length) return new Map();
+  const [rows] = await sequelize.query(
+    `SELECT exercise_id, image_url
+     FROM (
+       SELECT exercise_id, image_url,
+              ROW_NUMBER() OVER (PARTITION BY exercise_id ORDER BY is_primary DESC, display_order ASC, image_id ASC) AS rn
+       FROM image_exercise
+       WHERE exercise_id = ANY($1)
+     ) s
+     WHERE rn = 1`,
+    { bind: [list] }
+  );
+  return new Map(rows.map(r => [r.exercise_id, r.image_url]));
+}
+
 const CANONICAL_CHILD = new Set([
   'upper-chest','mid-chest','lower-chest',
   'latissimus-dorsi','trapezius','rhomboids','erector-spinae','teres-major',
@@ -264,14 +281,15 @@ export const getExercisesByMuscleGroup = async (req, res) => {
       }
     }
 
-    // Map DB fields to FE shape minimally
+    // Prefer image from image_exercise if available
+    const imgMap = await fetchBestImagesForIds(rows.map(r => r.exercise_id));
     const data = rows.map(r => ({
       id: r.exercise_id,
       name: r.name || r.name_en,
       description: r.description,
       difficulty: r.difficulty_level,
       equipment: r.equipment_needed,
-      imageUrl: r.thumbnail_url || r.gif_demo_url || null,
+      imageUrl: imgMap.get(r.exercise_id) || r.thumbnail_url || r.gif_demo_url || null,
       instructions: null,
       impact_level: r.impact_level || null,
     }));
@@ -291,13 +309,14 @@ export const getAllExercises = async (_req, res) => {
   try {
     const { limit, offset, page, pageSize } = parsePaging(_req.query);
     const { count, rows } = await Exercise.findAndCountAll({ limit, offset, order: [["popularity_score", "DESC"], ["name", "ASC"]] });
+    const imgMap = await fetchBestImagesForIds(rows.map(r => r.exercise_id));
     const data = rows.map((r) => ({
       id: r.exercise_id,
       name: r.name || r.name_en,
       description: r.description,
       difficulty: r.difficulty_level,
       equipment: r.equipment_needed,
-      imageUrl: r.thumbnail_url || r.gif_demo_url || null,
+      imageUrl: imgMap.get(r.exercise_id) || r.thumbnail_url || r.gif_demo_url || null,
       instructions: null,
       impact_level: r.impact_level || null,
     }));
@@ -337,13 +356,14 @@ export const getExercisesByType = async (req, res) => {
       { bind: [t, limit, offset] }
     );
 
+    const imgMap = await fetchBestImagesForIds(rows.map(r => r.exercise_id));
     const data = rows.map((r) => ({
       id: r.exercise_id,
       name: r.name || r.name_en,
       description: r.description,
       difficulty: r.difficulty_level,
       equipment: r.equipment_needed,
-      imageUrl: r.thumbnail_url || r.gif_demo_url || null,
+      imageUrl: imgMap.get(r.exercise_id) || r.thumbnail_url || r.gif_demo_url || null,
       instructions: null,
       impact_level: null,
     }));
@@ -420,5 +440,104 @@ export const getExerciseStepsBySlug = async (req, res) => {
   } catch (error) {
     console.error('Error fetching steps by slug:', error);
     return res.status(500).json({ success: false, message: 'Error fetching steps', error: error.message });
+  }
+};
+
+// AI advice: summarize exercises with Gemini and return guidance
+export const getExerciseAiAdvice = async (req, res) => {
+  try {
+    const limit = Math.min(50, Math.max(5, parseInt(req.query.limit, 10) || 20));
+    const rows = await Exercise.findAll({
+      limit,
+      order: [["popularity_score", "DESC"], ["name", "ASC"]],
+      attributes: [
+        ["exercise_id", "id"],
+        "name",
+        "name_en",
+        "difficulty_level",
+        "exercise_type",
+        "equipment_needed",
+      ],
+    });
+
+    const payload = rows.map(r => ({
+      id: r.get("id"),
+      name: r.name || r.name_en,
+      difficulty: r.difficulty_level || null,
+      type: r.exercise_type || null,
+      equipment: r.equipment_needed || null,
+    }));
+
+    const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || "";
+    const model = process.env.GEMINI_MODEL || "gemini-2.0-flash";
+
+    if (!apiKey) {
+      return res.json({
+        success: true,
+        data: {
+          exercises: payload,
+          ai: {
+            advice: "Thiếu GEMINI_API_KEY – trả về danh sách bài tập cục bộ. Hãy thiết lập khóa API để nhận gợi ý từ AI.",
+          },
+          meta: { fallback: true },
+        },
+      });
+    }
+
+    // Simple Gemini call with version fallback (reuse pattern from nutrition.routes)
+    const versions = ["v1beta", "v1"]; // try v1beta first, then v1
+
+    const prompt = `Bạn là huấn luyện viên thể hình. Dưới đây là danh sách bài tập (JSON):\n\n${JSON.stringify(payload)}\n\nYêu cầu:\n1) In lại danh sách bài tập ở dạng gọn (name, difficulty, type, equipment).\n2) Đưa ra 3-5 lời khuyên ngắn cho người mới để sắp xếp buổi tập trong tuần (ưu tiên bài compound, tránh trùng cơ).\n\nTrả về JSON hợp lệ duy nhất với cấu trúc:\n{\n  "exercises": [{"name":"...","difficulty":"...","type":"...","equipment":"..."}],\n  "advice": ["...", "...", "..."]\n}\nKhông kèm text ngoài JSON.`;
+
+    const postJson = async (url, body) => {
+      const resp = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok) {
+        const err = new Error(data?.error?.message || 'Gemini API error');
+        err.status = resp.status;
+        err.body = data;
+        throw err;
+      }
+      return data;
+    };
+
+    const body = {
+      contents: [{ role: 'user', parts: [{ text: prompt }]}],
+      generationConfig: { temperature: 0.6, maxOutputTokens: 1024 },
+    };
+
+    let outText = '';
+    let lastErr = null;
+    for (const v of versions) {
+      const url = `https://generativelanguage.googleapis.com/${v}/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`;
+      try {
+        const data = await postJson(url, body);
+        outText = (data?.candidates?.[0]?.content?.parts || []).map(p => p.text).join('\n');
+        if (outText) break;
+      } catch (e) {
+        lastErr = e;
+        if (e?.status !== 404) break;
+      }
+    }
+    if (!outText) throw lastErr || new Error('Gemini call failed');
+
+    // Extract JSON content
+    let aiJson = null;
+    try {
+      const i = outText.indexOf('{');
+      const j = outText.lastIndexOf('}');
+      aiJson = JSON.parse(outText.slice(i, j + 1));
+    } catch (_) {
+      aiJson = { exercises: payload.map(x => ({ name: x.name, difficulty: x.difficulty, type: x.type, equipment: x.equipment })), advice: ["Tập toàn thân 3 buổi/tuần", "Ưu tiên compound trước isolation"] };
+    }
+
+    return res.json({ success: true, data: { exercises: payload, ai: aiJson } });
+  } catch (error) {
+    console.error('getExerciseAiAdvice error:', error);
+    return res.status(500).json({ success: false, message: 'Failed to get AI advice', error: error.message });
   }
 };
