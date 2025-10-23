@@ -63,7 +63,8 @@ function main() {
       equipment_needed: firstOrNull(item.equipment_keys),
       bodyparts_keys: Array.isArray(item.bodyparts_keys) ? item.bodyparts_keys : [],
       target_muscle_slugs: target,
-      secondary_muscle_slugs: secondary
+      secondary_muscle_slugs: secondary,
+      popularity_score: typeof item.popularity_score === 'number' ? item.popularity_score : null
     });
   }
 

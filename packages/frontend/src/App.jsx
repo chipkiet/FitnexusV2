@@ -14,9 +14,14 @@ import NutritionAI from "./pages/nutrition/NutritionAI.jsx";
 import NutritionPersonalize from "./pages/nutrition/NutritionPersonalize.jsx";
 import Dashboard from "./pages/user/Dashboard.jsx";
 import Modeling from "./pages/model3D/Modeling.jsx";
-import ModelingPreview from "./pages/model3D/ModelingPreview.jsx";
+import ModelingDemo from "./pages/model3D/ModelingDemo.jsx";
 import ExerciseDetail from "./pages/exercises/ExerciseDetail.jsx";
-import Exercises from "./pages/exercises/Exercises.jsx";
+import ExercisesDemo from "./pages/exercises/ExercisesDemo.jsx";
+import Exercise from "./pages/exercises/Exercise.jsx";
+import PlanNew from "./pages/plans/PlanNew.jsx";
+import PlanPicker from "./pages/plans/PlanPicker.jsx";
+import Logout from "./pages/authentication/Logout.jsx";
+import NotFoundRedirect from "./pages/system/NotFoundRedirect.jsx";
 
 // Onboarding
 import OnboardingAge from "./pages/boardings/OnboardingAge.jsx";
@@ -30,10 +35,6 @@ import OnboardingFrequency from "./pages/boardings/OnboardingFrequency.jsx";
 import OnboardingEntry from "./pages/boardings/OnboardingEntry.jsx";
 
 
-
-
-
-
 // Admin
 import AdminLayout from "./layouts/AdminLayout.jsx";
 import AdminOverview from "./pages/admin/Overview.jsx";
@@ -45,7 +46,6 @@ import Plan from "./pages/admin/Plan.jsx";
 import AdminLockUnlock from "./pages/admin/LockUnlock.jsx";
 import AdminResetPassword from "./pages/admin/ResetPassword.jsx";
 
-// (Optional) trang quản lý users nếu bạn có file này
 
 import AdminUsers from "./pages/admin/AdminUsers.jsx";
 
@@ -75,7 +75,6 @@ function AdminRoute({ children }) {
 function App() {
   useEffect(() => {
 
-    // Debug listener để xem FE có nhận message từ popup OAuth hay không
     const handler = (e) => {
       console.log("oauth msg:", e.origin, e.data);
     };
@@ -88,7 +87,6 @@ function App() {
     <AuthProvider>
       <Router>
         <Routes>
-          {/* Auth */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/onboarding" element={<OnboardingEntry />} />
@@ -106,16 +104,48 @@ function App() {
           <Route path="/reset-password" element={<ResetPassword />} />
 
 
-          {/* Main app routes */}
-          {/* Public landing page at root shows Dashboard */}
           <Route path="/" element={<Landing />} />
           <Route path="/nutrition-ai" element={<NutritionAI />} />
           <Route path="/nutrition-ai/personalize" element={<NutritionPersonalize />} />
-          {/* Public 3D modeling preview */}
-          <Route path="/modeling-preview" element={<ModelingPreview />} />
-          <Route path="/exercises" element={<Exercises/>}/>
 
-          {/* Protected route: exercise detail (no MainLayout) */}
+          <Route path="/modeling-demo" element={<ModelingDemo />} />
+          {/* Backward compat: redirect old preview path to new demo path */}
+          <Route path="/modeling-preview" element={<Navigate to="/modeling-demo" replace />} />
+          <Route path="/exercises-demo" element={<ExercisesDemo/>}/>
+          <Route
+            path="/exercises"
+            element={
+              <PrivateRoute>
+                <Exercise />
+              </PrivateRoute>
+            }
+          />
+          <Route path="/logout" element={<Logout />} />
+          <Route
+            path="/plans/select"
+            element={
+              <PrivateRoute>
+                <PlanPicker />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/plans/select"
+            element={
+              <PrivateRoute>
+                <PlanPicker />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/plans/new"
+            element={
+              <PrivateRoute>
+                <PlanNew />
+              </PrivateRoute>
+            }
+          />
+
           <Route
             path="/exercises/:id"
             element={
@@ -123,7 +153,6 @@ function App() {
             }
           />
 
-          {/* Protected route without MainLayout (dashboard full control) */}
           <Route
             path="/dashboard"
             element={
@@ -166,8 +195,8 @@ function App() {
           </Route>
 
 
-          {/* Catch all */}
-          <Route path="*" element={<Navigate to="/" replace />} />
+          {/* Catch all: redirect based on auth status */}
+          <Route path="*" element={<NotFoundRedirect />} />
         </Routes>
       </Router>
     </AuthProvider>

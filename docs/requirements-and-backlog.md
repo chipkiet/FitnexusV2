@@ -47,9 +47,9 @@ Mục tiêu: hoàn tất nhanh Phase 1 để “map” đầy đủ với `docs/
 
 -------------------------------------------------------------------------------
 
-**Modeling (Multi‑Group) — Khác biệt với Exercises**
+**Modeling (Multi‑Group) — Khác biệt với ExercisesDemo**
 
-- Mục tiêu khác biệt: Trang Exercises thiên về browse/list & lọc đơn nhóm cơ hoặc theo type; Modeling cho phép “kết hợp nhiều nhóm cơ” để tìm các bài tập phù hợp một lúc (ví dụ: chest + triceps, back + biceps, legs + core...).
+- Mục tiêu khác biệt: Trang ExercisesDemo thiên về browse/list & lọc đơn nhóm cơ hoặc theo type; Modeling cho phép “kết hợp nhiều nhóm cơ” để tìm các bài tập phù hợp một lúc (ví dụ: chest + triceps, back + biceps, legs + core...).
 - UX (đề xuất):
   - Cho phép chọn nhiều nhóm cơ trên mô hình 3D (multi‑select). Hiển thị chip các nhóm đã chọn + nút “Xoá hết”.
   - Chế độ kết hợp: `mode = all` (mặc định) = bài tập tác động tới TẤT CẢ nhóm cơ đã chọn; `mode = any` = bài tập chạm ÍT NHẤT 1 nhóm đã chọn.
@@ -141,7 +141,7 @@ Acceptance tiêu chuẩn Phase 1
   - Lưu lịch sử scan, tổng hợp macro/ngày/tuần, gợi ý kế hoạch bữa theo mục tiêu.
 
 - Admin/Trainer
-  - Admin: CRUD Exercises/MuscleGroups/Steps; moderation ảnh tiến độ; thống kê.
+  - Admin: CRUD ExercisesDemo/MuscleGroups/Steps; moderation ảnh tiến độ; thống kê.
   - Trainer: quản lý học viên, chat realtime, gói PT (bán dịch vụ, revenue share — Phase 3 nếu cần).
 
 - Observability & Growth

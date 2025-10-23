@@ -177,7 +177,9 @@ export default function Login() {
           password: form.password,
           rememberMe: form.remember,
         },
-        navigate
+        navigate,
+        // Nếu tới từ một trang cụ thể (vd: /plans/new) thì điều hướng về đó sau login
+        (location.state && typeof location.state.from === 'string') ? location.state.from : null
       );
     } catch (e) {
       // ⬇️ Nếu BE trả 423 Locked, mở modal kèm lý do
@@ -201,13 +203,10 @@ export default function Login() {
     setOauthLoading(true);
     const be = import.meta.env.VITE_BACKEND_URL || "http://localhost:3001";
 
-    // chuyển tab hiện tại sang BE để bắt đầu OAuth
-    const from = location.state?.from?.pathname; // ⬅️ lấy from nếu có
-    const url = `${be}/auth/google${
-      from ? `?from=${encodeURIComponent(from)}` : ""
-    }`;
-
-    window.location.href = `${be}/auth/google`;
+    // chuyển sang BE để bắt đầu OAuth, kèm from nếu có (chuỗi path)
+    const from = (location.state && typeof location.state.from === 'string') ? location.state.from : "";
+    const url = `${be}/auth/google${from ? `?from=${encodeURIComponent(from)}` : ""}`;
+    window.location.href = url;
   };
 
   return (

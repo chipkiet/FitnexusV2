@@ -22,7 +22,7 @@ function readJson(p){ return JSON.parse(fs.readFileSync(p, 'utf8')); }
 
 async function upsertExercise(client, row, t) {
   const fields = [
-    'slug','name','name_en','description','gif_demo_url','primary_video_url','thumbnail_url','equipment_needed'
+    'slug','name','name_en','description','gif_demo_url','primary_video_url','thumbnail_url','equipment_needed','popularity_score'
   ];
   const values = fields.map(f => row[f] ?? null);
 
@@ -35,17 +35,46 @@ async function upsertExercise(client, row, t) {
     'primary_video_url = EXCLUDED.primary_video_url',
     'thumbnail_url = EXCLUDED.thumbnail_url',
     'equipment_needed = EXCLUDED.equipment_needed',
+    'popularity_score = COALESCE(EXCLUDED.popularity_score, exercises.popularity_score)',
     'updated_at = NOW()'
   ].join(',');
 
   const sql = `
-    INSERT INTO exercises (slug, name, name_en, description, gif_demo_url, primary_video_url, thumbnail_url, equipment_needed, created_at, updated_at)
+    INSERT INTO exercises (slug, name, name_en, description, gif_demo_url, primary_video_url, thumbnail_url, equipment_needed, popularity_score, created_at, updated_at)
     VALUES (${placeholders}, NOW(), NOW())
     ON CONFLICT (slug) DO UPDATE SET ${updates}
     RETURNING exercise_id;
   `;
   const [res] = await client.query(sql, { transaction: t, bind: values });
   return res[0]?.exercise_id;
+}
+
+async function upsertBasicImages(client, exerciseId, row, t) {
+  // Insert thumbnail as cover (primary), gif as gif (secondary)
+  const thumb = row.thumbnail_url || null;
+  const gif = row.gif_demo_url || null;
+  // Clean previous basic images so this importer stays idempotent
+  await client.query(
+    `DELETE FROM image_exercise 
+     WHERE exercise_id = $1 AND image_type IN ('cover','gif','thumbnail')`,
+    { transaction: t, bind: [exerciseId] }
+  );
+  if (thumb) {
+    await client.query(
+      `INSERT INTO image_exercise (exercise_id, image_url, image_type, alt_text, display_order, is_primary, created_at, updated_at)
+       VALUES ($1, $2, 'cover', NULL, 0, TRUE, NOW(), NOW())
+       ON CONFLICT DO NOTHING`,
+      { transaction: t, bind: [exerciseId, thumb] }
+    );
+  }
+  if (gif) {
+    await client.query(
+      `INSERT INTO image_exercise (exercise_id, image_url, image_type, alt_text, display_order, is_primary, created_at, updated_at)
+       VALUES ($1, $2, 'gif', NULL, 1, FALSE, NOW(), NOW())
+       ON CONFLICT DO NOTHING`,
+      { transaction: t, bind: [exerciseId, gif] }
+    );
+  }
 }
 
 async function getMuscleIdBySlug(client, slug, cache, t) {
@@ -113,6 +142,7 @@ async function main() {
 
       const exId = await upsertExercise(sequelize, row, t);
       const linked = await replaceMuscles(sequelize, exId, row.target_muscle_slugs, row.secondary_muscle_slugs, t);
+      await upsertBasicImages(sequelize, exId, row, t);
       await t.commit();
       totalInserted += 1;
       totalLinked += linked;
@@ -132,4 +162,3 @@ main().catch((e) => {
   console.error(e);
   process.exit(1);
 });
-

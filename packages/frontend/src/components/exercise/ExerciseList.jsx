@@ -1,100 +1,95 @@
-import React from "react";
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
-export default function ExerciseList({ exercises, loading, error }) {
+function ExerciseList({ exercises, loading, error, total }) {
+  const navigate = useNavigate();
+
   if (loading) {
     return (
-      <div className="p-4">
-        <div className="animate-pulse space-y-4">
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="bg-white/5 p-4 rounded-lg">
-              <div className="h-4 bg-purple-200/20 rounded w-3/4"></div>
-              <div className="space-y-2 mt-4">
-                <div className="h-3 bg-purple-200/10 rounded"></div>
-                <div className="h-3 bg-purple-200/10 rounded w-5/6"></div>
-              </div>
-            </div>
-          ))}
-        </div>
+      <div className="flex items-center justify-center p-8">
+        <div className="text-gray-600">Đang tải danh sách bài tập...</div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="p-8 text-center">
-        <div className="text-red-400">{error}</div>
+      <div className="p-4 border border-red-200 rounded-lg bg-red-50">
+        <p className="text-red-600">Lỗi: {error}</p>
       </div>
     );
   }
 
-  if (!exercises.length) {
+  if (!exercises || exercises.length === 0) {
     return (
-      <div className="p-8 text-center text-purple-200/60">
-        Select a body part to see available exercises
+      <div className="p-8 text-center text-gray-500 border border-gray-200 rounded-lg bg-gray-50">
+        Không tìm thấy bài tập phù hợp. Hãy thử thay đổi bộ lọc hoặc tìm kiếm.
       </div>
     );
   }
+
+  const handleExerciseClick = (exercise) => {
+    navigate(`/exercises/${exercise.id}`, { state: exercise });
+  };
 
   return (
-    <div className="p-4 space-y-4">
-      {exercises.map((exercise) => (
-        <div
-          key={exercise.id}
-          className="bg-white/5 rounded-lg p-4 hover:bg-white/10 transition-colors cursor-pointer group"
-        >
-          <h3 className="text-purple-100 font-medium group-hover:text-white transition-colors">
-            {exercise.name}
-          </h3>
-          
-          <div className="mt-2 space-y-2">
-            {exercise.equipment && (
-              <div className="flex items-center gap-2 text-sm text-purple-300/80">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                </svg>
-                <span>{exercise.equipment}</span>
+    <div>
+      <div className="mb-3 text-sm text-gray-600">
+        Tìm thấy {typeof total === 'number' ? total : (exercises?.length || 0)} bài tập
+      </div>
+      
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {exercises.map((exercise) => (
+          <div
+            key={exercise.id}
+            onClick={() => handleExerciseClick(exercise)}
+            className="overflow-hidden transition-shadow border border-gray-200 rounded-lg cursor-pointer hover:shadow-lg"
+          >
+            {exercise.imageUrl && (
+              <div className="relative w-full bg-gray-100" style={{ paddingBottom: '75%' }}>
+                <img
+                  src={exercise.imageUrl}
+                  alt={exercise.name}
+                  className="absolute inset-0 object-cover w-full h-full"
+                  loading="lazy"
+                />
               </div>
             )}
             
-            <div className="flex items-center gap-2 text-sm text-purple-300/80">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-              <span>{exercise.difficulty}</span>
-            </div>
-
-            {exercise.muscle_target && (
-              <div className="flex items-center gap-2 text-sm text-purple-300/80">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-                <span>{exercise.muscle_target}</span>
+            <div className="p-4">
+              <h3 className="mb-2 text-lg font-semibold text-gray-900 line-clamp-2">
+                {exercise.name}
+              </h3>
+              
+              {exercise.description && (
+                <p className="mb-3 text-sm text-gray-600 line-clamp-2">
+                  {exercise.description}
+                </p>
+              )}
+              
+              <div className="flex flex-wrap gap-2">
+                {exercise.difficulty && (
+                  <span className="px-2 py-1 text-xs font-medium text-blue-700 rounded bg-blue-50">
+                    {exercise.difficulty}
+                  </span>
+                )}
+                {exercise.equipment && (
+                  <span className="px-2 py-1 text-xs font-medium text-gray-700 bg-gray-100 rounded">
+                    {exercise.equipment}
+                  </span>
+                )}
+                {exercise.impact && (
+                  <span className="px-2 py-1 text-xs font-medium text-green-700 rounded bg-green-50">
+                    {exercise.impact}
+                  </span>
+                )}
               </div>
-            )}
+            </div>
           </div>
-
-          {exercise.description && (
-            <p className="mt-3 text-sm text-purple-200/60 line-clamp-2">
-              {exercise.description}
-            </p>
-          )}
-
-          {exercise.video_url && (
-            <a
-              href={exercise.video_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-4 inline-flex items-center gap-2 text-sm text-purple-400 hover:text-purple-300 transition-colors"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              Watch Video
-            </a>
-          )}
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }
+
+export default ExerciseList;
