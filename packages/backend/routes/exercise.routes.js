@@ -13,4 +13,6 @@ router.get("/id/:exerciseId/steps", getExerciseStepsById);
 
 router.get("/slug/:slug/steps", getExerciseStepsBySlug);
 
+
+
 export default router;
