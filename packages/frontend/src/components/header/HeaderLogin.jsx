@@ -22,10 +22,10 @@ export default function HeaderLogin() {
   const handleLogout = async () => {
     try {
       await logout();
-      navigate("/login", { replace: true });
+      navigate("/", { replace: true });
     } catch (error) {
       console.error("Logout failed:", error);
-      navigate("/login", { replace: true });
+      navigate("/", { replace: true });
     }
   };
   const displayName = (user?.username || "").replaceAll("_", " ");
