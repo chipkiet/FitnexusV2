@@ -4,7 +4,7 @@ import * as tf from "@tensorflow/tfjs";
 import "@tensorflow/tfjs-backend-webgl";
 import * as mobilenet from "@tensorflow-models/mobilenet";
 import "./NutritionAI.css";
-import logo from "../../assets/logo.png";
+import Navbar from "../../components/common/Navbar.jsx";
 
 function centerCropToSquare(imgEl, size = 224) {
   const s = Math.min(imgEl.naturalWidth, imgEl.naturalHeight);
@@ -112,7 +112,7 @@ export default function FoodCalorie() {
             cache: "no-store",
           });
           if (r.ok) macros = await r.json();
-        } catch {}
+        } catch { }
         models.net = net;
         models.clf = clf;
         setLabels(lbs);
@@ -138,7 +138,7 @@ export default function FoodCalorie() {
     return () => {
       try {
         models.clf?.dispose();
-      } catch {}
+      } catch { }
     };
   }, [models]);
 
@@ -242,23 +242,23 @@ export default function FoodCalorie() {
     const kcal100FromMacros =
       per100By.protein || per100By.carbs || per100By.fat || per100By.alcohol
         ? (per100By.protein || 0) * 4 +
-          (per100By.carbs || 0) * 4 +
-          (per100By.fat || 0) * 9 +
-          (per100By.alcohol || 0) * 7
+        (per100By.carbs || 0) * 4 +
+        (per100By.fat || 0) * 9 +
+        (per100By.alcohol || 0) * 7
         : null;
     const kcal100Effective = Number.isFinite(kcal100Field)
       ? kcal100Field
       : Number.isFinite(kcal100FromMacros)
-      ? Math.round(kcal100FromMacros)
-      : null;
+        ? Math.round(kcal100FromMacros)
+        : null;
     const pct =
       kcalFromMacros > 0
         ? {
-            p: +((pKcal / kcalFromMacros) * 100).toFixed(0),
-            c: +((cKcal / kcalFromMacros) * 100).toFixed(0),
-            f: +((fKcal / kcalFromMacros) * 100).toFixed(0),
-            a: +((aKcal / kcalFromMacros) * 100).toFixed(0),
-          }
+          p: +((pKcal / kcalFromMacros) * 100).toFixed(0),
+          c: +((cKcal / kcalFromMacros) * 100).toFixed(0),
+          f: +((fKcal / kcalFromMacros) * 100).toFixed(0),
+          a: +((aKcal / kcalFromMacros) * 100).toFixed(0),
+        }
         : { p: 0, c: 0, f: 0, a: 0 };
 
     const order = ["protein", "carbs", "fat", "alcohol"];
@@ -380,32 +380,7 @@ export default function FoodCalorie() {
 
   return (
     <div className="fc-page">
-      {/* Header */}
-      <header className="fc-header-bar">
-        <div className="fc-container">
-          <div className="fc-header-content">
-            <div className="text-base/6 text-zinc-950 dark:text-white hover:underline -m-1.5 p-1.5 shrink-0">
-              <img src={logo} alt="Fitnexus logo" className="h-24" />
-            </div>
-            <div className="text-base/6 text-zinc-950 dark:text-white hover:underline -m-1.5 p-1.5 shrink-0">
-              <nav className="fc-nav">
-                <button
-                  className="fc-nav-btn"
-                  onClick={() => (window.location.href = "/")}
-                >
-                  Trang chủ
-                </button>
-                <button
-                  className="fc-nav-btn fc-nav-btn-primary"
-                  onClick={() => (window.location.href = "/login")}
-                >
-                  Đăng nhập
-                </button>
-              </nav>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Navbar />
 
       {/* Hidden global file input */}
       <input
@@ -505,6 +480,7 @@ export default function FoodCalorie() {
           </section>
         ) : (
           <section className="fc-scanner">
+
             <div className="fc-card">
               <div className="fc-scanner-header">
                 <h3 className="fc-scanner-title">Kết quả phân tích</h3>
@@ -577,9 +553,8 @@ export default function FoodCalorie() {
                       <div className="fc-top3">
                         {result.top3.map((t, idx) => {
                           const active = result.dish === t.dish;
-                          const cls = `fc-chip clickable${
-                            active ? " active" : ""
-                          }`;
+                          const cls = `fc-chip clickable${active ? " active" : ""
+                            }`;
                           return (
                             <span
                               key={idx}
@@ -598,8 +573,19 @@ export default function FoodCalorie() {
                             >
                               {t.dish} {(t.confidence * 100).toFixed(1)}%
                             </span>
+
+
                           );
                         })}
+                        <button
+                          className="fc-btn-secondary"
+                          style={{ marginLeft: 12 }}
+                          onClick={() =>
+                            (window.location.href = "/nutrition-ai/personalize")
+                          }
+                        >
+                          Cá nhân hoá dinh dưỡng
+                        </button>
                       </div>
                     </div>
                   )}
@@ -621,19 +607,19 @@ export default function FoodCalorie() {
                               it.id === "protein"
                                 ? result.macros.pct.p
                                 : it.id === "carbs"
-                                ? result.macros.pct.c
-                                : it.id === "fat"
-                                ? result.macros.pct.f
-                                : it.id === "alcohol"
-                                ? result.macros.pct.a
-                                : null;
+                                  ? result.macros.pct.c
+                                  : it.id === "fat"
+                                    ? result.macros.pct.f
+                                    : it.id === "alcohol"
+                                      ? result.macros.pct.a
+                                      : null;
                             return (
                               <div key={it.id} className="fc-macro-row">
                                 <div className="fc-macro-name">{it.name}</div>
                                 <div className="fc-macro-val">
                                   {it.value} {it.unit}
                                   {pctBadge !== null &&
-                                  pctBadge !== undefined ? (
+                                    pctBadge !== undefined ? (
                                     <>
                                       {" "}
                                       <span className="fc-badge">

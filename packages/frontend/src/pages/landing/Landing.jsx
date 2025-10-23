@@ -138,11 +138,11 @@ const Fitnexus3DLanding = () => {
             onClick={() => navigate("/")}
             className="text-base/6 text-zinc-950 hover:opacity-80 transition -m-1.5 p-1.5 shrink-0"
           >
-            <img src={logo} alt="Fitnexus logo" className="h-12" />
+            <img src={logo} alt="Fitnexus logo" className="h-36" />
           </button>
           <nav className="items-center hidden gap-6 md:flex">
             <button
-              className="text-base font-medium text-gray-700 transition hover:text-blue-600"
+              className="text-base text-gray-800 transition hover:text-blue-500"
               onClick={() => navigate("/modeling-preview")}
             >
               Mô hình hoá
@@ -152,7 +152,7 @@ const Fitnexus3DLanding = () => {
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setShowWorkoutDropdown(!showWorkoutDropdown)}
-                className="text-base font-medium text-gray-700 transition hover:text-blue-600"
+                className="text-base text-gray-800 transition hover:text-blue-500"
               >
                 Luyện tập
               </button>
@@ -171,8 +171,12 @@ const Fitnexus3DLanding = () => {
                       }}
                       className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-gray-50 transition"
                     >
-                      <div className="text-sm font-semibold text-gray-900">Xem tất cả bài tập</div>
-                      <div className="text-xs text-gray-500">1000+ bài tập theo nhóm cơ</div>
+                      <div className="text-sm font-semibold text-gray-900">
+                        Xem tất cả bài tập
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        1000+ bài tập theo nhóm cơ
+                      </div>
                     </button>
                   </div>
 
@@ -195,8 +199,12 @@ const Fitnexus3DLanding = () => {
                       }}
                       className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-gray-50 transition"
                     >
-                      <div className="text-sm font-semibold text-gray-900">Kế hoạch của tôi</div>
-                      <div className="text-xs text-gray-500">Quản lý các plan đã tạo</div>
+                      <div className="text-sm font-semibold text-gray-900">
+                        Kế hoạch của tôi
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        Quản lý các plan đã tạo
+                      </div>
                     </button>
 
                     {/* Create New Plan */}
@@ -211,30 +219,35 @@ const Fitnexus3DLanding = () => {
                       }}
                       className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-gray-50 transition mt-1"
                     >
-                      <div className="text-sm font-semibold text-gray-900">Tạo plan mới</div>
-                      <div className="text-xs text-gray-500">Lên kế hoạch tập luyện riêng</div>
+                      <div className="text-sm font-semibold text-gray-900">
+                        Tạo plan mới
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        Lên kế hoạch tập luyện riêng
+                      </div>
                     </button>
                   </div>
                 </div>
               )}
             </div>
 
-            <a
-              href="#testimonials"
-              className="text-base font-medium text-gray-700 transition hover:text-blue-600"
+            <button
+              type="button"
+              onClick={() => navigate("/nutrition-ai")}
+              className="text-base text-gray-800 transition hover:text-blue-500"
             >
-              Dinh dưỡng
-            </a>
+              Khám phá Nutrition AI
+            </button>
             <a
               href="#blog"
-              className="text-base font-medium text-gray-700 transition hover:text-blue-600"
+              className="text-base text-gray-800 transition hover:text-blue-500"
             >
               Cộng đồng
             </a>
           </nav>
           <div className="flex items-center gap-4">
-            {/* <button
-              className="text-base font-medium text-gray-700 transition hover:text-blue-600"
+            <button
+              className="font-extrabold text-gray-700 transition text-pretty hover:text-blue-600"
               onClick={() => navigate("/login")}
             >
               Đăng nhập
@@ -504,7 +517,8 @@ const Fitnexus3DLanding = () => {
             PHÂN TÍCH THỰC PHẨM THÔNG MINH
           </h2>
           <p className="mb-20 text-xl text-gray-400">
-            Đưa ra những kết quả chính xác về dinh dưỡng của thực phẩm bạn muốn, lượng calories, lượng dinh dưỡng
+            Đưa ra những kết quả chính xác về dinh dưỡng của thực phẩm bạn muốn,
+            lượng calories, lượng dinh dưỡng
           </p>
           <div className="grid gap-8 md:grid-cols-3">
             {[

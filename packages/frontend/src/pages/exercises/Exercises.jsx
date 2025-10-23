@@ -60,11 +60,11 @@ export default function Exercises() {
           // default list with pagination
           res = await axios.get('/api/exercises', { params: { page, pageSize } });
         } else if (selectedGroup === 'cardio') {
-          // exercise type; fetch full list (no pagination params)
-          res = await axios.get('/api/exercises/type/cardio');
+          // exercise type with pagination
+          res = await axios.get('/api/exercises/type/cardio', { params: { page, pageSize } });
         } else {
-          // fetch by muscle group; return full list (no pagination params)
-          res = await axios.get(`/api/exercises/muscle/${selectedGroup}`);
+          // fetch by muscle group with pagination
+          res = await axios.get(`/api/exercises/muscle/${selectedGroup}`, { params: { page, pageSize } });
         }
         if (isMounted) {
           if (res.data?.success) {
@@ -310,40 +310,38 @@ export default function Exercises() {
             </div>
           ) : null}
 
-          <ExerciseList exercises={filtered} loading={loading} error={error} />
+          <ExerciseList exercises={filtered} loading={loading} error={error} total={total} />
 
-          {/* Pagination controls: only for default list (no group selected) */}
-          {!selectedGroup && (
-            <div className="flex items-center justify-between mt-4">
-              <div className="text-sm text-gray-600">
-                Trang {page} / {Math.max(1, Math.ceil((total || 0) / pageSize))}
-              </div>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  disabled={page <= 1 || loading}
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  className={[
-                    "px-3 py-2 text-sm border rounded-lg",
-                    page <= 1 || loading ? "text-gray-400 border-gray-200" : "border-gray-300 hover:bg-gray-50"
-                  ].join(" ")}
-                >
-                  Trang trước
-                </button>
-                <button
-                  type="button"
-                  disabled={loading || page >= Math.max(1, Math.ceil((total || 0) / pageSize))}
-                  onClick={() => setPage((p) => p + 1)}
-                  className={[
-                    "px-3 py-2 text-sm border rounded-lg",
-                    loading || page >= Math.max(1, Math.ceil((total || 0) / pageSize)) ? "text-gray-400 border-gray-200" : "border-gray-300 hover:bg-gray-50"
-                  ].join(" ")}
-                >
-                  Trang sau
-                </button>
-              </div>
+          {/* Pagination controls: apply for all modes (default or group/type) */}
+          <div className="flex items-center justify-between mt-4">
+            <div className="text-sm text-gray-600">
+              Trang {page} / {Math.max(1, Math.ceil((total || 0) / pageSize))}
             </div>
-          )}
+            <div className="flex gap-2">
+              <button
+                type="button"
+                disabled={page <= 1 || loading}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                className={[
+                  "px-3 py-2 text-sm border rounded-lg",
+                  page <= 1 || loading ? "text-gray-400 border-gray-200" : "border-gray-300 hover:bg-gray-50"
+                ].join(" ")}
+              >
+                Trang trước
+              </button>
+              <button
+                type="button"
+                disabled={loading || page >= Math.max(1, Math.ceil((total || 0) / pageSize))}
+                onClick={() => setPage((p) => p + 1)}
+                className={[
+                  "px-3 py-2 text-sm border rounded-lg",
+                  loading || page >= Math.max(1, Math.ceil((total || 0) / pageSize)) ? "text-gray-400 border-gray-200" : "border-gray-300 hover:bg-gray-50"
+                ].join(" ")}
+              >
+                Trang sau
+              </button>
+            </div>
+          </div>
         </section>
       </main>
     </div>

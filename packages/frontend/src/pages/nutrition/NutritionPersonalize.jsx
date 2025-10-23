@@ -2,7 +2,9 @@ import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api, { endpoints } from '../../lib/api';
 import './NutritionAI.css';
+import Navbar from '../../components/common/Navbar.jsx';
 import { useAuth } from '../../context/auth.context.jsx';
+import { renderMarkdown } from '../../lib/markdown.js';
 
 const GOALS = [
   { key: 'LOSE_WEIGHT', label: 'Giảm cân' },
@@ -42,32 +44,10 @@ export default function NutritionPersonalize() {
 
   return (
       <div className="fc-page">
+        <Navbar />
         <div className="fc-container">
-          {/* Top Navbar showing current user */}
-          <div className="fc-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', marginTop: 14, marginBottom: 14 }}>
-            <div style={{ fontWeight: 800 }}>Nutrition AI • Personalize</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              {isAuthenticated() ? (
-                <>
-                  {/* Avatar */}
-                  {user?.avatarUrl ? (
-                    <img src={user.avatarUrl} alt="avatar" style={{ width: 28, height: 28, borderRadius: '999px', objectFit: 'cover', border: '1px solid rgba(255,255,255,.2)' }} onError={(e)=>{ e.currentTarget.style.display='none'; }} />
-                  ) : (
-                    <div style={{ width: 28, height: 28, borderRadius: '999px', display: 'grid', placeItems: 'center', background: 'rgba(255,255,255,.08)', border: '1px solid rgba(255,255,255,.15)', fontSize: 12, fontWeight: 700 }}>
-                      {(user?.fullName || user?.username || user?.email || '?').toString().trim()[0]?.toUpperCase() || 'U'}
-                    </div>
-                  )}
-                  <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1 }}>
-                    <span style={{ fontWeight: 700 }}>{user?.fullName || user?.username || 'Người dùng'}</span>
-                    <span style={{ fontSize: 12, opacity: .8 }}>{user?.email || ''}</span>
-                  </div>
-                  <button className="fc-btn-secondary" onClick={logout}>Đăng xuất</button>
-                </>
-              ) : (
-                <button className="fc-btn-primary" onClick={() => navigate('/login')}>Đăng nhập</button>
-              )}
-            </div>
-          </div>
+          {/* Page header card (under the fixed navbar) */}
+          
           <div className="fc-card">
             <div className="fc-header">
               <h3>Cá nhân hoá chế độ dinh dưỡng</h3>
@@ -117,9 +97,12 @@ export default function NutritionPersonalize() {
             <div className="fc-card" style={{ marginTop: 18 }}>
               <div className="fc-header">
                 <h3>Kế hoạch gợi ý</h3>
-                <p className="fc-sub">Kết quả tạo bởi AI (Gemini)</p>
               </div>
-              <div style={{ whiteSpace: 'pre-wrap', lineHeight: 1.6, maxHeight: '70vh', overflow: 'auto' }}>{plan}</div>
+              <div
+                className="markdown-body"
+                style={{ lineHeight: 1.6, maxHeight: '70vh', overflow: 'auto' }}
+                dangerouslySetInnerHTML={{ __html: renderMarkdown(plan) }}
+              />
             </div>
           )}
         </div>

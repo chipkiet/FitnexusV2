@@ -31,7 +31,7 @@ export function AuthProvider({ children }) {
   /**
    * Sau khi có token/user -> hỏi BE xem còn Onboarding không để điều hướng.
    * - Nếu còn: nhảy tới /onboarding/<nextStepKey>
-   * - Nếu xong: về "/"
+   * - Nếu xong: vào "/dashboard" (không quay về landing)
    * Gọi hàm này từ màn Login/Register (truyền navigate)
    */
   const redirectAfterAuth = async (navigate) => {
@@ -56,7 +56,6 @@ export function AuthProvider({ children }) {
         navigate("/dashboard", { replace: true });
       }
     } catch {
-      // lỗi hiếm: đưa người dùng về Dashboard mặc định
       navigate("/dashboard", { replace: true });
     }
   };
@@ -206,7 +205,7 @@ export function AuthProvider({ children }) {
    * - setTokens + setUser
    * - (khuyên dùng) truyền navigate để redirect theo trạng thái onboarding
    */
-  const login = async (payload, navigate) => {
+  const login = async (payload, navigate, nextPath) => {
     setLoading(true);
     setError(null);
     try {
@@ -224,7 +223,25 @@ export function AuthProvider({ children }) {
           } else {
             // Nếu là user thường thì check onboarding
             await refreshUser();
-            await redirectAfterAuth(navigate);
+            try {
+              const r = await api.get(endpoints.onboarding.session, {
+                params: { t: Date.now() },
+                headers: { "Cache-Control": "no-cache", Pragma: "no-cache" },
+                withCredentials: true,
+              });
+              const d = r?.data?.data;
+              if (d?.required && d?.nextStepKey) {
+                navigate(`/onboarding/${d.nextStepKey}`, { replace: true });
+              } else if (nextPath) {
+                navigate(nextPath, { replace: true });
+              } else {
+                navigate("/dashboard", { replace: true });
+              }
+            } catch {
+              // lỗi hiếm: ưu tiên nextPath nếu có, fallback dashboard
+              if (nextPath) navigate(nextPath, { replace: true });
+              else navigate("/dashboard", { replace: true });
+            }
           }
         }
       }
