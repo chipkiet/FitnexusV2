@@ -11,5 +11,25 @@ services:
       - "${POSTGRES_PORT}:5432"
     volumes:
       - fitness-data:/var/lib/postgresql/data
+    networks:
+      - fitnexus-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: fitnexus-redis
+    restart: always
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - fitnexus-network
+
 volumes:
   fitness-data:
+  redis-data:
+
+networks:
+  fitnexus-network:
+    driver: bridge
