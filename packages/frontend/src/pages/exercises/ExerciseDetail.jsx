@@ -1,48 +1,169 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, useLocation, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+// src/pages/exercises/ExerciseDetail.jsx
+import React, { useEffect, useMemo, useState } from "react";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { useAuth } from "../../context/auth.context.jsx";
+
+function Badge({ children, tone = "gray" }) {
+  const tones = {
+    gray: "bg-gray-100 text-gray-700",
+    blue: "bg-blue-50 text-blue-700",
+    green: "bg-green-50 text-green-700",
+    amber: "bg-amber-50 text-amber-700",
+    purple: "bg-purple-50 text-purple-700",
+  };
+  return (
+    <span className={`inline-flex items-center px-2 py-1 rounded text-xs ${tones[tone] || tones.gray}`}>
+      {children}
+    </span>
+  );
+}
 
 export default function ExerciseDetail() {
-  const { id } = useParams();
+  const { id: idOrSlug } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
 
-  const [exercise, setExercise] = useState(location.state || null);
+  // ---- State
+  const [exerciseRaw, setExerciseRaw] = useState(location.state || null);
+  const [images, setImages] = useState([]); // từ bảng image_exercise
+  const [steps, setSteps] = useState([]);   // từ exercise_step.json hoặc API steps
   const [loading, setLoading] = useState(!location.state);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    // Nếu đã có state (được truyền từ list), không cần fetch
-    if (exercise) return;
+  const [mainMedia, setMainMedia] = useState(null); // url ảnh/gif đang hiển thị
+  const { user } = useAuth();
 
-    let isMounted = true;
-    const fetchOne = async () => {
+  // ---- Chuẩn hóa dữ liệu theo model bạn đã đưa
+  const exercise = useMemo(() => {
+    if (!exerciseRaw) return null;
+    const e = exerciseRaw;
+
+    // chấp nhận cả hai kiểu key: id hoặc exercise_id
+    const exercise_id = e.exercise_id ?? e.id ?? e.exerciseId;
+    const name = e.name || e.title || "Bài tập";
+    const difficulty = e.difficulty_level ?? e.difficulty ?? null;
+    const equipment = e.equipment_needed ?? e.equipment ?? null;
+    const type = e.exercise_type ?? e.type ?? null;
+    const gif = e.gif_demo_url ?? e.gifUrl ?? e.gif_url ?? null;
+    const thumb = e.thumbnail_url ?? e.imageUrl ?? null;
+
+    // nhóm cơ (có thể backend trả về theo nhiều tên khác nhau)
+    const primaryMuscles =
+      e.primary_muscles ??
+      e.primaryMuscleGroups ??
+      e.primary_groups ??
+      e.primary ??
+      []; // array of strings
+
+    const secondaryMuscles =
+      e.secondary_muscles ??
+      e.secondaryMuscleGroups ??
+      e.secondary_groups ??
+      e.secondary ??
+      []; // array of strings
+
+    return {
+      exercise_id,
+      name,
+      name_en: e.name_en ?? null,
+      slug: e.slug ?? String(exercise_id),
+      description: e.description ?? null,
+      difficulty,
+      equipment,
+      type,
+      gif,
+      thumb,
+      primaryMuscles,
+      secondaryMuscles,
+      primary_video_url: e.primary_video_url ?? null,
+    };
+  }, [exerciseRaw]);
+
+  useEffect(() => {
+    if (exerciseRaw) return;
+    let alive = true;
+
+    async function fetchDetail() {
       setLoading(true);
       setError(null);
       try {
-        // Fallback: lấy danh sách và tìm theo id (tạm thời, khi chưa có API chi tiết)
-        const res = await axios.get('/api/exercises');
-        if (res.data?.success) {
-          const found = (res.data.data || []).find((e) => String(e.id) === String(id));
-          if (isMounted) {
-            if (found) setExercise(found);
-            else setError('Không tìm thấy bài tập');
+        // BE chưa có endpoint chi tiết cho phần này -> lấy list rồi them theo id/slug
+        const list = await axios.get("/api/exercises");
+        if (alive && list.data?.success) {
+          const found = (list.data.data || []).find(
+            (e) =>
+              String(e.exercise_id ?? e.id) === String(idOrSlug) ||
+              String(e.slug) === String(idOrSlug)
+          );
+          if (found) {
+            setExerciseRaw(found);
+          } else {
+            setError("Không tìm thấy bài tập");
           }
-        } else {
-          if (isMounted) setError('Không thể tải thông tin bài tập');
+        } else if (alive) {
+          setError("Không thể tải thông tin bài tập");
         }
       } catch (err) {
-        if (isMounted) setError(err.message || 'Lỗi tải dữ liệu');
+        if (alive) setError(err.message || "Lỗi tải dữ liệu");
       } finally {
-        if (isMounted) setLoading(false);
+        if (alive) setLoading(false);
       }
+    }
+
+    fetchDetail();
+    return () => {
+      alive = false;
     };
-    fetchOne();
-    return () => { isMounted = false; };
-  }, [id, exercise]);
+  }, [idOrSlug, exerciseRaw]);
+
+  useEffect(() => {
+    if (!exercise) return;
+    let alive = true;
+
+    async function fetchExtra() {
+      try {
+
+        const stepRes =
+          (await axios.get(`/api/exercises/id/${exercise.exercise_id}/steps`).catch(() => null)) ||
+          (exercise.slug
+            ? await axios
+                .get(`/api/exercises/slug/${encodeURIComponent(exercise.slug)}/steps`)
+                .catch(() => null)
+            : null) ||
+          (await axios.get(`/data/exercise_steps/${exercise.slug}.json`).catch(() => null)) ||
+          (await axios.get(`/data/exercise_steps/${exercise.exercise_id}.json`).catch(() => null));
+
+        if (alive && stepRes?.data) {
+          const payload = stepRes.data.data ?? stepRes.data.steps ?? stepRes.data;
+          const arr = Array.isArray(payload) ? payload : [];
+          setSteps(arr);
+        }
+      } catch {
+  
+      }
+    }
+
+    fetchExtra();
+  }, [exercise]);
+
+
+  useEffect(() => {
+    if (!exercise) return;
+    const firstImage = images?.[0]?.url || images?.[0]?.image_url || null;
+    const initial = exercise.gif || exercise.thumb || firstImage || null;
+    setMainMedia(initial);
+  }, [exercise, images]);
+
+  const handleAddToPlan = () => {
+    if (!exercise?.exercise_id) return;
+    const picker = `/plans/select?exerciseId=${encodeURIComponent(exercise.exercise_id)}`;
+    if (user) navigate(picker);
+    else navigate('/login', { state: { from: picker } });
+  }
 
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="max-w-6xl px-4 py-6 mx-auto">
       <button
         type="button"
         onClick={() => navigate(-1)}
@@ -52,39 +173,149 @@ export default function ExerciseDetail() {
       </button>
 
       {loading && (
-        <div className="text-gray-600">Đang tải thông tin bài tập...</div>
+        <div className="space-y-3">
+          <div className="w-48 h-6 bg-gray-200 rounded animate-pulse" />
+          <div className="grid gap-6 md:grid-cols-10">
+            <div className="space-y-3 md:col-span-3">
+              <div className="h-56 bg-gray-100 rounded animate-pulse" />
+              <div className="grid grid-cols-3 gap-2">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="h-16 bg-gray-100 rounded animate-pulse" />
+                ))}
+              </div>
+            </div>
+            <div className="space-y-3 md:col-span-7">
+              <div className="flex justify-between">
+                <div className="w-64 h-8 bg-gray-100 rounded animate-pulse" />
+                <div className="bg-gray-100 rounded h-9 w-36 animate-pulse" />
+              </div>
+              <div className="h-5 bg-gray-100 rounded w-80 animate-pulse" />
+              <div className="space-y-2">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="w-full h-4 bg-gray-100 rounded animate-pulse" />
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
-      {error && !loading && (
-        <div className="text-red-600">{error}</div>
-      )}
+      {error && !loading && <div className="text-red-600">{error}</div>}
 
       {exercise && !loading && !error && (
-        <div className="p-6 bg-white rounded-lg shadow">
-          <h1 className="text-2xl font-bold text-gray-900">{exercise.name}</h1>
-          <div className="flex items-center gap-2 mt-3 text-sm">
-            {exercise.difficulty && (
-              <span className="px-2 py-1 text-gray-700 bg-gray-100 rounded">{exercise.difficulty}</span>
-            )}
-            {exercise.equipment && (
-              <span className="px-2 py-1 text-blue-700 rounded bg-blue-50">{exercise.equipment}</span>
-            )}
-          </div>
+        <div className="grid gap-6 md:grid-cols-10">
+          <aside className="md:col-span-3">
+            <div className="p-2 bg-white border rounded-lg">
+              {mainMedia ? (
+                <img
+                  src={mainMedia}
+                  alt={exercise.name}
+                  className="object-cover w-full h-56 rounded"
+                />
+              ) : (
+                <div className="flex items-center justify-center w-full h-56 text-gray-400 bg-gray-100 rounded">
+                  Không có media
+                </div>
+              )}
+            </div>
 
-          {exercise.imageUrl && (
-            <img
-              src={exercise.imageUrl}
-              alt={exercise.name}
-              className="object-cover w-full h-64 mt-6 rounded"
-            />
-          )}
+            {/* Gallery */}
+            <div className="grid grid-cols-3 gap-2 mt-3">
+              {[exercise.gif, exercise.thumb, ...images.map((x) => x.url || x.image_url)].filter(Boolean).map((url, idx) => (
+                <button
+                  key={`${url}-${idx}`}
+                  type="button"
+                  onClick={() => setMainMedia(url)}
+                  className={`rounded border p-0.5 transition ${mainMedia === url ? "border-blue-400 ring-2 ring-blue-200" : "border-gray-200 hover:border-gray-300"}`}
+                >
+                  <img src={url} alt={`media-${idx}`} className="object-cover w-full h-16 rounded" />
+                </button>
+              ))}
+            </div>
+          </aside>
 
-          {exercise.description && (
-            <p className="mt-6 text-gray-700">{exercise.description}</p>
-          )}
+     
+          <section className="md:col-span-7">
+            <div className="p-5 bg-white border rounded-lg shadow-sm">
+              <div className="flex items-start justify-between gap-4 mb-4">
+                <div>
+                  <h1 className="text-2xl font-semibold text-gray-900">{exercise.name}</h1>
+                  {exercise.name_en && (
+                    <p className="text-sm text-gray-500">{exercise.name_en}</p>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={handleAddToPlan}
+                  className="inline-flex items-center px-3 py-2 text-sm font-medium text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50"
+                >
+                  + Thêm vào Plan
+                </button>
+              </div>
+
+              
+              <div className="flex flex-wrap items-center gap-2 mb-4">
+                {exercise.difficulty && <Badge tone="amber">Độ khó: {exercise.difficulty}</Badge>}
+                {exercise.type && <Badge tone="purple">Loại: {exercise.type}</Badge>}
+                {exercise.equipment && <Badge tone="blue">Dụng cụ: {exercise.equipment}</Badge>}
+              </div>
+
+  
+              <div className="grid gap-3 mb-4 sm:grid-cols-2">
+                <div>
+                  <h3 className="mb-1 text-sm font-medium text-gray-800">Nhóm cơ chính</h3>
+                  {exercise.primaryMuscles?.length ? (
+                    <div className="flex flex-wrap gap-2">
+                      {exercise.primaryMuscles.map((m, i) => (
+                        <Badge key={i}>{m}</Badge>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500">—</p>
+                  )}
+                </div>
+                <div>
+                  <h3 className="mb-1 text-sm font-medium text-gray-800">Nhóm cơ phụ</h3>
+                  {exercise.secondaryMuscles?.length ? (
+                    <div className="flex flex-wrap gap-2">
+                      {exercise.secondaryMuscles.map((m, i) => (
+                        <Badge key={i} tone="green">{m}</Badge>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500">—</p>
+                  )}
+                </div>
+              </div>
+
+
+              {exercise.description && (
+                <div className="prose-sm prose max-w-none">
+                  <h3 className="mb-1 text-sm font-medium text-gray-800">Mô tả</h3>
+                  <p className="text-gray-700">{exercise.description}</p>
+                </div>
+              )}
+
+     
+              <div className="mt-5">
+                <h3 className="mb-2 text-sm font-medium text-gray-800">Hướng dẫn từng bước</h3>
+                {steps?.length ? (
+                  <ol className="space-y-2">
+                    {steps.map((s, i) => (
+                      <li key={i} className="p-3 text-sm text-gray-800 border border-gray-100 rounded-md bg-gray-50">
+                        <span className="mr-2 font-medium text-gray-600">Bước {i + 1}:</span>
+                        {typeof s === "string" ? s : s.instruction_text || s.text || JSON.stringify(s)}
+                      </li>
+                    ))}
+                  </ol>
+                ) : (
+                  <p className="text-sm text-gray-500">Chưa có hướng dẫn chi tiết.</p>
+                )}
+              </div>
+            </div>
+          </section>
         </div>
       )}
     </div>
   );
 }
-

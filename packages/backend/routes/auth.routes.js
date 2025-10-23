@@ -14,14 +14,13 @@ import {
   refreshToken,
   forgotPassword,
   resetPassword,
-  logout,           // ✅ thêm logout
+  logout,           
 } from "../controllers/auth.controller.js";
 import authGuard from "../middleware/auth.guard.js";
 import { registerValidation, loginValidation } from "../middleware/auth.validation.js";
 
 const router = express.Router();
 
-// ==== Rate limits ====
 const loginLimiter = rateLimit({
   windowMs: 5 * 60 * 1000,
   limit: 10,
@@ -46,7 +45,6 @@ const otpLimiter = rateLimit({
   message: { success: false, message: "Too many OTP requests, try again later." },
 });
 
-// ==== Local Auth APIs ====
 router.post("/register", registerValidation, register);
 router.post("/login", loginLimiter, loginValidation, login);
 router.get("/me", authGuard, me);
@@ -55,10 +53,8 @@ router.get("/check-email", checkEmail);
 router.get("/check-phone", checkPhone);
 router.post("/refresh", refreshToken);
 
-// ✅ Thêm logout (JWT-based)
 router.post("/logout", authGuard, logout);
 
-// ==== Google OAuth routes ====
 router.get(
   "/google",
   passport.authenticate("google", {
@@ -137,7 +133,6 @@ OK
   }
 );
 
-// 🟡 Nếu vẫn cần session logout cho Google OAuth:
 router.get("/logout-session", (req, res, next) => {
   req.logout(err => {
     if (err) return next(err);
@@ -145,7 +140,6 @@ router.get("/logout-session", (req, res, next) => {
   });
 });
 
-// ==== Forgot / Reset / OTP ====
 router.post("/forgot-password", forgotLimiter, forgotPassword);
 router.post("/reset-password", resetPassword);
 router.post("/send-otp", otpLimiter, sendOtp);

@@ -49,6 +49,34 @@ async function upsertExercise(client, row, t) {
   return res[0]?.exercise_id;
 }
 
+async function upsertBasicImages(client, exerciseId, row, t) {
+  // Insert thumbnail as cover (primary), gif as gif (secondary)
+  const thumb = row.thumbnail_url || null;
+  const gif = row.gif_demo_url || null;
+  // Clean previous basic images so this importer stays idempotent
+  await client.query(
+    `DELETE FROM image_exercise 
+     WHERE exercise_id = $1 AND image_type IN ('cover','gif','thumbnail')`,
+    { transaction: t, bind: [exerciseId] }
+  );
+  if (thumb) {
+    await client.query(
+      `INSERT INTO image_exercise (exercise_id, image_url, image_type, alt_text, display_order, is_primary, created_at, updated_at)
+       VALUES ($1, $2, 'cover', NULL, 0, TRUE, NOW(), NOW())
+       ON CONFLICT DO NOTHING`,
+      { transaction: t, bind: [exerciseId, thumb] }
+    );
+  }
+  if (gif) {
+    await client.query(
+      `INSERT INTO image_exercise (exercise_id, image_url, image_type, alt_text, display_order, is_primary, created_at, updated_at)
+       VALUES ($1, $2, 'gif', NULL, 1, FALSE, NOW(), NOW())
+       ON CONFLICT DO NOTHING`,
+      { transaction: t, bind: [exerciseId, gif] }
+    );
+  }
+}
+
 async function getMuscleIdBySlug(client, slug, cache, t) {
   if (cache.has(slug)) return cache.get(slug);
   const [rows] = await client.query(
@@ -114,6 +142,7 @@ async function main() {
 
       const exId = await upsertExercise(sequelize, row, t);
       const linked = await replaceMuscles(sequelize, exId, row.target_muscle_slugs, row.secondary_muscle_slugs, t);
+      await upsertBasicImages(sequelize, exId, row, t);
       await t.commit();
       totalInserted += 1;
       totalLinked += linked;

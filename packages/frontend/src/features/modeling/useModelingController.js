@@ -5,10 +5,8 @@ import { useSearchParams } from 'react-router-dom';
 export default function useModelingController(options = {}) {
   const { persistInURL = false } = options;
 
-  // URL state (always initialize hooks, guard by flags when using)
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // Core state
   const [selectedMuscleGroup, setSelectedMuscleGroup] = useState(null);
   const [exercises, setExercises] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -20,7 +18,6 @@ export default function useModelingController(options = {}) {
   const [primaryExercises, setPrimaryExercises] = useState([]);
   const [secondaryExercises, setSecondaryExercises] = useState([]);
 
-  // Restore from URL
   useEffect(() => {
     if (!persistInURL) return;
     const group = searchParams.get('group');
@@ -33,10 +30,8 @@ export default function useModelingController(options = {}) {
       setIsPrimaryOpen(openP);
       setIsSecondaryOpen(openS);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Fetch when opening panel for a selected group
   useEffect(() => {
     if (!selectedMuscleGroup) {
       setExercises([]);
@@ -47,7 +42,6 @@ export default function useModelingController(options = {}) {
     if (isPanelOpen) {
       fetchExercises(selectedMuscleGroup);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedMuscleGroup, isPanelOpen]);
 
   const fetchExercises = async (muscleGroup) => {

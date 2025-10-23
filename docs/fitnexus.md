@@ -66,7 +66,7 @@ quản lý toàn bộ dữ liệu và người dùng.
 
 -   **Quản lý người dùng**: Duyệt, khóa, phân quyền
     (User/Admin/Trainer).\
--   **Quản lý bài tập**: CRUD Exercises, MuscleGroups, liên kết
+-   **Quản lý bài tập**: CRUD ExercisesDemo, MuscleGroups, liên kết
     impact_level.\
 -   **Quản lý nội dung**: Thư viện bài tập, media (video, ảnh minh
     họa).\

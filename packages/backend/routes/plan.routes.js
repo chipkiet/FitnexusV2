@@ -1,17 +1,16 @@
 import { Router } from "express";
 import authGuard from "../middleware/auth.guard.js";
-import { createPlan, getPlanById, addExerciseToPlan } from "../controllers/plan.controller.js";
+import { createPlan, getPlanById, addExerciseToPlan, listMyPlans } from "../controllers/plan.controller.js";
 
 const router = Router();
 
-// Create a new workout plan
+// List my plans with ?mine=1
+router.get("/", authGuard, listMyPlans);
+
 router.post("/", authGuard, createPlan);
 
-// Get plan detail (metadata + items)
 router.get("/:planId", authGuard, getPlanById);
 
-// Add an exercise to the plan
 router.post("/:planId/exercises", authGuard, addExerciseToPlan);
 
 export default router;
-

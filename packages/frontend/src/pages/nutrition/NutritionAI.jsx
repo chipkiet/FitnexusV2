@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { ChevronRight, Brain, Leaf, ImagePlus, Loader2 } from "lucide-react";
+import { Brain, ImagePlus, Leaf, Loader2 } from "lucide-react";
 import * as tf from "@tensorflow/tfjs";
 import "@tensorflow/tfjs-backend-webgl";
 import * as mobilenet from "@tensorflow-models/mobilenet";
@@ -681,4 +681,5 @@ export default function FoodCalorie() {
       </main>
     </div>
   );
+  
 }

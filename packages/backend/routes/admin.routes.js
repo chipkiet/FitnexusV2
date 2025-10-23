@@ -14,7 +14,6 @@ import {
   unlockUser,
 } from '../controllers/admin.controller.js';
 
-// ⬇️ THÊM: controller cho admin phụ
 import {
   listSubAdmins,
   createSubAdmin,
@@ -22,17 +21,14 @@ import {
 
 const router = express.Router();
 
-/** Lock / Unlock */
 router.patch('/users/:id/lock',   authGuard, requireAdmin, lockUser);
 router.patch('/users/:id/unlock', authGuard, requireAdmin, unlockUser);
 
 
-/** GET /api/admin/health - ADMIN only */
 router.get('/health', authGuard, requireAdmin, (_req, res) => {
   res.json({ success: true, message: 'Admin route OK', timestamp: new Date().toISOString() });
 });
 
-/** GET /api/admin/users - list users */
 router.get(
   '/users',
   authGuard,
@@ -61,7 +57,6 @@ router.get(
   }
 );
 
-/** PATCH /api/admin/users/:id/role - update role */
 router.patch(
   '/users/:id/role',
   authGuard,
@@ -79,7 +74,6 @@ router.patch(
   }
 );
 
-/** PATCH /api/admin/users/:id/plan - update subscription plan */
 router.patch(
   '/users/:id/plan',
   authGuard,
@@ -100,7 +94,6 @@ router.patch(
   }
 );
 
-/** POST /api/admin/users/:userId/reset-password - admin sets a new password directly */
 router.post(
   '/users/:userId/reset-password',
   authGuard,
@@ -128,13 +121,7 @@ router.post(
   }
 );
 
-/** =========================
- *  SUB-ADMINS
- *  - GET  /api/admin/subadmins      → xem danh sách (admin chính & phụ đều xem được, phạm vi do controller quyết định)
- *  - POST /api/admin/subadmins      → tạo admin phụ (chỉ admin chính; controller sẽ trả 403 nếu không đủ quyền)
- * ========================= */
 
-/** GET /api/admin/subadmins - list sub-admins */
 router.get(
   '/subadmins',
   authGuard,
@@ -152,7 +139,6 @@ router.get(
   }
 );
 
-/** POST /api/admin/subadmins - create sub-admin (super admin only) */
 router.post(
   '/subadmins',
   authGuard,
