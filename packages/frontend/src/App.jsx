@@ -17,7 +17,11 @@ import Modeling from "./pages/model3D/Modeling.jsx";
 import ModelingDemo from "./pages/model3D/ModelingDemo.jsx";
 import ExerciseDetail from "./pages/exercises/ExerciseDetail.jsx";
 import ExercisesDemo from "./pages/exercises/ExercisesDemo.jsx";
+import Exercise from "./pages/exercises/Exercise.jsx";
 import PlanNew from "./pages/plans/PlanNew.jsx";
+import PlanPicker from "./pages/plans/PlanPicker.jsx";
+import Logout from "./pages/authentication/Logout.jsx";
+import NotFoundRedirect from "./pages/system/NotFoundRedirect.jsx";
 
 // Onboarding
 import OnboardingAge from "./pages/boardings/OnboardingAge.jsx";
@@ -108,8 +112,31 @@ function App() {
           {/* Backward compat: redirect old preview path to new demo path */}
           <Route path="/modeling-preview" element={<Navigate to="/modeling-demo" replace />} />
           <Route path="/exercises-demo" element={<ExercisesDemo/>}/>
-          {/* Backward compat: redirect old path to new demo path */}
-          <Route path="/exercises" element={<Navigate to="/exercises-demo" replace />} />
+          <Route
+            path="/exercises"
+            element={
+              <PrivateRoute>
+                <Exercise />
+              </PrivateRoute>
+            }
+          />
+          <Route path="/logout" element={<Logout />} />
+          <Route
+            path="/plans/select"
+            element={
+              <PrivateRoute>
+                <PlanPicker />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/plans/select"
+            element={
+              <PrivateRoute>
+                <PlanPicker />
+              </PrivateRoute>
+            }
+          />
           <Route
             path="/plans/new"
             element={
@@ -168,8 +195,8 @@ function App() {
           </Route>
 
 
-          {/* Catch all */}
-          <Route path="*" element={<Navigate to="/" replace />} />
+          {/* Catch all: redirect based on auth status */}
+          <Route path="*" element={<NotFoundRedirect />} />
         </Routes>
       </Router>
     </AuthProvider>

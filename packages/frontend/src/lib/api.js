@@ -332,4 +332,9 @@ export const addExerciseToPlanApi = async ({ planId, exercise_id, session_order,
   return res.data;
 };
 
+export const getMyPlansApi = async ({ limit = 50, offset = 0 } = {}) => {
+  const res = await api.get(endpoints.plans.base, { params: { mine: 1, limit, offset } });
+  return res.data; // expect { success, data: { items, total } } or similar
+};
+
 export default api;

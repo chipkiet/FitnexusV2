@@ -170,3 +170,30 @@ export async function addExerciseToPlan(req, res) {
   }
 }
 
+export async function listMyPlans(req, res) {
+  try {
+    const userId = req.userId;
+    if (!userId) return res.status(401).json({ success: false, message: "Unauthenticated" });
+    // only mine when mine=1
+    const mine = String(req.query?.mine || "").trim();
+    if (mine === "1" || mine.toLowerCase() === "true") {
+      const rows = await WorkoutPlan.findAll({
+        where: { creator_id: userId },
+        order: [["plan_id", "DESC"]],
+      });
+      const items = rows.map((p) => ({
+        plan_id: p.plan_id,
+        name: p.name,
+        description: p.description,
+        difficulty_level: p.difficulty_level,
+        is_public: p.is_public,
+      }));
+      return res.status(200).json({ success: true, data: { items, total: items.length } });
+    }
+    // In future: add admin/other views. For now, restrict.
+    return res.status(403).json({ success: false, message: "Forbidden" });
+  } catch (err) {
+    console.error("listMyPlans error:", err);
+    return res.status(500).json({ success: false, message: "Internal server error" });
+  }
+}

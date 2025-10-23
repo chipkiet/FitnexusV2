@@ -125,7 +125,7 @@ export default function HeaderLogin() {
               >
                 <button
                   role="menuitem"
-                  onClick={() => navigate("/exercise")}
+                  onClick={() => navigate("/exercises")}
                   className="w-full px-3 py-2 text-left rounded-lg hover:bg-gray-50"
                 >
                   <div className="text-sm font-semibold text-gray-900">Xem tất cả bài tập</div>
@@ -138,8 +138,8 @@ export default function HeaderLogin() {
                   role="menuitem"
                   onClick={() =>
                     !isAuthenticated
-                      ? navigate("/login", { state: { from: "/plans" } })
-                      : navigate("/plans")
+                      ? navigate("/login", { state: { from: "/plans/select" } })
+                      : navigate("/plans/select")
                   }
                   className="w-full px-3 py-2 text-left rounded-lg hover:bg-gray-50"
                 >
@@ -314,14 +314,14 @@ export default function HeaderLogin() {
               <div className="px-2 pb-2">
                 <button
                   className="block w-full px-3 py-2 text-left rounded-md hover:bg-gray-50"
-                  onClick={() => navigate("/exercises-demo")}
+                  onClick={() => navigate(isAuthenticated ? "/exercises" : "/exercises-demo")}
                 >
                   Xem tất cả bài tập
                 </button>
                 <button
                   className="block w-full px-3 py-2 text-left rounded-md hover:bg-gray-50"
                   onClick={() =>
-                    !isAuthenticated ? navigate("/login", { state: { from: "/plans" } }) : navigate("/plans")
+                    !isAuthenticated ? navigate("/login", { state: { from: "/plans/select" } }) : navigate("/plans/select")
                   }
                 >
                   Kế hoạch của tôi

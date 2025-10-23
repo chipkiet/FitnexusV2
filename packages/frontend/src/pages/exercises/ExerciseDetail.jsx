@@ -2,6 +2,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useAuth } from "../../context/auth.context.jsx";
 
 function Badge({ children, tone = "gray" }) {
   const tones = {
@@ -31,6 +32,7 @@ export default function ExerciseDetail() {
   const [error, setError] = useState(null);
 
   const [mainMedia, setMainMedia] = useState(null); // url ảnh/gif đang hiển thị
+  const { user } = useAuth();
 
   // ---- Chuẩn hóa dữ liệu theo model bạn đã đưa
   const exercise = useMemo(() => {
@@ -154,9 +156,10 @@ export default function ExerciseDetail() {
   }, [exercise, images]);
 
   const handleAddToPlan = () => {
-    if(!exercise?.exercise_id) return;
-    const next = `/plans/new?exerciseId=${encodeURIComponent(exercise.exercise_id)}`; // điều hướng fe
-    navigate('/login', {state: {from:next}});
+    if (!exercise?.exercise_id) return;
+    const picker = `/plans/select?exerciseId=${encodeURIComponent(exercise.exercise_id)}`;
+    if (user) navigate(picker);
+    else navigate('/login', { state: { from: picker } });
   }
 
   return (

@@ -73,7 +73,7 @@ export default function HeaderDemo() {
           className="-m-2.5 p-2.5 shrink-0"
           aria-label="Trang chủ"
         >
-          <img src={logo} alt="Fitnexus" className="w-auto h-24 md:h-11" />
+          <img src={logo} alt="Fitnexus" className="w-auto h-24 md:h-13" />
         </button>
 
         {/* Mobile toggle */}
@@ -203,17 +203,7 @@ export default function HeaderDemo() {
                   >
                   Fitness Trainer
                 </button>
-                {/* <button
-                  role="menuitem"
-                  onClick={() =>
-                    !isAuthenticated
-                      ? navigate("/login", { state: { from: "/plans/new" } })
-                      : navigate("/plans/new")
-                  }
-                  className="w-full px-3 py-2 mt-1 text-left rounded-lg hover:bg-gray-50"
-                >
-                  Diễn đàn
-                </button> */}
+                
               </div>
             )}
           </div>
@@ -222,20 +212,20 @@ export default function HeaderDemo() {
 
         {/* CTA phải: “Tải ứng dụng” + Đăng nhập (theo form eDoctor) */}
         <div className="items-center hidden gap-3 md:flex">
-          <a
+          {/* <a
             href="https://example.com/download-app" // TODO: thay link store/app thực tế
             target="_blank"
             rel="noreferrer"
             className="px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-full hover:shadow-lg"
           >
             Tải ứng dụng
-          </a>
+          </a> */}
 
           <button
-            onClick={() => navigate("/login")}
+            onClick={() => navigate(isAuthenticated ? "/dashboard" : "/login")}
             className="text-sm font-semibold text-gray-700 hover:text-blue-600"
           >
-            {isAuthenticated ? (user?.name ?? "Tài khoản") : "Đăng nhập"}
+            {isAuthenticated ? (user?.username ?? "Tài khoản") : "Đăng nhập"}
           </button>
         </div>
       </div>
@@ -299,8 +289,8 @@ export default function HeaderDemo() {
             </a>
 
             <div className="pt-2 border-t">
-              <button className="w-full px-4 py-2 border rounded-full" onClick={() => navigate("/login")}>
-                {isAuthenticated ? (user?.name ?? "Tài khoản") : "Đăng nhập"}
+              <button className="w-full px-4 py-2 border rounded-full" onClick={() => navigate(isAuthenticated ? "/dashboard" : "/login")}>
+                {isAuthenticated ? (user?.username ?? "Tài khoản") : "Đăng nhập"}
               </button>
             </div>
           </div>
