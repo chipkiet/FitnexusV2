@@ -1,4 +1,5 @@
 import express from 'express';
+import jwt from 'jsonwebtoken';
 import authOrSession from '../middleware/authOrSession.guard.js';
 import OnboardingSession from '../models/onboarding.session.model.js';
 import OnboardingAnswer from '../models/onboarding.answer.model.js';
@@ -100,11 +101,18 @@ async function callGemini(prompt, apiKey) {
   }
 
   const model = (process.env.GEMINI_MODEL || 'gemini-2.0-flash').trim();
-  dbg('model in use', model);
+  const temp = Number.isFinite(+process.env.GEMINI_TEMPERATURE) ? +process.env.GEMINI_TEMPERATURE : 0.7;
+  const maxTok = Number.isFinite(+process.env.GEMINI_MAX_TOKENS) ? +process.env.GEMINI_MAX_TOKENS : 2048;
+  const topP = Number.isFinite(+process.env.GEMINI_TOP_P) ? +process.env.GEMINI_TOP_P : undefined;
+  const topK = Number.isFinite(+process.env.GEMINI_TOP_K) ? +process.env.GEMINI_TOP_K : undefined;
+  dbg('model in use', { model, temp, maxTok, ...(topP!=null?{topP}:{}) , ...(topK!=null?{topK}:{}) });
   const versions = ['v1', 'v1beta'];
+  const genCfg = { temperature: temp, maxOutputTokens: maxTok };
+  if (topP != null) genCfg.topP = topP;
+  if (topK != null) genCfg.topK = topK;
   const body = {
     contents: [{ role: 'user', parts: [{ text: prompt }] }],
-    generationConfig: { temperature: 0.7, maxOutputTokens: 1024 },
+    generationConfig: genCfg,
     safetySettings: [],
   };
 
@@ -168,14 +176,42 @@ router.post('/plan', async (req, res) => {
       dbg('off-topic blocked', { goal: goalRaw, extraLen: extra.length });
       return res.status(400).json({ success: false, offTopic: true, message: 'Tôi chỉ được thiết kế để lên kế hoạch dinh dưỡng' });
     }
-    // Prompt theo format yêu cầu: "Mục tiêu: <tăng cân|giảm cân|giữ cân đối> + thông tin bổ sung (nếu có)"
-    const goalText = goal === 'LOSE_WEIGHT' ? 'giảm cân' : goal === 'GAIN_WEIGHT' ? 'tăng cân' : 'giữ cân đối';
-    const prompt = `Mục tiêu: ${goalText}${extra ? ` + ${extra}` : ''}`;
-    dbg('prompt', { text: prompt });
+    // Try enrich with onboarding if caller has a valid token
+    let prompt = '';
+    let usedProfile = null;
+    let usingOnboarding = false;
+    try {
+      const header = req.get('authorization') || req.get('Authorization') || '';
+      const [scheme, token] = header.split(' ');
+      if (scheme === 'Bearer' && token) {
+        const payload = jwt.verify(token, process.env.JWT_SECRET);
+        const userId = payload?.sub || payload?.userId || payload?.id || null;
+        if (userId) {
+          dbg('plan:try-onboarding', { userId });
+          try {
+            const r = await buildPromptFromOnboarding(userId, extra);
+            prompt = r.prompt;
+            usedProfile = r.profile;
+            usingOnboarding = true;
+          } catch (e) {
+            dbg('plan:onboarding-skip', { reason: e?.message });
+          }
+        }
+      }
+    } catch (e) {
+      dbg('plan:jwt-parse-error', { message: e?.message });
+    }
+
+    // Fallback: minimal goal-only prompt
+    if (!prompt) {
+      const goalText = goal === 'LOSE_WEIGHT' ? 'giảm cân' : goal === 'GAIN_WEIGHT' ? 'tăng cân' : 'giữ cân đối';
+      prompt = `Cung cấp cho tôi menu ăn uống trong 1 tuần với Mục tiêu: ${goalText}${extra ? ` + lưu ý: ${extra}` : ''}`;
+    }
+    dbg('prompt', { usingOnboarding, promptLen: prompt.length });
     const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '';
     dbg('incoming', { goal: goalRaw, extraLen: extra.length, model: process.env.GEMINI_MODEL || 'gemini-2.0-flash', apiKeySet: !!apiKey });
     const resp = await callGemini(prompt, apiKey);
-    return res.json({ success: true, data: { text: resp } });
+    return res.json({ success: true, data: { text: resp, ...(usingOnboarding ? { usedProfile } : {}) } });
   } catch (err) {
     console.error('nutrition plan error:', err);
     // Graceful fallback so FE still gets a plan
@@ -187,6 +223,7 @@ router.post('/plan', async (req, res) => {
 
 // Build a structured prompt from onboarding answers
 async function buildPromptFromOnboarding(userId, extraText = '') {
+  dbg('onboarding:buildPrompt:start', { userId });
   const user = await User.findByPk(userId);
 
   // Prefer the latest completed session; fall back to the latest created
@@ -205,12 +242,14 @@ async function buildPromptFromOnboarding(userId, extraText = '') {
     err.status = 400;
     throw err;
   }
+  dbg('onboarding:session', { sessionId: session.session_id, completed: !!session.is_completed, completed_at: session.completed_at, created_at: session.created_at });
 
   const answers = await OnboardingAnswer.findAll({
     where: { session_id: session.session_id },
     include: [{ model: OnboardingStep, as: 'step', attributes: ['step_key'] }],
     order: [["created_at", "ASC"]],
   });
+  dbg('onboarding:answers:loaded', { count: answers.length, steps: answers.map(a => a?.step?.step_key).filter(Boolean) });
 
   const byStep = {};
   for (const a of answers) {
@@ -263,6 +302,16 @@ async function buildPromptFromOnboarding(userId, extraText = '') {
     const m = profile.height_cm / 100;
     bmi = +(profile.weight_kg / (m * m)).toFixed(1);
   }
+  dbg('onboarding:profile', {
+    goal: profile.goal,
+    height_cm: profile.height_cm,
+    weight_kg: profile.weight_kg,
+    bmi,
+    body_type: profile.body_type,
+    body_fat_level: profile.body_fat_level,
+    experience_level: profile.experience_level,
+    workout_days_per_week: profile.workout_days_per_week,
+  });
 
   // Build a concise, structured prompt for Gemini
   const lines = [];
@@ -287,7 +336,9 @@ async function buildPromptFromOnboarding(userId, extraText = '') {
   lines.push('- Nếu có dị ứng/ưu tiên, điều chỉnh món cho phù hợp.');
   lines.push('- Trình bày ngắn gọn, có bullet, đơn vị quen thuộc (g, ml, kcal).');
 
-  return { prompt: lines.join('\n'), profile, bmi };
+  const finalPrompt = lines.join('\n');
+  dbg('onboarding:prompt:ready', { length: finalPrompt.length });
+  return { prompt: finalPrompt, profile, bmi };
 }
 
 // New: generate plan using latest onboarding answers of the authenticated user

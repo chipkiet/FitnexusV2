@@ -12,6 +12,9 @@ import { validateAnswers, pickAllowedAnswers } from "../utils/onboarding.validat
    Helpers chung (THÊM MỚI)
    ========================= */
 
+const ODEBUG = (process.env.ONBOARDING_DEBUG === '1') || (process.env.NODE_ENV !== 'production');
+const odbg = (...args) => { if (ODEBUG) console.log('[ONBOARDING]', ...args); };
+
 function isNonEmpty(v) {
   if (v === null || v === undefined) return false;
   if (typeof v === "string") return v.trim() !== "";
@@ -250,6 +253,7 @@ export async function saveAnswer(req, res) {
 export async function getSessionStatus(req, res) {
   try {
     const userId = req.userId;
+    odbg('getSessionStatus:start', { userId });
     const user = await User.findByPk(userId);
 
     const onboarded = !!(user?.onboarding_completed_at || user?.onboardingCompletedAt);
@@ -285,6 +289,7 @@ export async function getSessionStatus(req, res) {
       where: { step_id: stepIds },
       order: [["order_index", "ASC"], ["field_id", "ASC"]],
     });
+    odbg('getSessionStatus:loaded', { steps: allSteps.length, fields: allFields.length, hasActiveSession: !!session });
     const fieldsByStepId = new Map(stepIds.map(id => [id, []]));
     for (const f of allFields) fieldsByStepId.get(f.step_id).push(f);
 
@@ -337,6 +342,7 @@ export async function getSessionStatus(req, res) {
     const saved = await OnboardingAnswer.findAll({
       where: { session_id: session.session_id },
     });
+    odbg('getSessionStatus:answers', { answers: saved.length });
     const blobByStepId = new Map(saved.map(a => [a.step_id, a.answers || {}]));
 
     // Tính firstIncomplete
@@ -354,6 +360,7 @@ export async function getSessionStatus(req, res) {
       if (session.current_step_key !== nextKey || session.is_completed) {
         await session.update({ current_step_key: nextKey, is_completed: false, completed_at: null });
       }
+      odbg('getSessionStatus:pending', { nextKey });
       return res.json({
         success: true,
         data: {
@@ -377,6 +384,7 @@ export async function getSessionStatus(req, res) {
         if (u) await u.update({ onboarding_completed_at: new Date() });
       }
 
+      odbg('getSessionStatus:completed', { sessionId: session.session_id });
       return res.json({
         success: true,
         data: {
