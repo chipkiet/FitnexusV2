@@ -1,4 +1,4 @@
-// Migration: create tables and indexes for Exercises, MuscleGroups,
+// Migration: create tables and indexes for ExercisesDemo, MuscleGroups,
 // Exercise_MuscleGroup, ExerciseMuscleCombinations, ExerciseSteps,
 // ExerciseTips, WorkoutPlans, Plan_Exercise_Details, UserWorkoutLogs,
 // UserWorkoutLog_Details. No seed data.
@@ -6,7 +6,7 @@
 export async function up(queryInterface, Sequelize) {
   const t = await queryInterface.sequelize.transaction();
   try {
-    // 1) Exercises
+    // 1) ExercisesDemo
     await queryInterface.createTable(
       'exercises',
       {

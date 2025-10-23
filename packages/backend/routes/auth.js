@@ -4,7 +4,6 @@ import passport from "passport";
 
 const router = express.Router();
 
-/** 1) Bắt đầu OAuth (giữ nguyên) */
 router.get(
   "/google",
   passport.authenticate("google", {
@@ -13,21 +12,19 @@ router.get(
   })
 );
 
-/** 2) Callback -> tạo session cookie -> redirect về FE (giữ nguyên đường dẫn) */
 router.get(
   "/google/callback",
   passport.authenticate("google", {
     failureRedirect: `${process.env.FRONTEND_URL}/login`,
-    keepSessionInfo: true, // ✅ quan trọng với passport >= 0.6
+    keepSessionInfo: true, 
   }),
   (req, res) => {
-    // Session Passport đã có ở đây
+
     const url = new URL("/dashboard", process.env.FRONTEND_URL).toString();
     return res.redirect(url);
   }
 );
 
-/** 3) Trả user từ session cho FE (giữ nguyên) */
 router.get("/me", (req, res) => {
   res.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
   res.set("Pragma", "no-cache");

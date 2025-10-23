@@ -1,6 +1,5 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../config/database.js";
-// Table: plan_exercise_details (no timestamps in migration)
 const PlanExerciseDetail = sequelize.define(
   "PlanExerciseDetail",
   {

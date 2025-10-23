@@ -111,7 +111,7 @@ export default function AdminUsers() {
   return (
     <div className="min-h-screen py-8 bg-gray-50">
       <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
-        {/* Header */}
+      
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
