@@ -22,10 +22,10 @@ export default function HeaderLogin() {
   const handleLogout = async () => {
     try {
       await logout();
-      navigate("/login", { replace: true });
+      navigate("/", { replace: true });
     } catch (error) {
       console.error("Logout failed:", error);
-      navigate("/login", { replace: true });
+      navigate("/", { replace: true });
     }
   };
   const displayName = (user?.username || "").replaceAll("_", " ");
@@ -161,7 +161,7 @@ export default function HeaderLogin() {
           </div>
 
           <button
-            onClick={() => navigate("/modeling-demo")}
+            onClick={() => navigate("/modeling")}
             className="text-sm text-gray-800 hover:text-blue-600"
           >
             Mô hình hoá
