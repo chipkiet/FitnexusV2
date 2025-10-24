@@ -170,13 +170,14 @@ export default function Exercise() {
   const normalized = useMemo(() => {
     const list = rawExercises || [];
     return list.map((ex) => {
-      const imageUrlRaw = ex.imageUrl || ex.thumbnail_url || '';
-      const isGif = /\.gif($|\?)/i.test(imageUrlRaw);
-      const safeImage = isGif ? '' : imageUrlRaw; // avoid external gif for cards
+      const id = ex.id ?? ex.exercise_id;
+      // Prefer GIF from DB when available; otherwise use whatever BE provided
+      const mediaUrl = ex.gif_demo_url || ex.imageUrl || ex.thumbnail_url || '';
+      const fallback = `https://picsum.photos/seed/exercise-${encodeURIComponent(id ?? Math.random().toString(36).slice(2))}/800/450`;
       return {
-        id: ex.id ?? ex.exercise_id,
+        id,
         name: ex.name || '',
-        imageUrl: safeImage,
+        imageUrl: mediaUrl || fallback,
         description: ex.description || '',
         difficulty: ex.difficulty || ex.difficulty_level || '',
         impact: ex.impact_level || '',

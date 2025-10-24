@@ -34,31 +34,43 @@ export default function ExerciseDetail() {
   const [steps, setSteps] = useState([]); // từ exercise_step.json hoặc API steps
   const [related, setRelated] = useState([]);
   const [relatedLoading, setRelatedLoading] = useState(false);
+  const [muscles, setMuscles] = useState(null);
+  const [musclesLoading, setMusclesLoading] = useState(false);
   const [loading, setLoading] = useState(!location.state);
   const [error, setError] = useState(null);
 
   const [mainMedia, setMainMedia] = useState(null); // url ảnh/gif đang hiển thị
   const { user } = useAuth();
 
-  // Sync when navigating to a new id/slug: prefer location.state if it matches
+  // Scroll to top when switching exercise
+  useEffect(() => {
+    try { window.scrollTo({ top: 0, behavior: 'auto' }); } catch {}
+  }, [idOrSlug]);
+
+  // Sync when navigating to a new id/slug: prefer location.state if it matches (by id or slug)
   useEffect(() => {
     const state = location.state;
     const want = String(idOrSlug || "");
-    const stateKey = String(
-      state?.exercise_id ?? state?.id ?? state?.slug ?? ""
-    );
     const currentKey = String(
       exerciseRaw?.exercise_id ?? exerciseRaw?.id ?? exerciseRaw?.slug ?? ""
     );
 
-    if (state && stateKey === want) {
-      setExerciseRaw(state);
-      setImages([]);
-      setSteps([]);
-      setError(null);
-      setLoading(false);
-      return;
+    if (state) {
+      const sId = state?.exercise_id ?? state?.id;
+      const sSlug = state?.slug;
+      const match = [sId, sSlug].some(
+        (v) => v != null && String(v) === want
+      );
+      if (match) {
+        setExerciseRaw(state);
+        setImages([]);
+        setSteps([]);
+        setError(null);
+        setLoading(false);
+        return;
+      }
     }
+
     if (currentKey && currentKey !== want) {
       // different item: reset to trigger fetch
       setExerciseRaw(null);
@@ -131,7 +143,7 @@ export default function ExerciseDetail() {
       try {
         // BE chưa có endpoint chi tiết cho phần này -> lấy list rồi them theo id/slug
         const list = await axios.get("/api/exercises", {
-          params: { t: Date.now() },
+          params: { t: Date.now(), page: 1, pageSize: 1000 },
         });
         if (alive && list.data?.success) {
           const found = (list.data.data || []).find(
@@ -158,7 +170,7 @@ export default function ExerciseDetail() {
     return () => {
       alive = false;
     };
-  }, [idOrSlug, exerciseRaw]);
+  }, [idOrSlug]);
 
   useEffect(() => {
     if (!exercise) return;
@@ -221,6 +233,21 @@ export default function ExerciseDetail() {
     };
   }, [exercise?.exercise_id]);
 
+  // Fetch muscles breakdown with percentages
+  useEffect(() => {
+    if (!exercise?.exercise_id) return;
+    let alive = true;
+    (async () => {
+      try {
+        setMusclesLoading(true);
+        const res = await axios.get(`/api/exercises/id/${exercise.exercise_id}/muscles`);
+        if (alive && res?.data?.success) setMuscles(res.data.data || null);
+      } catch {}
+      finally { if (alive) setMusclesLoading(false); }
+    })();
+    return () => { alive = false; }
+  }, [exercise?.exercise_id]);
+
   useEffect(() => {
     if (!exercise) return;
     const firstImage = images?.[0]?.url || images?.[0]?.image_url || null;
@@ -238,7 +265,7 @@ export default function ExerciseDetail() {
   };
 
   return (
-    <div className="max-w-6xl px-4 py-6 mx-auto">
+    <div key={String(idOrSlug)} className="max-w-6xl px-4 py-6 mx-auto">
       <button
         type="button"
         onClick={() => navigate("/exercises")}
@@ -371,31 +398,49 @@ export default function ExerciseDetail() {
 
               <div className="grid gap-3 mb-4 sm:grid-cols-2">
                 <div>
-                  <h3 className="mb-1 text-sm font-medium text-gray-800">
-                    Nhóm cơ chính
-                  </h3>
-                  {exercise.primaryMuscles?.length ? (
-                    <div className="flex flex-wrap gap-2">
-                      {exercise.primaryMuscles.map((m, i) => (
-                        <Badge key={i}>{m}</Badge>
+                  <h3 className="mb-1 text-sm font-medium text-gray-800">Chính</h3>
+                  {!musclesLoading && muscles?.primary?.items?.length ? (
+                    <ul className="space-y-2">
+                      {muscles.primary.items.map((m) => (
+                        <li key={m.id} className="text-sm">
+                          <div className="flex items-center justify-between">
+                            <span className="text-gray-800">
+                              {m.parent?.name ? `${m.parent.name} • ${m.name}` : m.name}
+                            </span>
+                            <span className="ml-2 text-gray-600">{m.percent}%</span>
+                          </div>
+                          <div className="w-full h-2 mt-1 bg-blue-100 rounded">
+                            <div className="h-2 bg-blue-500 rounded" style={{ width: `${Math.max(0, Math.min(100, m.percent || 0))}%` }} />
+                          </div>
+                        </li>
                       ))}
-                    </div>
+                    </ul>
+                  ) : musclesLoading ? (
+                    <p className="text-sm text-gray-500">Đang tải...</p>
                   ) : (
                     <p className="text-sm text-gray-500">—</p>
                   )}
                 </div>
                 <div>
-                  <h3 className="mb-1 text-sm font-medium text-gray-800">
-                    Nhóm cơ phụ
-                  </h3>
-                  {exercise.secondaryMuscles?.length ? (
-                    <div className="flex flex-wrap gap-2">
-                      {exercise.secondaryMuscles.map((m, i) => (
-                        <Badge key={i} tone="green">
-                          {m}
-                        </Badge>
+                  <h3 className="mb-1 text-sm font-medium text-gray-800">Phụ</h3>
+                  {!musclesLoading && muscles?.secondary?.items?.length ? (
+                    <ul className="space-y-2">
+                      {muscles.secondary.items.map((m) => (
+                        <li key={m.id} className="text-sm">
+                          <div className="flex items-center justify-between">
+                            <span className="text-gray-800">
+                              {m.parent?.name ? `${m.parent.name} • ${m.name}` : m.name}
+                            </span>
+                            <span className="ml-2 text-gray-600">{m.percent}%</span>
+                          </div>
+                          <div className="w-full h-2 mt-1 bg-green-100 rounded">
+                            <div className="h-2 bg-green-500 rounded" style={{ width: `${Math.max(0, Math.min(100, m.percent || 0))}%` }} />
+                          </div>
+                        </li>
                       ))}
-                    </div>
+                    </ul>
+                  ) : musclesLoading ? (
+                    <p className="text-sm text-gray-500">Đang tải...</p>
                   ) : (
                     <p className="text-sm text-gray-500">—</p>
                   )}
@@ -456,7 +501,7 @@ export default function ExerciseDetail() {
                 type="button"
                 onClick={() =>
                   navigate(
-                    `/exercises/${encodeURIComponent(ex.id || ex.slug)}`,
+                    `/exercises/${encodeURIComponent(ex.id)}`,
                     { state: ex }
                   )
                 }

@@ -443,6 +443,81 @@ export const getExerciseStepsBySlug = async (req, res) => {
   }
 };
 
+// Return muscle groups with normalized intensity percentages for an exercise
+export const getExerciseMusclesById = async (req, res) => {
+  try {
+    const exerciseId = parseInt(req.params.exerciseId, 10);
+    if (!Number.isFinite(exerciseId) || exerciseId <= 0) {
+      return res.status(422).json({ success: false, message: 'Invalid exercise id' });
+    }
+
+    const [rows] = await sequelize.query(
+      `SELECT emg.muscle_group_id AS id,
+              emg.impact_level,
+              emg.intensity_percentage,
+              mg.slug,
+              COALESCE(mg.name, mg.name_en) AS name,
+              parent.slug AS parent_slug,
+              COALESCE(parent.name, parent.name_en) AS parent_name
+         FROM exercise_muscle_group emg
+         JOIN muscle_groups mg ON mg.muscle_group_id = emg.muscle_group_id
+         LEFT JOIN muscle_groups parent ON parent.muscle_group_id = mg.parent_id
+        WHERE emg.exercise_id = $1
+        ORDER BY CASE emg.impact_level WHEN 'primary' THEN 1 WHEN 'secondary' THEN 2 WHEN 'stabilizer' THEN 3 ELSE 4 END,
+                 COALESCE(emg.intensity_percentage, 0) DESC, mg.name ASC`,
+      { bind: [exerciseId] }
+    );
+
+    function normalizeGroup(items) {
+      const list = (items || []).map(r => ({
+        id: r.id,
+        slug: r.slug,
+        name: r.name,
+        parent: r.parent_slug ? { slug: r.parent_slug, name: r.parent_name } : null,
+        rawPercent: Number.isFinite(Number(r.intensity_percentage)) ? Number(r.intensity_percentage) : 0,
+      }));
+      const sum = list.reduce((acc, it) => acc + (it.rawPercent || 0), 0);
+      if (sum > 0) {
+        for (const it of list) it.percent = Math.round((100 * (it.rawPercent || 0)) / sum);
+      } else if (list.length) {
+        const eq = Math.floor(100 / list.length);
+        for (let i = 0; i < list.length; i++) list[i].percent = i === list.length - 1 ? 100 - eq * (list.length - 1) : eq;
+      }
+      // Ensure bounds
+      for (const it of list) {
+        if (!Number.isFinite(it.percent)) it.percent = 0;
+        it.percent = Math.max(0, Math.min(100, it.percent));
+      }
+      // Sort by percent desc, then name
+      list.sort((a, b) => (b.percent - a.percent) || String(a.name || '').localeCompare(String(b.name || '')));
+      return {
+        count: list.length,
+        sum: list.reduce((acc, it) => acc + it.percent, 0),
+        items: list,
+      };
+    }
+
+    const primaryRows = rows.filter(r => (r.impact_level || '').toLowerCase() === 'primary');
+    const secondaryRows = rows.filter(r => (r.impact_level || '').toLowerCase() === 'secondary');
+    const stabilizerRows = rows.filter(r => (r.impact_level || '').toLowerCase() === 'stabilizer');
+
+    const primary = normalizeGroup(primaryRows);
+    const secondary = normalizeGroup(secondaryRows);
+    const stabilizers = normalizeGroup(stabilizerRows);
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        primary,
+        secondary,
+        stabilizers,
+      }
+    });
+  } catch (error) {
+    console.error('getExerciseMusclesById error:', error);
+    return res.status(500).json({ success: false, message: 'Error fetching muscles', error: error.message });
+  }
+};
 // Related exercises by overlap of muscle groups + tie-breakers
 export const getRelatedExercisesById = async (req, res) => {
   try {
