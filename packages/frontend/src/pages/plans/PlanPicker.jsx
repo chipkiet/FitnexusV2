@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../../context/auth.context.jsx";
-import { getMyPlansApi, createPlanApi, addExerciseToPlanApi } from "../../lib/api.js";
+import { getMyPlansApi, addExerciseToPlanApi } from "../../lib/api.js";
 
 export default function PlanPicker() {
   const navigate = useNavigate();
@@ -19,15 +19,7 @@ export default function PlanPicker() {
   const [saving, setSaving] = useState(false);
 
   // Quick create form
-  const [qName, setQName] = useState(() => {
-    const d = new Date();
-    const dd = String(d.getDate()).padStart(2, "0");
-    const mm = String(d.getMonth() + 1).padStart(2, "0");
-    const yyyy = d.getFullYear();
-    return `Kế hoạch luyện tập - ${dd}/${mm}/${yyyy}`;
-  });
-  const [qLevel, setQLevel] = useState("");
-  const [creating, setCreating] = useState(false);
+  // Removed quick-create state per request
 
   const load = async () => {
     setLoading(true);
@@ -68,32 +60,7 @@ export default function PlanPicker() {
     }
   };
 
-  const handleQuickCreate = async () => {
-    setCreating(true);
-    setError(null);
-    try {
-      const res = await createPlanApi({ name: qName, difficulty_level: qLevel || undefined, is_public: false });
-      const plan = res?.data;
-      if (plan?.plan_id) {
-        setSelectedPlanId(plan.plan_id);
-        // Auto add if exercise is provided
-        if (exerciseId) {
-          await addExerciseToPlanApi({
-            planId: plan.plan_id,
-            exercise_id: exerciseId,
-            sets_recommended: 3,
-            reps_recommended: "8-12",
-            rest_period_seconds: 60,
-          });
-        }
-        navigate("/exercises", { replace: true });
-      }
-    } catch (e) {
-      setError({ message: e?.response?.data?.message || e?.message || "Không thể tạo plan" });
-    } finally {
-      setCreating(false);
-    }
-  };
+  // Removed quick-create handler per request
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -128,7 +95,7 @@ export default function PlanPicker() {
           ) : (
             <div className="space-y-2">
               {items.map((p) => (
-                <label key={p.plan_id} className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                <label key={p.plan_id} className="flex items-center justify-between gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
                   <input
                     type="radio"
                     name="picked_plan"
@@ -136,12 +103,22 @@ export default function PlanPicker() {
                     checked={selectedPlanId === p.plan_id}
                     onChange={() => setSelectedPlanId(p.plan_id)}
                   />
-                  <div>
-                    <div className="text-sm font-medium text-gray-900">{p.name}</div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-medium text-gray-900 truncate">{p.name || '(Không có tên)'}</div>
+                    {p.description && (
+                      <div className="text-xs text-gray-600 truncate">{p.description}</div>
+                    )}
                     {p.difficulty_level && (
                       <div className="text-xs text-gray-500">Độ khó: {p.difficulty_level}</div>
                     )}
                   </div>
+                  <button
+                    type="button"
+                    className="px-3 py-1.5 text-xs text-blue-600 border border-blue-200 rounded hover:bg-blue-50 shrink-0"
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate(`/plans/${p.plan_id}`); }}
+                  >
+                    Xem kế hoạch
+                  </button>
                 </label>
               ))}
             </div>
@@ -166,50 +143,7 @@ export default function PlanPicker() {
           </div>
         </div>
 
-        {/* Quick create */}
-        <div className="p-5 bg-white border rounded-xl">
-          <h2 className="mb-3 text-lg font-semibold text-gray-900">Tạo plan nhanh</h2>
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-            <div>
-              <label className="block mb-1 text-sm font-medium text-gray-700">Tên kế hoạch</label>
-              <input
-                value={qName}
-                onChange={(e) => setQName(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-              />
-            </div>
-            <div>
-              <label className="block mb-1 text-sm font-medium text-gray-700">Cấp độ</label>
-              <select
-                value={qLevel}
-                onChange={(e) => setQLevel(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-              >
-                <option value="">Không chọn</option>
-                <option value="beginner">Beginner</option>
-                <option value="intermediate">Intermediate</option>
-                <option value="advanced">Advanced</option>
-              </select>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 mt-4">
-            <button
-              type="button"
-              disabled={creating}
-              onClick={handleQuickCreate}
-              className="px-4 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700 disabled:opacity-60"
-            >
-              {creating ? "Đang tạo..." : "Tạo và thêm bài tập"}
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate('/dashboard')}
-              className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
-            >
-              Về Dashboard
-            </button>
-          </div>
-        </div>
+        {/* Quick create removed as requested */}
       </div>
     </div>
   );

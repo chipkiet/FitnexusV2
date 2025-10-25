@@ -89,6 +89,12 @@ export default function HeaderDemo() {
         </button>
 
         <nav className="items-center hidden gap-5 md:flex">
+          <button
+            onClick={() => (isAuthenticated ? navigate("/ai") : navigate("/login", { state: { from: "/ai" } }))}
+            className="text-sm text-gray-800 hover:text-blue-600"
+          >
+            AI
+          </button>
           
 
           <div className="relative" ref={workoutRef}>
@@ -159,7 +165,12 @@ export default function HeaderDemo() {
           >
             Dinh dưỡng
           </button>
-          
+          <button
+            onClick={() => navigate("/shopping-demo")}
+            className="text-sm text-gray-800 hover:text-blue-600"
+          >
+            Shopping
+          </button>
 
 
           <div className="relative" ref={communityRef}>

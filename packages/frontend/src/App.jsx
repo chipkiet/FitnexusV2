@@ -15,11 +15,13 @@ import NutritionPersonalize from "./pages/nutrition/NutritionPersonalize.jsx";
 import Dashboard from "./pages/user/Dashboard.jsx";
 import Modeling from "./pages/model3D/Modeling.jsx";
 import ModelingDemo from "./pages/model3D/ModelingDemo.jsx";
+import AiTrainer from "./components/AiTrainer.jsx";
 import ExerciseDetail from "./pages/exercises/ExerciseDetail.jsx";
 import ExercisesDemo from "./pages/exercises/ExercisesDemo.jsx";
 import Exercise from "./pages/exercises/Exercise.jsx";
 import PlanNew from "./pages/plans/PlanNew.jsx";
 import PlanPicker from "./pages/plans/PlanPicker.jsx";
+import PlanDetail from "./pages/plans/PlanDetail.jsx";
 import Logout from "./pages/authentication/Logout.jsx";
 import NotFoundRedirect from "./pages/system/NotFoundRedirect.jsx";
 
@@ -113,6 +115,14 @@ function App() {
           <Route path="/modeling-preview" element={<Navigate to="/modeling-demo" replace />} />
           <Route path="/exercises-demo" element={<ExercisesDemo/>}/>
           <Route
+            path="/ai"
+            element={
+              <PrivateRoute>
+                <AiTrainer />
+              </PrivateRoute>
+            }
+          />
+          <Route
             path="/exercises"
             element={
               <PrivateRoute>
@@ -126,6 +136,14 @@ function App() {
             element={
               <PrivateRoute>
                 <PlanPicker />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/plans/:planId"
+            element={
+              <PrivateRoute>
+                <PlanDetail />
               </PrivateRoute>
             }
           />
