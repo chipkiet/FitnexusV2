@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node ./bin/www",
     "dev": "nodemon ./bin/www",
-    "test": "node --test --test-reporter=spec --experimental-test-coverage",
+    "test": "node --test --test-reporter=spec",
+    "test:coverage": "c8 -r text -r lcov -r html node --test",
     "db:migrate": "sequelize-cli db:migrate",
     "db:migrate:undo": "sequelize-cli db:migrate:undo",
     "db:migrate:undo:all": "sequelize-cli db:migrate:undo:all",
@@ -45,6 +46,7 @@
     "nodemon": "^3.1.10",
     "pg": "^8.16.3",
     "sequelize-cli": "^6.6.3",
-    "supertest": "^7.0.0"
+    "supertest": "^7.0.0",
+    "c8": "^10.1.2"
   }
 }
