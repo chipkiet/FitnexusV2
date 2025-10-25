@@ -3,13 +3,16 @@ import { sequelize } from "../config/database.js";
 
 function normalize(str = "") {
   return String(str)
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .trim();
 }
 
 async function fetchBestImagesForIds(ids) {
-  const list = Array.from(new Set((ids || []).filter((x) => Number.isFinite(Number(x)))));
+  const list = Array.from(
+    new Set((ids || []).filter((x) => Number.isFinite(Number(x))))
+  );
   if (!list.length) return new Map();
   const [rows] = await sequelize.query(
     `SELECT exercise_id, image_url
@@ -22,93 +25,174 @@ async function fetchBestImagesForIds(ids) {
      WHERE rn = 1`,
     { bind: [list] }
   );
-  return new Map(rows.map(r => [r.exercise_id, r.image_url]));
+  return new Map(rows.map((r) => [r.exercise_id, r.image_url]));
 }
 
 const CANONICAL_CHILD = new Set([
-  'upper-chest','mid-chest','lower-chest',
-  'latissimus-dorsi','trapezius','rhomboids','erector-spinae','teres-major',
-  'anterior-deltoid','lateral-deltoid','posterior-deltoid','rotator-cuff','serratus-anterior',
-  'biceps-brachii','brachialis','brachioradialis','triceps-brachii','wrist-flexors','wrist-extensors',
-  'rectus-abdominis','obliques','transversus-abdominis',
-  'quadriceps','hamstrings','gluteus-maximus','gluteus-medius','gluteus-minimus','hip-adductors','hip-flexors','gastrocnemius','soleus','tibialis-anterior'
+  "upper-chest",
+  "mid-chest",
+  "lower-chest",
+  "latissimus-dorsi",
+  "trapezius",
+  "rhomboids",
+  "erector-spinae",
+  "teres-major",
+  "anterior-deltoid",
+  "lateral-deltoid",
+  "posterior-deltoid",
+  "rotator-cuff",
+  "serratus-anterior",
+  "biceps-brachii",
+  "brachialis",
+  "brachioradialis",
+  "triceps-brachii",
+  "wrist-flexors",
+  "wrist-extensors",
+  "rectus-abdominis",
+  "obliques",
+  "transversus-abdominis",
+  "quadriceps",
+  "hamstrings",
+  "gluteus-maximus",
+  "gluteus-medius",
+  "gluteus-minimus",
+  "hip-adductors",
+  "hip-flexors",
+  "gastrocnemius",
+  "soleus",
+  "tibialis-anterior",
 ]);
 
 const PARENT_ALIASES = new Map([
   [
-    'chest',
+    "chest",
     [
-      'chest', 'nguc', 'torso',
-      'pec', 'pecs',
-      'upper chest', 'upper-chest',
-      'mid chest', 'mid-chest',
-      'lower chest', 'lower-chest',
-    ]
+      "chest",
+      "nguc",
+      "torso",
+      "pec",
+      "pecs",
+      "upper chest",
+      "upper-chest",
+      "mid chest",
+      "mid-chest",
+      "lower chest",
+      "lower-chest",
+    ],
   ],
   [
-    'back',
+    "back",
     [
-      'back', 'lung',
-      'upper-back', 'upper back',
-      'lower-back', 'lower back',
-      'lats', 'latissimus', 'latissimus-dorsi',
-      'trapezius', 'traps',
-      'rhomboids', 'erector-spinae', 'teres-major',
-      'neck',
-    ]
+      "back",
+      "lung",
+      "upper-back",
+      "upper back",
+      "lower-back",
+      "lower back",
+      "lats",
+      "latissimus",
+      "latissimus-dorsi",
+      "trapezius",
+      "traps",
+      "rhomboids",
+      "erector-spinae",
+      "teres-major",
+      "neck",
+    ],
   ],
   [
-    'shoulders',
+    "shoulders",
     [
-      'shoulders', 'shoulder', 'vai', 'delts', 'deltoids',
-      'anterior-deltoid', 'lateral-deltoid', 'posterior-deltoid', 'rotator-cuff', 'serratus-anterior',
-    ]
+      "shoulders",
+      "shoulder",
+      "vai",
+      "delts",
+      "deltoids",
+      "anterior-deltoid",
+      "lateral-deltoid",
+      "posterior-deltoid",
+      "rotator-cuff",
+      "serratus-anterior",
+    ],
   ],
   [
-    'arms',
+    "arms",
     [
-      'arms', 'tay', 'upper arms', 'upper-arms', 'lower-arms', 'lower arms',
-      'forearm', 'forearms',
-      'biceps', 'biceps-brachii',
-      'triceps', 'triceps-brachii',
-      'brachialis', 'brachioradialis',
-      'wrist-flexors', 'wrist-extensors',
-    ]
+      "arms",
+      "tay",
+      "upper arms",
+      "upper-arms",
+      "lower-arms",
+      "lower arms",
+      "forearm",
+      "forearms",
+      "biceps",
+      "biceps-brachii",
+      "triceps",
+      "triceps-brachii",
+      "brachialis",
+      "brachioradialis",
+      "wrist-flexors",
+      "wrist-extensors",
+    ],
   ],
   [
-    'core',
+    "core",
     [
-      'core', 'abs', 'abdominals', 'rectus-abdominis', 'obliques', 'transversus-abdominis',
-      'bung', 'waist',
-    ]
+      "core",
+      "abs",
+      "abdominals",
+      "rectus-abdominis",
+      "obliques",
+      "transversus-abdominis",
+      "bung",
+      "waist",
+    ],
   ],
   [
-    'legs',
+    "legs",
     [
-      'legs', 'chan', 'upper legs', 'upper-legs', 'lower legs', 'lower-legs',
-      'quads', 'quadriceps', 'hamstrings',
-      'glutes', 'glute', 'butt',
-      'gluteus-maximus', 'gluteus-medius', 'gluteus-minimus',
-      'hip-adductors', 'hip-flexors',
-      'gastrocnemius', 'soleus', 'tibialis-anterior',
-      'calf', 'calves',
-    ]
+      "legs",
+      "chan",
+      "upper legs",
+      "upper-legs",
+      "lower legs",
+      "lower-legs",
+      "quads",
+      "quadriceps",
+      "hamstrings",
+      "glutes",
+      "glute",
+      "butt",
+      "gluteus-maximus",
+      "gluteus-medius",
+      "gluteus-minimus",
+      "hip-adductors",
+      "hip-flexors",
+      "gastrocnemius",
+      "soleus",
+      "tibialis-anterior",
+      "calf",
+      "calves",
+    ],
   ],
 ]);
 
-
 function guessSlugOrParent(input) {
   const raw = normalize(input);
-  const candidate = raw.replace(/\s+/g, '-');
+  const candidate = raw.replace(/\s+/g, "-");
   if (CANONICAL_CHILD.has(candidate)) return { childSlug: candidate };
   for (const [parent, aliases] of PARENT_ALIASES) {
-    const s = new Set(aliases.map(a => normalize(a)));
+    const s = new Set(aliases.map((a) => normalize(a)));
     if (s.has(raw) || s.has(candidate)) return { parentSlug: parent };
   }
   return { any: raw };
 }
 
-function parsePaging(query, defaults = { page: 1, pageSize: 15, maxPageSize: 1000 }) {
+function parsePaging(
+  query,
+  defaults = { page: 1, pageSize: 15, maxPageSize: 1000 }
+) {
   const page = Math.max(1, parseInt(query?.page, 10) || defaults.page);
   let pageSize = parseInt(query?.pageSize, 10) || defaults.pageSize;
   if (!Number.isFinite(pageSize) || pageSize <= 0) pageSize = defaults.pageSize;
@@ -224,7 +308,13 @@ export const getExercisesByMuscleGroup = async (req, res) => {
          JOIN exercises e ON e.exercise_id = c.exercise_id
          ORDER BY e.popularity_score DESC NULLS LAST, e.name ASC
          LIMIT :limit OFFSET :offset`,
-        { replacements: { slug: muscleGroup.toLowerCase().replace(/\s+/g, '-'), limit, offset } }
+        {
+          replacements: {
+            slug: muscleGroup.toLowerCase().replace(/\s+/g, "-"),
+            limit,
+            offset,
+          },
+        }
       );
       if (bySlug.length) {
         rows = bySlug;
@@ -238,7 +328,11 @@ export const getExercisesByMuscleGroup = async (req, res) => {
              GROUP BY e.exercise_id
            )
            SELECT COUNT(*)::int AS total FROM classified`,
-          { replacements: { slug: muscleGroup.toLowerCase().replace(/\s+/g, '-') } }
+          {
+            replacements: {
+              slug: muscleGroup.toLowerCase().replace(/\s+/g, "-"),
+            },
+          }
         );
         total = countRows?.[0]?.total || 0;
       } else {
@@ -282,14 +376,15 @@ export const getExercisesByMuscleGroup = async (req, res) => {
     }
 
     // Prefer image from image_exercise if available
-    const imgMap = await fetchBestImagesForIds(rows.map(r => r.exercise_id));
-    const data = rows.map(r => ({
+    const imgMap = await fetchBestImagesForIds(rows.map((r) => r.exercise_id));
+    const data = rows.map((r) => ({
       id: r.exercise_id,
       name: r.name || r.name_en,
       description: r.description,
       difficulty: r.difficulty_level,
       equipment: r.equipment_needed,
-      imageUrl: imgMap.get(r.exercise_id) || r.thumbnail_url || r.gif_demo_url || null,
+      imageUrl:
+        imgMap.get(r.exercise_id) || r.thumbnail_url || r.gif_demo_url || null,
       instructions: null,
       impact_level: r.impact_level || null,
     }));
@@ -308,15 +403,23 @@ export const getExercisesByMuscleGroup = async (req, res) => {
 export const getAllExercises = async (_req, res) => {
   try {
     const { limit, offset, page, pageSize } = parsePaging(_req.query);
-    const { count, rows } = await Exercise.findAndCountAll({ limit, offset, order: [["popularity_score", "DESC"], ["name", "ASC"]] });
-    const imgMap = await fetchBestImagesForIds(rows.map(r => r.exercise_id));
+    const { count, rows } = await Exercise.findAndCountAll({
+      limit,
+      offset,
+      order: [
+        ["popularity_score", "DESC"],
+        ["name", "ASC"],
+      ],
+    });
+    const imgMap = await fetchBestImagesForIds(rows.map((r) => r.exercise_id));
     const data = rows.map((r) => ({
       id: r.exercise_id,
       name: r.name || r.name_en,
       description: r.description,
       difficulty: r.difficulty_level,
       equipment: r.equipment_needed,
-      imageUrl: imgMap.get(r.exercise_id) || r.thumbnail_url || r.gif_demo_url || null,
+      imageUrl:
+        imgMap.get(r.exercise_id) || r.thumbnail_url || r.gif_demo_url || null,
       instructions: null,
       impact_level: r.impact_level || null,
     }));
@@ -335,10 +438,16 @@ export const getAllExercises = async (_req, res) => {
 export const getExercisesByType = async (req, res) => {
   try {
     const { type } = req.params;
-    const t = normalize(type).replace(/\s+/g, '-');
-    const allowed = new Set(['compound', 'isolation', 'cardio', 'flexibility']);
+    const t = normalize(type).replace(/\s+/g, "-");
+    const allowed = new Set(["compound", "isolation", "cardio", "flexibility"]);
     if (!allowed.has(t)) {
-      return res.status(400).json({ success: false, message: 'Invalid exercise type', allowed: Array.from(allowed) });
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "Invalid exercise type",
+          allowed: Array.from(allowed),
+        });
     }
 
     const { limit, offset, page, pageSize } = parsePaging(req.query);
@@ -356,22 +465,29 @@ export const getExercisesByType = async (req, res) => {
       { bind: [t, limit, offset] }
     );
 
-    const imgMap = await fetchBestImagesForIds(rows.map(r => r.exercise_id));
+    const imgMap = await fetchBestImagesForIds(rows.map((r) => r.exercise_id));
     const data = rows.map((r) => ({
       id: r.exercise_id,
       name: r.name || r.name_en,
       description: r.description,
       difficulty: r.difficulty_level,
       equipment: r.equipment_needed,
-      imageUrl: imgMap.get(r.exercise_id) || r.thumbnail_url || r.gif_demo_url || null,
+      imageUrl:
+        imgMap.get(r.exercise_id) || r.thumbnail_url || r.gif_demo_url || null,
       instructions: null,
       impact_level: null,
     }));
 
     return res.status(200).json({ success: true, data, page, pageSize, total });
   } catch (error) {
-    console.error('Error fetching exercises by type:', error);
-    return res.status(500).json({ success: false, message: 'Error fetching exercises by type', error: error.message });
+    console.error("Error fetching exercises by type:", error);
+    return res
+      .status(500)
+      .json({
+        success: false,
+        message: "Error fetching exercises by type",
+        error: error.message,
+      });
   }
 };
 
@@ -393,7 +509,7 @@ export const getExerciseStepsById = async (req, res) => {
        FROM exercise_steps WHERE exercise_id = $1 ORDER BY step_number ASC`,
       { bind: [exerciseId] }
     );
-    const steps = rows.map(r => ({
+    const steps = rows.map((r) => ({
       step_number: r.step_number,
       instruction_text: r.instruction_text,
       title: r.title,
@@ -402,8 +518,14 @@ export const getExerciseStepsById = async (req, res) => {
     }));
     return res.status(200).json({ success: true, data: steps });
   } catch (error) {
-    console.error('Error fetching steps by id:', error);
-    return res.status(500).json({ success: false, message: 'Error fetching steps', error: error.message });
+    console.error("Error fetching steps by id:", error);
+    return res
+      .status(500)
+      .json({
+        success: false,
+        message: "Error fetching steps",
+        error: error.message,
+      });
   }
 };
 
@@ -415,7 +537,10 @@ export const getExerciseStepsBySlug = async (req, res) => {
       `SELECT exercise_id FROM exercises WHERE slug = $1 LIMIT 1`,
       { bind: [slug] }
     );
-    if (!exRows.length) return res.status(404).json({ success: false, message: 'Exercise not found' });
+    if (!exRows.length)
+      return res
+        .status(404)
+        .json({ success: false, message: "Exercise not found" });
     const exerciseId = exRows[0].exercise_id;
     const [jsonRows] = await sequelize.query(
       `SELECT steps FROM exercise_steps_json WHERE exercise_id = $1 LIMIT 1`,
@@ -429,7 +554,7 @@ export const getExerciseStepsBySlug = async (req, res) => {
        FROM exercise_steps WHERE exercise_id = $1 ORDER BY step_number ASC`,
       { bind: [exerciseId] }
     );
-    const steps = rows.map(r => ({
+    const steps = rows.map((r) => ({
       step_number: r.step_number,
       instruction_text: r.instruction_text,
       title: r.title,
@@ -438,8 +563,14 @@ export const getExerciseStepsBySlug = async (req, res) => {
     }));
     return res.status(200).json({ success: true, data: steps });
   } catch (error) {
-    console.error('Error fetching steps by slug:', error);
-    return res.status(500).json({ success: false, message: 'Error fetching steps', error: error.message });
+    console.error("Error fetching steps by slug:", error);
+    return res
+      .status(500)
+      .json({
+        success: false,
+        message: "Error fetching steps",
+        error: error.message,
+      });
   }
 };
 
@@ -448,7 +579,9 @@ export const getExerciseMusclesById = async (req, res) => {
   try {
     const exerciseId = parseInt(req.params.exerciseId, 10);
     if (!Number.isFinite(exerciseId) || exerciseId <= 0) {
-      return res.status(422).json({ success: false, message: 'Invalid exercise id' });
+      return res
+        .status(422)
+        .json({ success: false, message: "Invalid exercise id" });
     }
 
     const [rows] = await sequelize.query(
@@ -469,19 +602,26 @@ export const getExerciseMusclesById = async (req, res) => {
     );
 
     function normalizeGroup(items) {
-      const list = (items || []).map(r => ({
+      const list = (items || []).map((r) => ({
         id: r.id,
         slug: r.slug,
         name: r.name,
-        parent: r.parent_slug ? { slug: r.parent_slug, name: r.parent_name } : null,
-        rawPercent: Number.isFinite(Number(r.intensity_percentage)) ? Number(r.intensity_percentage) : 0,
+        parent: r.parent_slug
+          ? { slug: r.parent_slug, name: r.parent_name }
+          : null,
+        rawPercent: Number.isFinite(Number(r.intensity_percentage))
+          ? Number(r.intensity_percentage)
+          : 0,
       }));
       const sum = list.reduce((acc, it) => acc + (it.rawPercent || 0), 0);
       if (sum > 0) {
-        for (const it of list) it.percent = Math.round((100 * (it.rawPercent || 0)) / sum);
+        for (const it of list)
+          it.percent = Math.round((100 * (it.rawPercent || 0)) / sum);
       } else if (list.length) {
         const eq = Math.floor(100 / list.length);
-        for (let i = 0; i < list.length; i++) list[i].percent = i === list.length - 1 ? 100 - eq * (list.length - 1) : eq;
+        for (let i = 0; i < list.length; i++)
+          list[i].percent =
+            i === list.length - 1 ? 100 - eq * (list.length - 1) : eq;
       }
       // Ensure bounds
       for (const it of list) {
@@ -489,7 +629,11 @@ export const getExerciseMusclesById = async (req, res) => {
         it.percent = Math.max(0, Math.min(100, it.percent));
       }
       // Sort by percent desc, then name
-      list.sort((a, b) => (b.percent - a.percent) || String(a.name || '').localeCompare(String(b.name || '')));
+      list.sort(
+        (a, b) =>
+          b.percent - a.percent ||
+          String(a.name || "").localeCompare(String(b.name || ""))
+      );
       return {
         count: list.length,
         sum: list.reduce((acc, it) => acc + it.percent, 0),
@@ -497,9 +641,15 @@ export const getExerciseMusclesById = async (req, res) => {
       };
     }
 
-    const primaryRows = rows.filter(r => (r.impact_level || '').toLowerCase() === 'primary');
-    const secondaryRows = rows.filter(r => (r.impact_level || '').toLowerCase() === 'secondary');
-    const stabilizerRows = rows.filter(r => (r.impact_level || '').toLowerCase() === 'stabilizer');
+    const primaryRows = rows.filter(
+      (r) => (r.impact_level || "").toLowerCase() === "primary"
+    );
+    const secondaryRows = rows.filter(
+      (r) => (r.impact_level || "").toLowerCase() === "secondary"
+    );
+    const stabilizerRows = rows.filter(
+      (r) => (r.impact_level || "").toLowerCase() === "stabilizer"
+    );
 
     const primary = normalizeGroup(primaryRows);
     const secondary = normalizeGroup(secondaryRows);
@@ -511,11 +661,17 @@ export const getExerciseMusclesById = async (req, res) => {
         primary,
         secondary,
         stabilizers,
-      }
+      },
     });
   } catch (error) {
-    console.error('getExerciseMusclesById error:', error);
-    return res.status(500).json({ success: false, message: 'Error fetching muscles', error: error.message });
+    console.error("getExerciseMusclesById error:", error);
+    return res
+      .status(500)
+      .json({
+        success: false,
+        message: "Error fetching muscles",
+        error: error.message,
+      });
   }
 };
 // Related exercises by overlap of muscle groups + tie-breakers
@@ -523,10 +679,15 @@ export const getRelatedExercisesById = async (req, res) => {
   try {
     const exerciseId = parseInt(req.params.exerciseId, 10);
     if (!Number.isFinite(exerciseId) || exerciseId <= 0) {
-      return res.status(422).json({ success: false, message: 'Invalid exercise id' });
+      return res
+        .status(422)
+        .json({ success: false, message: "Invalid exercise id" });
     }
 
-    const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 16, 1), 50);
+    const limit = Math.min(
+      Math.max(parseInt(req.query.limit, 10) || 16, 1),
+      50
+    );
 
     const [rows] = await sequelize.query(
       `WITH my_ex AS (
@@ -604,37 +765,45 @@ export const getRelatedExercisesById = async (req, res) => {
 
     // Sort by parent priority then score then popularity then name
     rows.sort((a, b) => {
-      if ((b.parent_priority || 0) !== (a.parent_priority || 0)) return (b.parent_priority || 0) - (a.parent_priority || 0);
-      if ((b.score || 0) !== (a.score || 0)) return (b.score || 0) - (a.score || 0);
-      if ((b.popularity_score || 0) !== (a.popularity_score || 0)) return (b.popularity_score || 0) - (a.popularity_score || 0);
-      return String(a.name || '').localeCompare(String(b.name || ''));
+      if ((b.parent_priority || 0) !== (a.parent_priority || 0))
+        return (b.parent_priority || 0) - (a.parent_priority || 0);
+      if ((b.score || 0) !== (a.score || 0))
+        return (b.score || 0) - (a.score || 0);
+      if ((b.popularity_score || 0) !== (a.popularity_score || 0))
+        return (b.popularity_score || 0) - (a.popularity_score || 0);
+      return String(a.name || "").localeCompare(String(b.name || ""));
     });
 
     // Require at least one shared child group
-    const withChildOverlap = rows.filter(r => (r.w_overlap || 0) > 0 && (r.shared_children_count || 1) >= 1);
+    const withChildOverlap = rows.filter(
+      (r) => (r.w_overlap || 0) > 0 && (r.shared_children_count || 1) >= 1
+    );
 
     // Resolve best images (do not filter out when missing images)
-    const ids = withChildOverlap.map(r => r.exercise_id);
+    const ids = withChildOverlap.map((r) => r.exercise_id);
     const imgMap = await fetchBestImagesForIds(ids);
 
     function bestImage(r) {
-      return imgMap.get(r.exercise_id) || r.thumbnail_url || r.gif_demo_url || null;
+      return (
+        imgMap.get(r.exercise_id) || r.thumbnail_url || r.gif_demo_url || null
+      );
     }
 
     let chosen = [];
     for (const th of thresholds) {
       const candidate = withChildOverlap
-        .filter(r => (r.score || 0) >= th)
-        .map(r => ({ ...r, imageUrl: bestImage(r) }))
+        .filter((r) => (r.score || 0) >= th)
+        .map((r) => ({ ...r, imageUrl: bestImage(r) }))
         .slice(0, limit);
-      if (candidate.length >= Math.min(limit, 8)) { // ensure decent fill for UI
+      if (candidate.length >= Math.min(limit, 8)) {
+        // ensure decent fill for UI
         chosen = candidate;
         break;
       }
       if (!chosen.length && candidate.length) chosen = candidate; // keep best attempt
     }
 
-    const data = chosen.map(r => ({
+    const data = chosen.map((r) => ({
       id: r.exercise_id,
       slug: r.slug,
       name: r.name,
@@ -645,7 +814,13 @@ export const getRelatedExercisesById = async (req, res) => {
 
     return res.status(200).json({ success: true, data, total: data.length });
   } catch (error) {
-    console.error('getRelatedExercisesById error:', error);
-    return res.status(500).json({ success: false, message: 'Error fetching related exercises', error: error.message });
+    console.error("getRelatedExercisesById error:", error);
+    return res
+      .status(500)
+      .json({
+        success: false,
+        message: "Error fetching related exercises",
+        error: error.message,
+      });
   }
 };

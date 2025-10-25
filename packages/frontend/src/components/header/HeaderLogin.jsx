@@ -112,6 +112,12 @@ export default function HeaderLogin() {
         </button>
 
         <nav className="items-center hidden gap-5 md:flex">
+          <button
+            onClick={() => navigate('/ai')}
+            className="text-sm text-gray-800 hover:text-blue-600"
+          >
+            AI
+          </button>
           
 
           <div className="relative" ref={workoutRef}>
@@ -561,6 +567,9 @@ export default function HeaderLogin() {
 
             <button className="block w-full py-2 text-left" onClick={() => navigate("/modeling-demo")}>
               Mô hình hoá
+            </button>
+            <button className="block w-full py-2 text-left" onClick={() => navigate('/ai')}>
+              AI
             </button>
             <button className="block w-full py-2 text-left" onClick={() => navigate("/nutrition-ai")}>
               Dinh dưỡng

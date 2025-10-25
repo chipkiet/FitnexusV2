@@ -8,6 +8,10 @@ cách bắn các instruction json ở xwalk_exercise_steps.import.json san g dat
 
 node scripts/import_exercise_steps_json.js
 
-Lưu ý: importer exercises cũng đẩy ảnh cơ bản vào bảng image_exercise:
-- thumbnail_url -> image_type = 'cover' (is_primary = true)
-- gif_demo_url -> image_type = 'gif'
+
+đẩy image_exercises thành các hình ảnh:
+node ./scripts/import-image-exercise-from-data.js
+
+
+bắn nó lên database:
+node ./scripts/import-image-exercise-from-data.js --commit

@@ -87,6 +87,7 @@ const PASS_THROUGH = [
   // Passport callback (nếu dùng)
   "/auth/google/callback",
   "/api/nutrition/plan",
+  "/api/trainer/upload",
 ];
 
 const isPassThroughUrl = (u = "") => PASS_THROUGH.some((p) => u.startsWith(p));
