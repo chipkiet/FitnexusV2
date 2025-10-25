@@ -18,6 +18,8 @@ export default function HeaderLogin() {
   const communityRef = useRef(null);
 
   const [showAvatarMenu, setShowAvatarMenu] = useState(false);
+  const [activeSubmenu, setActiveSubmenu] = useState(null);
+  const avatarMenuRef = useRef(null);
 
   const handleLogout = async () => {
     try {
@@ -35,6 +37,8 @@ export default function HeaderLogin() {
     setOpenMobile(false);
     setOpenWorkout(false);
     setOpenCommunity(false);
+    setShowAvatarMenu(false);
+    setActiveSubmenu(null);
   }, [location.pathname]);
 
   useEffect(() => {
@@ -42,11 +46,17 @@ export default function HeaderLogin() {
       if(communityRef.current && !communityRef.current.contains(e.target)) {
         setOpenCommunity(false);
       }
+      if(avatarMenuRef.current && !avatarMenuRef.current.contains(e.target)) {
+        setShowAvatarMenu(false);
+        setActiveSubmenu(null);
+      }
     };
     const onKey = (e) => {
       if (e.key === "Escape") {
         setOpenMobile(false);
         setOpenWorkout(false);
+        setShowAvatarMenu(false);
+        setActiveSubmenu(null);
       }
     };
     document.addEventListener("mousedown", onDown);
@@ -233,7 +243,7 @@ export default function HeaderLogin() {
 
         <div className="flex items-center gap-4">
             {user ? (
-              <div className="relative">
+              <div className="relative" ref={avatarMenuRef}>
                 <button
                   onClick={() => setShowAvatarMenu(!showAvatarMenu)}
                   className="flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
@@ -243,28 +253,240 @@ export default function HeaderLogin() {
                   </div>
                 </button>
                 {showAvatarMenu && (
-                  <div className="absolute right-0 z-50 w-48 mt-2 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5">
+                  <div className="absolute right-0 z-50 w-64 mt-2 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5">
+                    {/* Tài khoản */}
+                    <div className="relative">
+                      <button
+                        onClick={() => setActiveSubmenu(activeSubmenu === 'account' ? null : 'account')}
+                        className="flex items-center justify-between w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
+                      >
+                        <span>Tài khoản</span>
+                        <svg className={`w-4 h-4 transition-transform ${activeSubmenu === 'account' ? 'rotate-180' : ''}`} fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                        </svg>
+                      </button>
+                      {activeSubmenu === 'account' && (
+                        <div className="absolute left-full top-0 w-48 ml-1 bg-white border border-gray-200 rounded-md shadow-lg">
+                          <button
+                            onClick={() => {
+                              setShowAvatarMenu(false);
+                              setActiveSubmenu(null);
+                              navigate("/account/personal-info");
+                            }}
+                            className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
+                          >
+                            Thông tin cá nhân
+                          </button>
+                          <button
+                            onClick={() => {
+                              setShowAvatarMenu(false);
+                              setActiveSubmenu(null);
+                              navigate("/account/change-password");
+                            }}
+                            className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
+                          >
+                            Đổi mật khẩu
+                          </button>
+                          <button
+                            onClick={() => {
+                              setShowAvatarMenu(false);
+                              setActiveSubmenu(null);
+                              navigate("/account/security");
+                            }}
+                            className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
+                          >
+                            Bảo mật
+                          </button>
+                          <button
+                            onClick={() => {
+                              setShowAvatarMenu(false);
+                              setActiveSubmenu(null);
+                              navigate("/account/activity");
+                            }}
+                            className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
+                          >
+                            Lịch sử hoạt động
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Hồ sơ */}
+                    <div className="relative">
+                      <button
+                        onClick={() => setActiveSubmenu(activeSubmenu === 'profile' ? null : 'profile')}
+                        className="flex items-center justify-between w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
+                      >
+                        <span>Hồ sơ</span>
+                        <svg className={`w-4 h-4 transition-transform ${activeSubmenu === 'profile' ? 'rotate-180' : ''}`} fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                        </svg>
+                      </button>
+                      {activeSubmenu === 'profile' && (
+                        <div className="absolute left-full top-0 w-48 ml-1 bg-white border border-gray-200 rounded-md shadow-lg">
+                          <button
+                            onClick={() => {
+                              setShowAvatarMenu(false);
+                              setActiveSubmenu(null);
+                              navigate("/profile/edit");
+                            }}
+                            className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
+                          >
+                            Chỉnh sửa hồ sơ
+                          </button>
+                          <button
+                            onClick={() => {
+                              setShowAvatarMenu(false);
+                              setActiveSubmenu(null);
+                              navigate("/profile/avatar");
+                            }}
+                            className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
+                          >
+                            Ảnh đại diện
+                          </button>
+                          <button
+                            onClick={() => {
+                              setShowAvatarMenu(false);
+                              setActiveSubmenu(null);
+                              navigate("/profile/goals");
+                            }}
+                            className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
+                          >
+                            Mục tiêu fitness
+                          </button>
+                          <button
+                            onClick={() => {
+                              setShowAvatarMenu(false);
+                              setActiveSubmenu(null);
+                              navigate("/profile/statistics");
+                            }}
+                            className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
+                          >
+                            Thống kê
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Hỗ trợ */}
+                    <div className="relative">
+                      <button
+                        onClick={() => setActiveSubmenu(activeSubmenu === 'support' ? null : 'support')}
+                        className="flex items-center justify-between w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
+                      >
+                        <span>Hỗ trợ</span>
+                        <svg className={`w-4 h-4 transition-transform ${activeSubmenu === 'support' ? 'rotate-180' : ''}`} fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                        </svg>
+                      </button>
+                      {activeSubmenu === 'support' && (
+                        <div className="absolute left-full top-0 w-48 ml-1 bg-white border border-gray-200 rounded-md shadow-lg">
+                          <button
+                            onClick={() => {
+                              setShowAvatarMenu(false);
+                              setActiveSubmenu(null);
+                              navigate("/support/faq");
+                            }}
+                            className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
+                          >
+                            FAQ
+                          </button>
+                          <button
+                            onClick={() => {
+                              setShowAvatarMenu(false);
+                              setActiveSubmenu(null);
+                              navigate("/support/contact");
+                            }}
+                            className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
+                          >
+                            Liên hệ
+                          </button>
+                          <button
+                            onClick={() => {
+                              setShowAvatarMenu(false);
+                              setActiveSubmenu(null);
+                              navigate("/support/bug-report");
+                            }}
+                            className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
+                          >
+                            Báo lỗi
+                          </button>
+                          <button
+                            onClick={() => {
+                              setShowAvatarMenu(false);
+                              setActiveSubmenu(null);
+                              navigate("/support/guide");
+                            }}
+                            className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
+                          >
+                            Hướng dẫn sử dụng
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Cài đặt */}
+                    <div className="relative">
+                      <button
+                        onClick={() => setActiveSubmenu(activeSubmenu === 'settings' ? null : 'settings')}
+                        className="flex items-center justify-between w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
+                      >
+                        <span>Cài đặt</span>
+                        <svg className={`w-4 h-4 transition-transform ${activeSubmenu === 'settings' ? 'rotate-180' : ''}`} fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                        </svg>
+                      </button>
+                      {activeSubmenu === 'settings' && (
+                        <div className="absolute left-full top-0 w-48 ml-1 bg-white border border-gray-200 rounded-md shadow-lg">
+                          <button
+                            onClick={() => {
+                              setShowAvatarMenu(false);
+                              setActiveSubmenu(null);
+                              navigate("/settings/notifications");
+                            }}
+                            className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
+                          >
+                            Thông báo
+                          </button>
+                          <button
+                            onClick={() => {
+                              setShowAvatarMenu(false);
+                              setActiveSubmenu(null);
+                              navigate("/settings/language");
+                            }}
+                            className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
+                          >
+                            Ngôn ngữ
+                          </button>
                     <button
                       onClick={() => {
                         setShowAvatarMenu(false);
-                        navigate("/profile");
+                              setActiveSubmenu(null);
+                              navigate("/settings/theme");
                       }}
                       className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
                     >
-                      Hồ sơ
+                            Chế độ tối
                     </button>
                     <button
                       onClick={() => {
                         setShowAvatarMenu(false);
-                        navigate("/settings");
+                              setActiveSubmenu(null);
+                              navigate("/settings/privacy");
                       }}
                       className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
                     >
-                      Cài đặt
+                            Quyền riêng tư
                     </button>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="border-t border-gray-200"></div>
                     <button
                       onClick={() => {
                         setShowAvatarMenu(false);
+                        setActiveSubmenu(null);
                         handleLogout();
                       }}
                       className="block w-full px-4 py-2 text-sm text-left text-red-600 hover:bg-gray-100"
