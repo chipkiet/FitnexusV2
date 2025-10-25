@@ -2,6 +2,9 @@ import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api, { endpoints } from '../../lib/api';
 import './NutritionAI.css';
+import Navbar from '../../components/common/Navbar.jsx';
+import { useAuth } from '../../context/auth.context.jsx';
+import { renderMarkdown } from '../../lib/markdown.js';
 
 const GOALS = [
   { key: 'LOSE_WEIGHT', label: 'Giảm cân' },
@@ -11,6 +14,7 @@ const GOALS = [
 
 export default function NutritionPersonalize() {
   const navigate = useNavigate();
+  const { user, isAuthenticated, logout } = useAuth();
   const [goal, setGoal] = useState('LOSE_WEIGHT');
   const [extra, setExtra] = useState('');
   const [loading, setLoading] = useState(false);
@@ -40,7 +44,10 @@ export default function NutritionPersonalize() {
 
   return (
       <div className="fc-page">
+        <Navbar />
         <div className="fc-container">
+          {/* Page header card (under the fixed navbar) */}
+          
           <div className="fc-card">
             <div className="fc-header">
               <h3>Cá nhân hoá chế độ dinh dưỡng</h3>
@@ -90,9 +97,12 @@ export default function NutritionPersonalize() {
             <div className="fc-card" style={{ marginTop: 18 }}>
               <div className="fc-header">
                 <h3>Kế hoạch gợi ý</h3>
-                <p className="fc-sub">Kết quả tạo bởi AI (Gemini)</p>
               </div>
-              <div style={{ whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>{plan}</div>
+              <div
+                className="markdown-body"
+                style={{ lineHeight: 1.6, maxHeight: '70vh', overflow: 'auto' }}
+                dangerouslySetInnerHTML={{ __html: renderMarkdown(plan) }}
+              />
             </div>
           )}
         </div>

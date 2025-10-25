@@ -52,6 +52,7 @@ export const endpoints = {
   // Nutrition endpoints
   nutrition: {
     plan: "/api/nutrition/plan",
+    planFromOnboarding: "/api/nutrition/plan/from-onboarding",
   },
 
   admin: {
