@@ -39,10 +39,8 @@ genai.configure(api_key=GEMINI_API_KEY)
 print("Khởi tạo cấu hình Gemini API...")
 # Chuẩn bị danh sách model fallback để tương thích nhiều phiên bản API
 GEMINI_MODELS = [
-    os.getenv("GEMINI_MODEL") or "gemini-2.0-flash",
-    "gemini-1.5-flash-latest",
-    "gemini-1.5-flash",
-    "gemini-1.5-flash-001",
+    os.getenv("GEMINI_MODEL") or "gemini-2.5-flash-lite",
+   
 ]
 
 def _gemini_generate_json(prompt: str, timeout_sec: int = 120):

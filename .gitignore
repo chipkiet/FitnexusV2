@@ -10,7 +10,7 @@ venv/
 outputs/
 images/
 processed_images/
-
+test/
 .idea/
 .vscode/
 .DS_Store
