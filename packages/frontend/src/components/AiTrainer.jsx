@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
-import axios from 'axios';
+import api from '../lib/api.js';
+import HeaderDemo from './header/HeaderDemo.jsx';
 
 const AiTrainer = () => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -37,8 +38,9 @@ const AiTrainer = () => {
     formData.append('image', selectedFile);
 
     try {
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
-      const response = await axios.post(`${backendUrl}/api/trainer/upload`, formData);
+      const response = await api.post(`/api/trainer/upload`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
 
       if (response.data && response.data.success) {
         setAnalysisResult(response.data.data);
@@ -64,7 +66,9 @@ const AiTrainer = () => {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+    <div>
+      <HeaderDemo />
+      <div className="w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
       {/* Header */}
       <header className="text-center mb-8">
         <h1 className="text-4xl sm:text-5xl font-bold text-sky-400">Fitnexus - AI Trainer</h1>
@@ -128,6 +132,7 @@ const AiTrainer = () => {
           </div>
         )}
       </main>
+      </div>
     </div>
   );
 };

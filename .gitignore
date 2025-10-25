@@ -7,6 +7,13 @@ build/
 .env.*
 !.env.example
 venv/
+outputs/
+images/
+processed_images/
+test/
+testing/
+!packages/backend/test/**
+coverage/
 .idea/
 .vscode/
 .DS_Store
