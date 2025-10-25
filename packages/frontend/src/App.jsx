@@ -21,6 +21,7 @@ import ExercisesDemo from "./pages/exercises/ExercisesDemo.jsx";
 import Exercise from "./pages/exercises/Exercise.jsx";
 import PlanNew from "./pages/plans/PlanNew.jsx";
 import PlanPicker from "./pages/plans/PlanPicker.jsx";
+import PlanDetail from "./pages/plans/PlanDetail.jsx";
 import Logout from "./pages/authentication/Logout.jsx";
 import NotFoundRedirect from "./pages/system/NotFoundRedirect.jsx";
 
@@ -135,6 +136,14 @@ function App() {
             element={
               <PrivateRoute>
                 <PlanPicker />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/plans/:planId"
+            element={
+              <PrivateRoute>
+                <PlanDetail />
               </PrivateRoute>
             }
           />

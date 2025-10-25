@@ -165,7 +165,12 @@ export default function HeaderDemo() {
           >
             Dinh dưỡng
           </button>
-          
+          <button
+            onClick={() => navigate("/shopping-demo")}
+            className="text-sm text-gray-800 hover:text-blue-600"
+          >
+            Shopping
+          </button>
 
 
           <div className="relative" ref={communityRef}>

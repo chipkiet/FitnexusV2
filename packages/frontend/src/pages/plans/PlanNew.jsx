@@ -210,7 +210,7 @@ export default function PlanNew() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => navigate(`/exercises-demo`)}
+                  onClick={() => navigate(`/exercises`)}
                   className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
                 >
                   Thêm bài tập khác
