@@ -299,3 +299,73 @@ export async function reorderPlanExercises(req, res) {
         });
     }
 }
+
+// Add this function to your plan.controller.js
+
+export async function updatePlanExercise(req, res) {
+    try {
+        const userId = req.userId;
+        const planId = parseInt(req.params?.planId, 10);
+        const planExerciseId = parseInt(req.params?.planExerciseId, 10);
+
+        if (!Number.isFinite(planId) || planId <= 0) {
+            return res.status(400).json({ success: false, message: "Invalid planId" });
+        }
+        if (!Number.isFinite(planExerciseId) || planExerciseId <= 0) {
+            return res.status(400).json({ success: false, message: "Invalid planExerciseId" });
+        }
+
+        // Verify plan ownership
+        const plan = await WorkoutPlan.findOne({ where: { plan_id: planId } });
+        if (!plan) {
+            return res.status(404).json({ success: false, message: "Plan not found" });
+        }
+        if (plan.creator_id !== userId) {
+            return res.status(403).json({ success: false, message: "Not authorized" });
+        }
+
+        const planExercise = await PlanExerciseDetail.findOne({
+            where: {
+                plan_exercise_id: planExerciseId,
+                plan_id: planId,
+            },
+        });
+
+        if (!planExercise) {
+            return res.status(404).json({ success: false, message: "Exercise not found in plan" });
+        }
+        const updateData = {};
+
+        if (req.body?.sets_recommended !== undefined) {
+            const sets = parseInt(req.body.sets_recommended, 10);
+            updateData.sets_recommended = Number.isFinite(sets) && sets > 0 ? sets : null;
+        }
+
+        if (req.body?.reps_recommended !== undefined) {
+            updateData.reps_recommended = req.body.reps_recommended != null
+                ? String(req.body.reps_recommended).trim()
+                : null;
+        }
+
+        if (req.body?.rest_period_seconds !== undefined) {
+            const rest = parseInt(req.body.rest_period_seconds, 10);
+            updateData.rest_period_seconds = Number.isFinite(rest) && rest >= 0 ? rest : null;
+        }
+
+        // Update the record
+        await planExercise.update(updateData);
+
+        return res.status(200).json({
+            success: true,
+            data: {
+                plan_exercise_id: planExercise.plan_exercise_id,
+                sets_recommended: planExercise.sets_recommended,
+                reps_recommended: planExercise.reps_recommended,
+                rest_period_seconds: planExercise.rest_period_seconds,
+            },
+        });
+    } catch (err) {
+        console.error("updatePlanExercise error:", err);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+}

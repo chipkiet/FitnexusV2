@@ -1,6 +1,13 @@
 import { Router } from "express";
 import authGuard from "../middleware/auth.guard.js";
-import { createPlan, getPlanById, addExerciseToPlan, listMyPlans, reorderPlanExercises } from "../controllers/plan.controller.js";
+import {
+    createPlan,
+    getPlanById,
+    addExerciseToPlan,
+    listMyPlans,
+    reorderPlanExercises,
+    updatePlanExercise
+} from "../controllers/plan.controller.js";
 
 const router = Router();
 

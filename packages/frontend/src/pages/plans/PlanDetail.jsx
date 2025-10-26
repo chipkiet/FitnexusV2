@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import HeaderLogin from "../../components/header/HeaderLogin.jsx";
-import { getPlanByIdApi, reorderPlanExercisesApi } from "../../lib/api.js";
+import { getPlanByIdApi, reorderPlanExercisesApi, updatePlanExerciseApi } from "../../lib/api.js";
 
 function Badge({ children, tone = "gray" }) {
     const tones = {
@@ -18,6 +18,98 @@ function Badge({ children, tone = "gray" }) {
     );
 }
 
+function EditExerciseModal({ exercise, onClose, onSave }) {
+    const [sets, setSets] = useState(exercise?.sets_recommended || "");
+    const [reps, setReps] = useState(exercise?.reps_recommended || "");
+    const [rest, setRest] = useState(exercise?.rest_period_seconds || "");
+    const [saving, setSaving] = useState(false);
+
+    const handleSave = async () => {
+        setSaving(true);
+        try {
+            await onSave({
+                sets_recommended: sets ? parseInt(sets, 10) : null,
+                reps_recommended: reps || null,
+                rest_period_seconds: rest ? parseInt(rest, 10) : null,
+            });
+            onClose();
+        } catch (err) {
+            console.error("Save error:", err);
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={onClose}>
+            <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
+                <h3 className="text-lg font-semibold mb-4">Chỉnh sửa bài tập</h3>
+                <p className="text-sm text-gray-600 mb-4">{exercise?.exercise?.name}</p>
+
+                <div className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Số sets
+                        </label>
+                        <input
+                            type="number"
+                            min="1"
+                            value={sets}
+                            onChange={(e) => setSets(e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Ví dụ: 3"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Số reps
+                        </label>
+                        <input
+                            type="text"
+                            value={reps}
+                            onChange={(e) => setReps(e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Ví dụ: 10-12 hoặc 15"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Thời gian nghỉ (giây)
+                        </label>
+                        <input
+                            type="number"
+                            min="0"
+                            value={rest}
+                            onChange={(e) => setRest(e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Ví dụ: 60"
+                        />
+                    </div>
+                </div>
+
+                <div className="flex gap-3 mt-6">
+                    <button
+                        onClick={onClose}
+                        disabled={saving}
+                        className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                    >
+                        Hủy
+                    </button>
+                    <button
+                        onClick={handleSave}
+                        disabled={saving}
+                        className="flex-1 px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                    >
+                        {saving ? "Đang lưu..." : "Lưu"}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export default function PlanDetail() {
     const navigate = useNavigate();
     const { planId } = useParams();
@@ -27,6 +119,7 @@ export default function PlanDetail() {
     const [items, setItems] = useState([]);
     const [draggedIndex, setDraggedIndex] = useState(null);
     const [saving, setSaving] = useState(false);
+    const [editingExercise, setEditingExercise] = useState(null);
 
     useEffect(() => {
         let alive = true;
@@ -74,10 +167,9 @@ export default function PlanDetail() {
         if (draggedIndex === null) return;
 
         setSaving(true);
-        setError(null); // Clear previous errors
+        setError(null);
 
         try {
-            // Create update payload with new session_order values
             const updates = items.map((item, idx) => ({
                 plan_exercise_id: item.plan_exercise_id,
                 session_order: idx + 1
@@ -86,19 +178,16 @@ export default function PlanDetail() {
             const res = await reorderPlanExercisesApi(planId, updates);
 
             if (!res?.success) {
-                // Revert on failure - reload from server
                 const reloadRes = await getPlanByIdApi(planId);
                 if (reloadRes?.success) {
                     setItems(reloadRes.data?.items || []);
                 }
                 setError({ message: res?.message || "Không thể lưu thứ tự mới" });
             } else {
-                // Success - clear any previous errors
                 setError(null);
             }
         } catch (e) {
             console.error("Reorder error:", e);
-            // Reload on error
             const reloadRes = await getPlanByIdApi(planId);
             if (reloadRes?.success) {
                 setItems(reloadRes.data?.items || []);
@@ -107,6 +196,29 @@ export default function PlanDetail() {
         } finally {
             setDraggedIndex(null);
             setSaving(false);
+        }
+    };
+
+    const handleEditExercise = async (exercise, data) => {
+        try {
+            const res = await updatePlanExerciseApi(planId, exercise.plan_exercise_id, data);
+
+            if (res?.success) {
+                // Update local state
+                setItems(prevItems =>
+                    prevItems.map(item =>
+                        item.plan_exercise_id === exercise.plan_exercise_id
+                            ? { ...item, ...data }
+                            : item
+                    )
+                );
+                setError(null);
+            } else {
+                setError({ message: res?.message || "Không thể cập nhật bài tập" });
+            }
+        } catch (err) {
+            console.error("Update exercise error:", err);
+            setError({ message: "Không thể cập nhật bài tập" });
         }
     };
 
@@ -199,7 +311,6 @@ export default function PlanDetail() {
                                             }`}
                                         >
                                             <div className="flex items-start gap-3 min-w-0 flex-1">
-                                                {/* Drag Handle */}
                                                 <div className="flex flex-col items-center justify-center text-gray-400 pt-1">
                                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
@@ -228,7 +339,7 @@ export default function PlanDetail() {
                                                         {it.reps_recommended && (
                                                             <Badge tone="purple">{it.reps_recommended} reps</Badge>
                                                         )}
-                                                        {it.rest_period_seconds && (
+                                                        {it.rest_period_seconds !== null && it.rest_period_seconds !== undefined && (
                                                             <Badge tone="gray">Nghỉ: {it.rest_period_seconds}s</Badge>
                                                         )}
                                                     </div>
@@ -238,6 +349,15 @@ export default function PlanDetail() {
                                             <div className="flex items-center gap-2 shrink-0">
                                                 <button
                                                     className="px-3 py-1.5 text-sm text-blue-600 border border-blue-200 rounded hover:bg-blue-50"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setEditingExercise(it);
+                                                    }}
+                                                >
+                                                    Chỉnh sửa
+                                                </button>
+                                                <button
+                                                    className="px-3 py-1.5 text-sm text-gray-600 border border-gray-200 rounded hover:bg-gray-50"
                                                     onClick={() => navigate(`/exercises/${it.exercise?.id || it.exercise_id}`)}
                                                 >
                                                     Xem chi tiết
@@ -249,6 +369,14 @@ export default function PlanDetail() {
                             )}
                         </div>
                     </div>
+                )}
+
+                {editingExercise && (
+                    <EditExerciseModal
+                        exercise={editingExercise}
+                        onClose={() => setEditingExercise(null)}
+                        onSave={(data) => handleEditExercise(editingExercise, data)}
+                    />
                 )}
             </main>
         </div>
