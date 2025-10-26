@@ -4,7 +4,9 @@ import * as tf from "@tensorflow/tfjs";
 import "@tensorflow/tfjs-backend-webgl";
 import * as mobilenet from "@tensorflow-models/mobilenet";
 import "./NutritionAI.css";
-import Navbar from "../../components/common/Navbar.jsx";
+import { useAuth } from "../../context/auth.context.jsx";
+import HeaderLogin from "../../components/header/HeaderLogin.jsx";
+import HeaderDemo from "../../components/header/HeaderDemo.jsx";
 
 function centerCropToSquare(imgEl, size = 224) {
   const s = Math.min(imgEl.naturalWidth, imgEl.naturalHeight);
@@ -28,6 +30,8 @@ function norm(s) {
 }
 
 export default function FoodCalorie() {
+  const { user } = useAuth();
+  const isAuthenticated = !!user;
   const [ready, setReady] = useState(false);
   const [labels, setLabels] = useState([]);
   const [calo, setCalo] = useState({});
@@ -380,8 +384,7 @@ export default function FoodCalorie() {
 
   return (
     <div className="fc-page">
-      <Navbar />
-
+      {isAuthenticated ? <HeaderLogin /> : <HeaderDemo />}
       {/* Hidden global file input */}
       <input
         ref={fileRef}

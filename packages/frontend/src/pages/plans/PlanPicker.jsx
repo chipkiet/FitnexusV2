@@ -1,16 +1,18 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/auth.context.jsx";
 import { getMyPlansApi, addExerciseToPlanApi } from "../../lib/api.js";
 
 export default function PlanPicker() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
   const exerciseId = useMemo(() => {
     const v = parseInt(searchParams.get("exerciseId"), 10);
     return Number.isFinite(v) && v > 0 ? v : null;
   }, [searchParams]);
+  const exerciseName = useMemo(() => location.state?.exerciseName || "", [location.state]);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -45,14 +47,47 @@ export default function PlanPicker() {
     setSaving(true);
     setError(null);
     try {
-      await addExerciseToPlanApi({
+      const resData = await addExerciseToPlanApi({
         planId: selectedPlanId,
         exercise_id: exerciseId,
         sets_recommended: 3,
         reps_recommended: "8-12",
         rest_period_seconds: 60,
       });
-      navigate("/exercises", { replace: true });
+      // Cập nhật session current_plan_context để Exercises biết plan hiện tại
+      try {
+        const picked = (items || []).find((p) => p.plan_id === selectedPlanId);
+        const ctx = { plan_id: selectedPlanId, name: picked?.name || "" };
+        sessionStorage.setItem("current_plan_context", JSON.stringify(ctx));
+      } catch {}
+      // Lấy tổng số bài tập từ response nếu BE có trả về (không gọi endpoint khác)
+      const planItemCount = (() => {
+        const d = resData;
+        if (!d || typeof d !== 'object') return undefined;
+        if (typeof d.plan_item_count === 'number') return d.plan_item_count;
+        if (typeof d.items_count === 'number') return d.items_count;
+        if (typeof d.total_items === 'number') return d.total_items;
+        if (typeof d.total === 'number') return d.total;
+        if (typeof d.count === 'number') return d.count;
+        if (Array.isArray(d.items)) return d.items.length;
+        if (Array.isArray(d.data?.items)) return d.data.items.length;
+        if (Array.isArray(d.data)) return d.data.length;
+        return undefined;
+      })();
+
+      // Nếu BE trả về tên bài tập, ưu tiên dùng; nếu không fallback từ state
+      const serverExerciseName = resData?.exercise_name || resData?.exercise?.name || resData?.data?.exercise?.name;
+      const addedExerciseName = serverExerciseName || exerciseName || "";
+
+      // Điều hướng về trang bài tập và hiển thị thông báo nhỏ trong sidebar
+      navigate("/exercises", {
+        replace: true,
+        state: {
+          toast: "Thêm bài tập thành công",
+          addedExerciseName,
+          planItemCount,
+        },
+      });
     } catch (e) {
       setError({ message: e?.response?.data?.message || e?.message || "Không thể thêm vào plan" });
     } finally {
@@ -103,7 +138,7 @@ export default function PlanPicker() {
                     checked={selectedPlanId === p.plan_id}
                     onChange={() => setSelectedPlanId(p.plan_id)}
                   />
-                  <div className="min-w-0 flex-1">
+                  <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium text-gray-900 truncate">{p.name || '(Không có tên)'}</div>
                     {p.description && (
                       <div className="text-xs text-gray-600 truncate">{p.description}</div>

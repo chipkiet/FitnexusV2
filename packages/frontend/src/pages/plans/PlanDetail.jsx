@@ -87,7 +87,16 @@ export default function PlanDetail() {
                 <div className="flex items-center gap-2">
                   <button
                     className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
-                    onClick={() => navigate('/exercises')}
+                    onClick={() => {
+                      try {
+                        const ctx = {
+                          plan_id: Number(planId),
+                          name: plan?.name || '',
+                        };
+                        sessionStorage.setItem('current_plan_context', JSON.stringify(ctx));
+                      } catch {}
+                      navigate('/exercises');
+                    }}
                   >
                     Thêm bài tập từ Thư viện
                   </button>
@@ -148,4 +157,3 @@ export default function PlanDetail() {
     </div>
   );
 }
-
