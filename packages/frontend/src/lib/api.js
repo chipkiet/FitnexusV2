@@ -7,6 +7,7 @@ import {
   setTokens,
   isTokenExpired,
 } from "./tokenManager.js";
+import {exp} from "@tensorflow/tfjs";
 
 const BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3001";
 
@@ -34,6 +35,8 @@ export const endpoints = {
     base: "/api/plans",
     byId: (id) => `/api/plans/${id}`,
     items: (id) => `/api/plans/${id}/exercises`,
+    reorder: (id) => `/api/plans/${id}/exercises/reorder`,
+    updateExercise: (planId, planExerciseId) => `/api/plans/${planId}/exercises/${planExerciseId}`,
   },
 
   // OAuth session-based (Passport)
@@ -340,3 +343,14 @@ export const getMyPlansApi = async ({ limit = 50, offset = 0 } = {}) => {
 };
 
 export default api;
+
+
+export const reorderPlanExercisesApi = async (planId, exercises) => {
+    const res = await api.put(endpoints.plans.reorder(planId), {exercises});
+    return res.data;
+};
+
+export const updatePlanExerciseApi = async (planId, planExerciseId, data) => {
+    const res = await api.patch(endpoints.plans.updateExercise(planId, planExerciseId), data);
+    return res.data;
+}

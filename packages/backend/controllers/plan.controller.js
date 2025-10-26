@@ -208,10 +208,94 @@ export async function listMyPlans(req, res) {
       }));
       return res.status(200).json({ success: true, data: { items, total: items.length } });
     }
-    // In future: add admin/other views. For now, restrict.
     return res.status(403).json({ success: false, message: "Forbidden" });
   } catch (err) {
     console.error("listMyPlans error:", err);
     return res.status(500).json({ success: false, message: "Internal server error" });
   }
+}
+// Add this function to your plan.controller.js
+
+// Add this function to your plan.controller.js
+// Make sure you have: import { sequelize } from "../config/database.js";
+
+export async function reorderPlanExercises(req, res) {
+    const t = await sequelize.transaction();
+    try {
+        const userId = req.userId;
+        const planId = parseInt(req.params?.planId, 10);
+
+        if (!Number.isFinite(planId) || planId <= 0) {
+            await t.rollback();
+            return res.status(400).json({ success: false, message: "Invalid planId" });
+        }
+
+        // Verify plan ownership
+        const plan = await WorkoutPlan.findOne({ where: { plan_id: planId }, transaction: t });
+        if (!plan) {
+            await t.rollback();
+            return res.status(404).json({ success: false, message: "Plan not found" });
+        }
+        if (plan.creator_id !== userId) {
+            await t.rollback();
+            return res.status(403).json({ success: false, message: "Not authorized" });
+        }
+
+        // Expect array of { plan_exercise_id, session_order }
+        const updates = req.body?.exercises;
+        if (!Array.isArray(updates) || updates.length === 0) {
+            await t.rollback();
+            return res.status(422).json({ success: false, message: "exercises array required" });
+        }
+
+        // STEP 1: Bump all session_order by +10000 to avoid unique constraint conflicts
+        await sequelize.query(
+            `UPDATE plan_exercise_details
+             SET session_order = session_order + 10000
+             WHERE plan_id = :planId`,
+            {
+                replacements: { planId },
+                transaction: t,
+            }
+        );
+
+        // STEP 2: Update each exercise's session_order to the new value
+        for (const item of updates) {
+            const plan_exercise_id = parseInt(item?.plan_exercise_id, 10);
+            const session_order = parseInt(item?.session_order, 10);
+
+            if (!Number.isFinite(plan_exercise_id) || !Number.isFinite(session_order)) {
+                await t.rollback();
+                return res.status(422).json({
+                    success: false,
+                    message: "Invalid plan_exercise_id or session_order"
+                });
+            }
+
+            await PlanExerciseDetail.update(
+                { session_order },
+                {
+                    where: {
+                        plan_exercise_id,
+                        plan_id: planId
+                    },
+                    transaction: t
+                }
+            );
+        }
+
+        await t.commit();
+        return res.status(200).json({
+            success: true,
+            message: "Exercises reordered successfully"
+        });
+    } catch (err) {
+        await t.rollback();
+        console.error("reorderPlanExercises error:", err);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: err.message
+        });
+    }
 }
