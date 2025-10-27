@@ -2,7 +2,7 @@ import { Router } from "express";
 import authGuard from "../middleware/auth.guard.js";
 import {
     getActiveSession,
-    // createWorkoutSession,
+    createWorkoutSession,
     // getWorkoutSession,
     // listWorkoutSessions,
     // updateSessionProgress,
@@ -18,11 +18,9 @@ import {
 
 const router = Router();
 
-// Lấy session đang tập hiện tại , kiểm tra có session nào đang dở không ?
 router.get("/active", authGuard, getActiveSession)
 
-// Nếu không có session workout, tạo workout mới hiện tại
-// router.post("/", authGuard, createWorkoutSession);
+router.post("/", authGuard, createWorkoutSession);
 
 /*
 // Xem lịch sử các buổi tập, các buổi tập đã hoàn thành
