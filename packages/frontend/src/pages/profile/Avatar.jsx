@@ -95,6 +95,25 @@ export default function Avatar() {
     }
   };
 
+  // Remove avatar without browser confirm dialog
+  const handleRemoveAvatarNoConfirm = async () => {
+    try {
+      const response = await api.delete(endpoints.auth.avatar);
+      if (response?.data?.success && response?.data?.data?.user) {
+        updateUserData(response.data.data.user);
+        setNotice({ type: "success", text: "Ảnh đại diện đã được xóa" });
+        setSelectedFile(null);
+        setPreview(null);
+      } else {
+        const serverMsg = typeof response?.data?.message === 'string' ? response.data.message : null;
+        setNotice({ type: "error", text: serverMsg || "Xóa ảnh thất bại" });
+      }
+    } catch (err) {
+      console.error("Remove avatar error:", err);
+      setNotice({ type: "error", text: "Có lỗi xảy ra khi xóa ảnh" });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <HeaderLogin />
@@ -231,7 +250,7 @@ export default function Avatar() {
               <div className="pt-6 border-t border-gray-200">
                 <div className="text-center">
                   <button
-                    onClick={handleRemoveAvatar}
+                    onClick={handleRemoveAvatarNoConfirm}
                     className="text-red-600 hover:text-red-800 text-sm font-medium"
                   >
                     Xóa ảnh đại diện
