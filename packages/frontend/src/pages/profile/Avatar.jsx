@@ -1,30 +1,40 @@
 import React, { useState } from "react";
 import { useAuth } from "../../context/auth.context.jsx";
 import HeaderLogin from "../../components/header/HeaderLogin.jsx";
+import { api, endpoints } from "../../lib/api.js";
 
 export default function Avatar() {
-  const { user } = useAuth();
+  const { user, updateUserData } = useAuth();
   const [selectedFile, setSelectedFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [notice, setNotice] = useState({ type: null, text: "" });
 
+  const getInitial = (u) => {
+    const src = u?.fullName || u?.username || u?.email || "U";
+    const letter = src.trim()[0] || "U";
+    return String(letter).toUpperCase();
+  };
+  const isMailProviderAvatar = (url = "") => /googleusercontent|gravatar|ggpht|gmail|gstatic/i.test(url);
+
+  // Handle file selection
   const handleFileSelect = (e) => {
     const file = e.target.files[0];
     if (file) {
       // Validate file type
-      if (!file.type.startsWith('image/')) {
-        alert('Vui lòng chọn file ảnh');
-        return;
-      }
-      
+      if (!file.type.startsWith("image/")) {
+      setNotice({ type: "error", text: "Vui lòng chọn file ảnh hợp lệ" });
+      return;
+    }
+
       // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        alert('Kích thước file không được vượt quá 5MB');
-        return;
-      }
+      setNotice({ type: "error", text: "Kích thước file không được vượt quá 5MB" });
+      return;
+    }
 
       setSelectedFile(file);
-      
+
       // Create preview
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -34,37 +44,61 @@ export default function Avatar() {
     }
   };
 
+  // Handle upload of the file
   const handleUpload = async () => {
     if (!selectedFile) return;
 
     setIsUploading(true);
     try {
-      // TODO: Implement actual file upload
-      console.log("Uploading file:", selectedFile);
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate upload
-      alert("Ảnh đại diện đã được cập nhật!");
-      setSelectedFile(null);
-      setPreview(null);
+      const formData = new FormData();
+      // Backend expects field name 'avatar'
+      formData.append("avatar", selectedFile);
+
+      // Use existing auth endpoint which returns { success, data: { user } }
+      const response = await api.post(endpoints.auth.avatar, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      const updatedUser = response?.data?.data?.user;
+      if (response?.data?.success && updatedUser) {
+        updateUserData(updatedUser);
+        setNotice({ type: "success", text: "Ảnh đại diện đã được cập nhật thành công" });
+        setSelectedFile(null);
+        setPreview(null);
+      } else {
+        setNotice({ type: "error", text: response?.data?.message || "Tải ảnh thất bại" });
+      }
     } catch (error) {
       console.error("Upload error:", error);
-      alert("Có lỗi xảy ra khi tải lên ảnh");
+      setNotice({ type: "error", text: "Có lỗi xảy ra khi tải lên ảnh" });
     } finally {
       setIsUploading(false);
     }
   };
 
-  const handleRemoveAvatar = () => {
-    if (confirm("Bạn có chắc chắn muốn xóa ảnh đại diện?")) {
-      // TODO: Implement remove avatar API call
-      console.log("Removing avatar");
-      alert("Ảnh đại diện đã được xóa");
+  // Handle removing the avatar
+  const handleRemoveAvatar = async () => {
+    if (!confirm("Bạn có chắc chắn muốn xóa ảnh đại diện?")) return;
+    try {
+      const response = await api.delete(endpoints.auth.avatar);
+      if (response?.data?.success && response?.data?.data?.user) {
+        updateUserData(response.data.data.user);
+        setNotice({ type: "success", text: "Ảnh đại diện đã được xóa" });
+        setSelectedFile(null);
+        setPreview(null);
+      } else {
+        setNotice({ type: "error", text: response?.data?.message || "Xóa ảnh thất bại" });
+      }
+    } catch (err) {
+      console.error("Remove avatar error:", err);
+      setNotice({ type: "error", text: "Có lỗi xảy ra khi xóa ảnh" });
     }
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <HeaderLogin />
-      
+
       <div className="max-w-2xl mx-auto px-4 py-8">
         <div className="bg-white rounded-lg shadow-sm">
           <div className="px-6 py-4 border-b border-gray-200">
@@ -73,34 +107,46 @@ export default function Avatar() {
           </div>
 
           <div className="p-6">
+            {notice?.type && (
+              <div
+                className={`${notice.type === 'success' ? 'bg-green-50 text-green-800 border-green-200' : 'bg-red-50 text-red-800 border-red-200'} border rounded-md px-4 py-3 mb-4`}
+                role="alert"
+              >
+                {notice.text}
+              </div>
+            )}
             {/* Current Avatar */}
             <div className="text-center mb-8">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Ảnh hiện tại</h3>
               <div className="inline-block relative">
-                <div className="w-32 h-32 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center text-white text-4xl font-bold">
-                  {user?.username?.[0]?.toUpperCase() || "U"}
+                <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center">
+                  {(() => {
+                    if (preview) return <img src={preview} alt="Preview" className="w-full h-full object-cover" />;
+                    const be = import.meta.env.VITE_BACKEND_URL || "http://localhost:3001";
+                    const raw = user?.avatarUrl || "";
+                    let src = null;
+                    if (raw) {
+                      const abs = raw.startsWith("http") ? raw : `${be}${raw}`;
+                      if (!isMailProviderAvatar(abs)) src = abs;
+                    }
+                    if (src) return <img src={src} alt="Avatar" className="w-full h-full object-cover" />;
+                    return (
+                      <div className="w-full h-full flex items-center justify-center text-white text-4xl font-bold rounded-full bg-gradient-to-r from-blue-400 to-blue-600">
+                        {getInitial(user)}
+                      </div>
+                    );
+                  })()}
                 </div>
-                {preview && (
-                  <div className="absolute inset-0 w-32 h-32 rounded-full overflow-hidden">
-                    <img
-                      src={preview}
-                      alt="Preview"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                )}
               </div>
               <p className="text-sm text-gray-600 mt-2">
-                {preview ? "Ảnh mới sẽ được áp dụng" : "Chưa có ảnh đại diện"}
+                {preview ? "Ảnh mới sẽ được áp dụng" : user?.avatarUrl ? "" : "Chưa có ảnh đại diện"}
               </p>
             </div>
 
             {/* Upload Section */}
             <div className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Chọn ảnh mới
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Chọn ảnh mới</label>
                 <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-gray-400 transition-colors">
                   <div className="space-y-1 text-center">
                     <svg
@@ -133,9 +179,7 @@ export default function Avatar() {
                       </label>
                       <p className="pl-1">hoặc kéo thả vào đây</p>
                     </div>
-                    <p className="text-xs text-gray-500">
-                      PNG, JPG, GIF lên đến 5MB
-                    </p>
+                    <p className="text-xs text-gray-500">PNG, JPG, GIF lên đến 5MB</p>
                   </div>
                 </div>
               </div>
@@ -150,9 +194,7 @@ export default function Avatar() {
                       </svg>
                     </div>
                     <div className="ml-3">
-                      <h3 className="text-sm font-medium text-blue-800">
-                        File đã chọn: {selectedFile.name}
-                      </h3>
+                      <h3 className="text-sm font-medium text-blue-800">File đã chọn: {selectedFile.name}</h3>
                       <div className="mt-2 text-sm text-blue-700">
                         <p>Kích thước: {(selectedFile.size / 1024 / 1024).toFixed(2)} MB</p>
                         <p>Loại: {selectedFile.type}</p>
@@ -171,7 +213,7 @@ export default function Avatar() {
                 >
                   {isUploading ? "Đang tải lên..." : "Tải lên ảnh"}
                 </button>
-                
+
                 {selectedFile && (
                   <button
                     onClick={() => {

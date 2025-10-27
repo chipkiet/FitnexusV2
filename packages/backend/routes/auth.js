@@ -1,6 +1,7 @@
 // routes/auth.js
 import express from "express";
 import passport from "passport";
+// import { recordLoginHistory } from "../controllers/auth.controller.js";
 
 const router = express.Router();
 
@@ -18,7 +19,8 @@ router.get(
     failureRedirect: `${process.env.FRONTEND_URL}/login`,
     keepSessionInfo: true, 
   }),
-  (req, res) => {
+  async (req, res) => {
+    // login history disabled
 
     const url = new URL("/dashboard", process.env.FRONTEND_URL).toString();
     return res.redirect(url);

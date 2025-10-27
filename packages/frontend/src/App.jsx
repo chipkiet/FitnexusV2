@@ -54,21 +54,13 @@ import AdminUsers from "./pages/admin/AdminUsers.jsx";
 // Account pages
 import PersonalInfo from "./pages/account/PersonalInfo.jsx";
 import ChangePassword from "./pages/account/ChangePassword.jsx";
-import Security from "./pages/account/Security.jsx";
-import Activity from "./pages/account/Activity.jsx";
+// import Activity from "./pages/account/Activity.jsx";
 
-// Profile pages
-import EditProfile from "./pages/profile/EditProfile.jsx";
+// Profile pages (only Avatar kept)
 import Avatar from "./pages/profile/Avatar.jsx";
-import Goals from "./pages/profile/Goals.jsx";
-import Statistics from "./pages/profile/Statistics.jsx";
 
 // Support pages
 import FAQ from "./pages/support/FAQ.jsx";
-import Contact from "./pages/support/Contact.jsx";
-import BugReport from "./pages/support/BugReport.jsx";
-import Guide from "./pages/support/Guide.jsx";
-
 // Settings pages
 import Notifications from "./pages/settings/Notifications.jsx";
 import Language from "./pages/settings/Language.jsx";
@@ -231,32 +223,10 @@ function App() {
               </PrivateRoute>
             }
           />
-          <Route
-            path="/account/security"
-            element={
-              <PrivateRoute>
-                <Security />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/account/activity"
-            element={
-              <PrivateRoute>
-                <Activity />
-              </PrivateRoute>
-            }
-          />
+          {/* Removed Security page */}
+          {/* Activity route removed */}
 
-          {/* Profile Routes */}
-          <Route
-            path="/profile/edit"
-            element={
-              <PrivateRoute>
-                <EditProfile />
-              </PrivateRoute>
-            }
-          />
+          {/* Profile Routes (main profile removed) */}
           <Route
             path="/profile/avatar"
             element={
@@ -265,28 +235,9 @@ function App() {
               </PrivateRoute>
             }
           />
-          <Route
-            path="/profile/goals"
-            element={
-              <PrivateRoute>
-                <Goals />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/profile/statistics"
-            element={
-              <PrivateRoute>
-                <Statistics />
-              </PrivateRoute>
-            }
-          />
 
           {/* Support Routes */}
           <Route path="/support/faq" element={<FAQ />} />
-          <Route path="/support/contact" element={<Contact />} />
-          <Route path="/support/bug-report" element={<BugReport />} />
-          <Route path="/support/guide" element={<Guide />} />
 
           {/* Settings Routes */}
           <Route

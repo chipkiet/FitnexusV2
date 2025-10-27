@@ -27,6 +27,11 @@ export const endpoints = {
     checkEmail: "/api/auth/check-email",
     checkPhone: "/api/auth/check-phone",
     forgot: "/api/auth/forgot-password",
+    updatePersonalInfo: "/api/auth/personal-info",
+    avatar: "/api/auth/avatar",
+    logoutSession: "/api/auth/logout-session",
+    changePassword: "/api/auth/change-password",
+    // loginHistory removed
   },
 
   // Plans
@@ -337,5 +342,7 @@ export const getMyPlansApi = async ({ limit = 50, offset = 0 } = {}) => {
   const res = await api.get(endpoints.plans.base, { params: { mine: 1, limit, offset } });
   return res.data; // expect { success, data: { items, total } } or similar
 };
+
+// getLoginHistoryApi removed
 
 export default api;

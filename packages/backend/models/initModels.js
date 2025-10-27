@@ -11,6 +11,7 @@ import PlanExerciseDetail from "./plan.exercise.detail.model.js";
 import UserWorkoutLog from "./user.workout.log.model.js";
 import UserWorkoutLogDetail from "./user.workout.log.detail.model.js";
 import ExerciseImage from "./exercise.image.model.js";
+import LoginHistory from "./login.history.model.js";
 
 export function initModels() {
   // Khai báo quan hệ 1-n: User hasMany PasswordReset
@@ -76,6 +77,10 @@ export function initModels() {
   Exercise.hasMany(UserWorkoutLogDetail, { foreignKey: 'exercise_id', sourceKey: 'exercise_id', as: 'performedSets' });
   UserWorkoutLogDetail.belongsTo(Exercise, { foreignKey: 'exercise_id', targetKey: 'exercise_id', as: 'exercise' });
   
+  // Users + LoginHistory
+  User.hasMany(LoginHistory, { foreignKey: 'user_id', sourceKey: 'user_id', as: 'loginHistory' });
+  LoginHistory.belongsTo(User, { foreignKey: 'user_id', targetKey: 'user_id', as: 'user' });
+  
   // Trả ra để dùng nếu bạn muốn
   return {
     User,
@@ -90,5 +95,6 @@ export function initModels() {
     PlanExerciseDetail,
     UserWorkoutLog,
     UserWorkoutLogDetail,
+    LoginHistory,
   };
 }
