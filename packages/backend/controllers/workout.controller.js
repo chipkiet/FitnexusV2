@@ -339,12 +339,3 @@ export async function createWorkoutSession(req, res) {
     });
   }
 }
-
-
-
-
-
-
-
-
-
