@@ -24,6 +24,7 @@ import PlanPicker from "./pages/plans/PlanPicker.jsx";
 import PlanDetail from "./pages/plans/PlanDetail.jsx";
 import Logout from "./pages/authentication/Logout.jsx";
 import NotFoundRedirect from "./pages/system/NotFoundRedirect.jsx";
+import WorkoutRun from "./pages/workout/WorkoutRun.jsx";
 
 // Onboarding
 import OnboardingAge from "./pages/boardings/OnboardingAge.jsx";
@@ -192,6 +193,15 @@ function App() {
             path="/exercises/:id"
             element={
                 <ExerciseDetail />             
+            }
+          />
+
+          <Route
+            path="/workout-run/:sessionId"
+            element={
+              <PrivateRoute>
+                <WorkoutRun />
+              </PrivateRoute>
             }
           />
 

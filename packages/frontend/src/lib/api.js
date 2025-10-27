@@ -354,3 +354,34 @@ export const updatePlanExerciseApi = async (planId, planExerciseId, data) => {
     const res = await api.patch(endpoints.plans.updateExercise(planId, planExerciseId), data);
     return res.data;
 }
+
+// ===== Workout convenience APIs =====
+export const getActiveWorkoutSessionApi = async () => {
+  const res = await api.get('/api/workout/active');
+  return res.data;
+};
+
+export const createWorkoutSessionApi = async ({ plan_id, notes }) => {
+  const res = await api.post('/api/workout', { plan_id, notes });
+  return res.data;
+};
+
+export const getCurrentExerciseApi = async (sessionId) => {
+  const res = await api.get(`/api/workout/${sessionId}/current`);
+  return res.data;
+};
+
+export const completeCurrentExerciseApi = async (sessionId) => {
+  const res = await api.post(`/api/workout/${sessionId}/current/complete`);
+  return res.data;
+};
+
+export const skipCurrentExerciseApi = async (sessionId) => {
+  const res = await api.post(`/api/workout/${sessionId}/current/skip`);
+  return res.data;
+};
+
+export const completeWorkoutSessionApi = async (sessionId, payload = {}) => {
+  const res = await api.post(`/api/workout/${sessionId}/complete`, payload);
+  return res.data;
+};

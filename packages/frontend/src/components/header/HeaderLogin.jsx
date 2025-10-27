@@ -266,7 +266,7 @@ export default function HeaderLogin() {
                         </svg>
                       </button>
                       {activeSubmenu === 'account' && (
-                        <div className="absolute left-full top-0 w-48 ml-1 bg-white border border-gray-200 rounded-md shadow-lg">
+                        <div className="absolute top-0 w-48 ml-1 bg-white border border-gray-200 rounded-md shadow-lg left-full">
                           <button
                             onClick={() => {
                               setShowAvatarMenu(false);
@@ -323,7 +323,7 @@ export default function HeaderLogin() {
                         </svg>
                       </button>
                       {activeSubmenu === 'profile' && (
-                        <div className="absolute left-full top-0 w-48 ml-1 bg-white border border-gray-200 rounded-md shadow-lg">
+                        <div className="absolute top-0 w-48 ml-1 bg-white border border-gray-200 rounded-md shadow-lg left-full">
                           <button
                             onClick={() => {
                               setShowAvatarMenu(false);
@@ -380,7 +380,7 @@ export default function HeaderLogin() {
                         </svg>
                       </button>
                       {activeSubmenu === 'support' && (
-                        <div className="absolute left-full top-0 w-48 ml-1 bg-white border border-gray-200 rounded-md shadow-lg">
+                        <div className="absolute top-0 w-48 ml-1 bg-white border border-gray-200 rounded-md shadow-lg left-full">
                           <button
                             onClick={() => {
                               setShowAvatarMenu(false);
@@ -437,7 +437,7 @@ export default function HeaderLogin() {
                         </svg>
                       </button>
                       {activeSubmenu === 'settings' && (
-                        <div className="absolute left-full top-0 w-48 ml-1 bg-white border border-gray-200 rounded-md shadow-lg">
+                        <div className="absolute top-0 w-48 ml-1 bg-white border border-gray-200 rounded-md shadow-lg left-full">
                           <button
                             onClick={() => {
                               setShowAvatarMenu(false);
@@ -517,7 +517,7 @@ export default function HeaderLogin() {
             href="https://example.com/download-app" // TODO: thay link store/app thực tế
             target="_blank"
             rel="noreferrer"
-            className="px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-full hover:shadow-lg"
+            className="px-4 py-2 text-sm font-semibold text-white bg-gray-400 rounded-full hover:shadow-lg"
           >
             Tải ứng dụng
           </a>
