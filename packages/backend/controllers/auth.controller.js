@@ -1,5 +1,6 @@
 // packages/backend/controllers/auth.controller.js
 import User from "../models/user.model.js";
+ 
 import jwt from "jsonwebtoken";
 import { validationResult } from "express-validator";
 import { Op } from "sequelize";
@@ -8,6 +9,7 @@ import crypto from "crypto";
 import PasswordReset from "../models/passwordReset.model.js";
 import { sendMail } from "../utils/mailer.js";
 import { buildResetPasswordEmail } from "../utils/emailTemplates.js";
+import { uploadBuffer } from "../utils/cloudinary.js";
 
 const generateTokens = (userId, role, rememberMe = false) => {
   const accessTokenExpiry = rememberMe ? "30d" : "4h";
@@ -451,3 +453,220 @@ export const logout = async (req, res) => {
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
+
+// ========= CHANGE PASSWORD (authenticated) =========
+export const changePassword = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { currentPassword, newPassword } = req.body || {};
+
+    if (!userId) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    if (!user.passwordHash) {
+      return res.status(400).json({ success: false, message: "Tài khoản không hỗ trợ đổi mật khẩu trực tiếp" });
+    }
+
+    const ok = await user.comparePassword(currentPassword || "");
+    if (!ok) {
+      return res.status(400).json({ success: false, message: "Mật khẩu hiện tại không đúng" });
+    }
+
+    // Set new password (hook beforeUpdate will hash)
+    user.passwordHash = newPassword;
+    if (user.provider !== "local") user.provider = "local";
+    await user.save();
+
+    return res.json({
+      success: true,
+      message: "Mật khẩu đã được thay đổi thành công",
+    });
+  } catch (err) {
+    console.error("Change password error:", err);
+    return res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+export const updatePersonalInfo = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { email, phone, fullName } = req.body;
+    
+    console.log('Update personal info request:', {
+      userId,
+      body: req.body
+    });
+
+    // Lấy thông tin user hiện tại
+    const user = await User.findByPk(userId);
+    console.log('User found:', !!user);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Kiểm tra email trùng lặp (nếu thay đổi)
+    if (email && email !== user.email) {
+      const existingEmail = await User.findOne({
+        where: { email, user_id: { [Op.ne]: userId } }
+      });
+      if (existingEmail) {
+        return res.status(400).json({
+          success: false,
+          message: "Email đã tồn tại",
+        });
+      }
+    }
+
+    // Kiểm tra phone trùng lặp (nếu thay đổi)
+    if (phone && phone !== user.phone) {
+      const existingPhone = await User.findOne({
+        where: { phone, user_id: { [Op.ne]: userId } }
+      });
+      if (existingPhone) {
+        return res.status(400).json({
+          success: false,
+          message: "Số điện thoại đã tồn tại",
+        });
+      }
+    }
+
+    // fullName provided directly from client (no first/last split)
+
+    // Cập nhật thông tin
+    const updateData = {};
+    if (email !== undefined) updateData.email = email;
+    if (phone !== undefined) updateData.phone = phone;
+    if (fullName !== undefined && typeof fullName === 'string' && fullName.trim() !== '') { updateData.fullName = fullName.trim(); }
+
+    console.log('Update data before save:', updateData);
+    
+    try {
+      await user.update(updateData);
+      console.log('User updated successfully');
+    } catch (updateError) {
+      console.error('Error updating user:', updateError);
+      throw updateError;
+    }
+    
+    // Reload user to get updated data
+    try {
+      await user.reload();
+      console.log('User reloaded successfully');
+    } catch (reloadError) {
+      console.error('Error reloading user:', reloadError);
+      // Don't throw here, we can still return the user data
+    }
+
+    res.json({
+      success: true,
+      message: "Thông tin cá nhân đã được cập nhật thành công",
+      data: { user: getUserData(user) },
+    });
+  } catch (error) {
+    console.error("Update personal info error:", error);
+    
+    // Log detailed error for debugging
+    if (error.name === 'SequelizeValidationError') {
+      console.error('Validation errors:', error.errors);
+      return res.status(400).json({
+        success: false,
+        message: "Dữ liệu không hợp lệ",
+        errors: error.errors.map(err => ({
+          field: err.path,
+          message: err.message
+        }))
+      });
+    }
+    
+    if (error.name === 'SequelizeUniqueConstraintError') {
+      console.error('Unique constraint error:', error.errors);
+      return res.status(400).json({
+        success: false,
+        message: "Email hoặc số điện thoại đã tồn tại",
+      });
+    }
+    
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+// ======== AVATAR UPLOAD / REMOVE ========
+export const uploadAvatar = async (req, res, next) => {
+  try {
+    const userId = req.userId;
+    if (!userId) return res.status(401).json({ success: false, message: "Unauthorized" });
+    if (!req.file || !req.file.buffer) {
+      const err = new Error("No image file uploaded");
+      err.status = 400;
+      return next(err);
+    }
+
+    const user = await User.findByPk(userId);
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    // Upload to Cloudinary
+    const result = await uploadBuffer(req.file.buffer, { folder: `users/${userId}` });
+    user.avatarUrl = result.secure_url;
+    await user.save({ fields: ["avatarUrl"] });
+
+    return res.json({
+      success: true,
+      message: "Avatar updated successfully",
+      data: { user: getUserData(user) },
+    });
+  } catch (err) {
+    return next(err);
+  }
+};
+
+export const removeAvatar = async (req, res, next) => {
+  try {
+    const userId = req.userId;
+    if (!userId) return res.status(401).json({ success: false, message: "Unauthorized" });
+
+    const user = await User.findByPk(userId);
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    user.avatarUrl = null;
+    await user.save({ fields: ["avatarUrl"] });
+
+    return res.json({
+      success: true,
+      message: "Avatar removed",
+      data: { user: getUserData(user) },
+    });
+  } catch (err) {
+    return next(err);
+  }
+};
+// ===== Helpers =====
+function parseUserAgent(ua = "") {
+  const s = String(ua);
+  let os = null;
+  if (/Windows NT 10\.0|Windows NT 11\.0/i.test(s)) os = "Windows";
+  else if (/Android/i.test(s)) os = "Android";
+  else if (/iPhone|iPad|iOS/i.test(s)) os = "iOS";
+  else if (/Mac OS X|Macintosh/i.test(s)) os = "macOS";
+  else if (/Linux/i.test(s)) os = "Linux";
+  let browser = null;
+  if (/Chrome\//i.test(s) && !/Edg\//i.test(s)) browser = "Chrome";
+  else if (/Edg\//i.test(s)) browser = "Edge";
+  else if (/Safari\//i.test(s) && /Version\//i.test(s)) browser = "Safari";
+  else if (/Firefox\//i.test(s)) browser = "Firefox";
+  const device = /Mobile|Android|iPhone|iPad/i.test(s) ? "Mobile" : "Desktop";
+  return { os, browser, device };
+}
+
+ 

@@ -1,4 +1,5 @@
 import { Router } from "express";
+import authOrSession from "../middleware/authOrSession.guard.js";
 import authGuard from "../middleware/auth.guard.js";
 import {
     createPlan,
@@ -12,13 +13,14 @@ import {
 const router = Router();
 
 // List my plans with ?mine=1
-router.get("/", authGuard, listMyPlans);
+// Accept both JWT (mobile/web) and Passport session (OAuth) for plan APIs
+router.get("/", authOrSession, listMyPlans);
 
-router.post("/", authGuard, createPlan);
+router.post("/", authOrSession, createPlan);
 
-router.get("/:planId", authGuard, getPlanById);
+router.get("/:planId", authOrSession, getPlanById);
 
-router.post("/:planId/exercises", authGuard, addExerciseToPlan);
+router.post("/:planId/exercises", authOrSession, addExerciseToPlan);
 
 router.put("/:planId/exercises/reorder", authGuard, reorderPlanExercises)
 

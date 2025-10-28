@@ -1,4 +1,3 @@
-// src/components/layout/HeaderApp.jsx
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/auth.context.jsx";
@@ -30,8 +29,16 @@ export default function HeaderLogin() {
       navigate("/", { replace: true });
     }
   };
+
   const displayName = (user?.username || "").replaceAll("_", " ");
 
+  const getInitial = (u) => {
+    const src = u?.fullName || u?.username || u?.email || "U";
+    const letter = src.trim()[0] || "U";
+    return String(letter).toUpperCase();
+  };
+
+  const isMailProviderAvatar = (url = "") => /googleusercontent|gravatar|ggpht|gmail|gstatic/i.test(url);
 
   useEffect(() => {
     setOpenMobile(false);
@@ -43,10 +50,10 @@ export default function HeaderLogin() {
 
   useEffect(() => {
     const onDown = (e) => {
-      if(communityRef.current && !communityRef.current.contains(e.target)) {
+      if (communityRef.current && !communityRef.current.contains(e.target)) {
         setOpenCommunity(false);
       }
-      if(avatarMenuRef.current && !avatarMenuRef.current.contains(e.target)) {
+      if (avatarMenuRef.current && !avatarMenuRef.current.contains(e.target)) {
         setShowAvatarMenu(false);
         setActiveSubmenu(null);
       }
@@ -90,7 +97,6 @@ export default function HeaderLogin() {
   return (
     <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/85 backdrop-blur-xl">
       <div className="flex items-center justify-between px-4 py-2 mx-auto max-w-7xl">
-       
         <button
           onClick={() => navigate("/dashboard")}
           className="-m-2.5 p-2.5 shrink-0"
@@ -118,7 +124,6 @@ export default function HeaderLogin() {
           >
             AI
           </button>
-          
 
           <div className="relative" ref={workoutRef}>
             <button
@@ -129,7 +134,7 @@ export default function HeaderLogin() {
             >
               Luyện tập
               <svg className="w-4 h-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z"/>
+                <path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" />
               </svg>
             </button>
 
@@ -188,8 +193,6 @@ export default function HeaderLogin() {
           >
             Dinh dưỡng
           </button>
-          
-
 
           <div className="relative" ref={communityRef}>
             <button
@@ -200,7 +203,7 @@ export default function HeaderLogin() {
             >
               Cộng đồng
               <svg className="w-4 h-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z"/>
+                <path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" />
               </svg>
             </button>
 
@@ -229,44 +232,76 @@ export default function HeaderLogin() {
                       : navigate("/trainer-demo")
                   }
                   className="inline-flex items-center text-sm text-gray-800 hover:text-blue-600"
-                  >
+                >
                   Fitness Trainer
                 </button>
               </div>
             )}
           </div>
-
         </nav>
 
-        {/* CTA phải: “Tải ứng dụng” + Đăng nhập (theo form eDoctor) */}
         <div className="items-center hidden gap-3 md:flex">
-
-        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4">
             {user ? (
               <div className="relative" ref={avatarMenuRef}>
                 <button
                   onClick={() => setShowAvatarMenu(!showAvatarMenu)}
                   className="flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 >
-                  <div className="flex items-center justify-center w-10 h-10 font-medium text-white rounded-full bg-gradient-to-r from-blue-400 to-blue-600">
-                    {user?.username?.[0]?.toUpperCase() || "U"}
-                  </div>
+                  {(() => {
+                    const be = import.meta.env.VITE_BACKEND_URL || "http://localhost:3001";
+                    const raw = user?.avatarUrl || "";
+                    let src = null;
+                    if (raw) {
+                      const abs = raw.startsWith("http") ? raw : `${be}${raw}`;
+                      if (!isMailProviderAvatar(abs)) src = abs;
+                    }
+                    if (src) {
+                      return <img src={src} alt="Avatar" className="w-10 h-10 rounded-full object-cover" />;
+                    }
+                    return (
+                      <div className="flex items-center justify-center w-10 h-10 text-white rounded-full bg-gradient-to-r from-blue-400 to-blue-600 font-semibold">
+                        {getInitial(user)}
+                      </div>
+                    );
+                  })()}
                 </button>
                 {showAvatarMenu && (
                   <div className="absolute right-0 z-50 w-64 mt-2 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5">
                     {/* Tài khoản */}
+                    {false && (
+                    <button
+                      onClick={() => {
+                        setShowAvatarMenu(false);
+                        setActiveSubmenu(null);
+                        navigate("/profile");
+                      }}
+                      className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
+                    >
+                      Hồ sơ
+                    </button>
+                    )}
+                    {/* Account, Profile, Support submenus */}
                     <div className="relative">
                       <button
                         onClick={() => setActiveSubmenu(activeSubmenu === 'account' ? null : 'account')}
                         className="flex items-center justify-between w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
                       >
                         <span>Tài khoản</span>
-                        <svg className={`w-4 h-4 transition-transform ${activeSubmenu === 'account' ? 'rotate-180' : ''}`} fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                        <svg
+                          className={`w-4 h-4 transition-transform ${activeSubmenu === 'account' ? 'rotate-180' : ''}`}
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                            clipRule="evenodd"
+                          />
                         </svg>
                       </button>
                       {activeSubmenu === 'account' && (
-                        <div className="absolute left-full top-0 w-48 ml-1 bg-white border border-gray-200 rounded-md shadow-lg">
+                        <div className="absolute top-0 w-48 ml-1 bg-white border border-gray-200 rounded-md shadow-lg left-full">
                           <button
                             onClick={() => {
                               setShowAvatarMenu(false);
@@ -287,26 +322,6 @@ export default function HeaderLogin() {
                           >
                             Đổi mật khẩu
                           </button>
-                          <button
-                            onClick={() => {
-                              setShowAvatarMenu(false);
-                              setActiveSubmenu(null);
-                              navigate("/account/security");
-                            }}
-                            className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
-                          >
-                            Bảo mật
-                          </button>
-                          <button
-                            onClick={() => {
-                              setShowAvatarMenu(false);
-                              setActiveSubmenu(null);
-                              navigate("/account/activity");
-                            }}
-                            className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
-                          >
-                            Lịch sử hoạt động
-                          </button>
                         </div>
                       )}
                     </div>
@@ -318,22 +333,20 @@ export default function HeaderLogin() {
                         className="flex items-center justify-between w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
                       >
                         <span>Hồ sơ</span>
-                        <svg className={`w-4 h-4 transition-transform ${activeSubmenu === 'profile' ? 'rotate-180' : ''}`} fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                        <svg
+                          className={`w-4 h-4 transition-transform ${activeSubmenu === 'profile' ? 'rotate-180' : ''}`}
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                            clipRule="evenodd"
+                          />
                         </svg>
                       </button>
                       {activeSubmenu === 'profile' && (
-                        <div className="absolute left-full top-0 w-48 ml-1 bg-white border border-gray-200 rounded-md shadow-lg">
-                          <button
-                            onClick={() => {
-                              setShowAvatarMenu(false);
-                              setActiveSubmenu(null);
-                              navigate("/profile/edit");
-                            }}
-                            className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
-                          >
-                            Chỉnh sửa hồ sơ
-                          </button>
+                        <div className="absolute top-0 w-48 ml-1 bg-white border border-gray-200 rounded-md shadow-lg left-full">
                           <button
                             onClick={() => {
                               setShowAvatarMenu(false);
@@ -344,30 +357,18 @@ export default function HeaderLogin() {
                           >
                             Ảnh đại diện
                           </button>
-                          <button
-                            onClick={() => {
-                              setShowAvatarMenu(false);
-                              setActiveSubmenu(null);
-                              navigate("/profile/goals");
-                            }}
-                            className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
-                          >
-                            Mục tiêu fitness
-                          </button>
-                          <button
-                            onClick={() => {
-                              setShowAvatarMenu(false);
-                              setActiveSubmenu(null);
-                              navigate("/profile/statistics");
-                            }}
-                            className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
-                          >
-                            Thống kê
-                          </button>
                         </div>
                       )}
                     </div>
 
+                    {/* Support → direct navigate */}
+                    <button
+                      onClick={() => { setShowAvatarMenu(false); setActiveSubmenu(null); navigate("/support/faq"); }}
+                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      Hỗ trợ
+                    </button>
+                    {/* Settings */}
                     {/* Hỗ trợ */}
                     <div className="relative">
                       <button
@@ -380,7 +381,7 @@ export default function HeaderLogin() {
                         </svg>
                       </button>
                       {activeSubmenu === 'support' && (
-                        <div className="absolute left-full top-0 w-48 ml-1 bg-white border border-gray-200 rounded-md shadow-lg">
+                        <div className="absolute top-0 w-48 ml-1 bg-white border border-gray-200 rounded-md shadow-lg left-full">
                           <button
                             onClick={() => {
                               setShowAvatarMenu(false);
@@ -432,12 +433,20 @@ export default function HeaderLogin() {
                         className="flex items-center justify-between w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
                       >
                         <span>Cài đặt</span>
-                        <svg className={`w-4 h-4 transition-transform ${activeSubmenu === 'settings' ? 'rotate-180' : ''}`} fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                        <svg
+                          className={`w-4 h-4 transition-transform ${activeSubmenu === 'settings' ? 'rotate-180' : ''}`}
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                            clipRule="evenodd"
+                          />
                         </svg>
                       </button>
                       {activeSubmenu === 'settings' && (
-                        <div className="absolute left-full top-0 w-48 ml-1 bg-white border border-gray-200 rounded-md shadow-lg">
+                        <div className="absolute top-0 w-48 ml-1 bg-white border border-gray-200 rounded-md shadow-lg left-full">
                           <button
                             onClick={() => {
                               setShowAvatarMenu(false);
@@ -458,26 +467,26 @@ export default function HeaderLogin() {
                           >
                             Ngôn ngữ
                           </button>
-                    <button
-                      onClick={() => {
-                        setShowAvatarMenu(false);
+                          <button
+                            onClick={() => {
+                              setShowAvatarMenu(false);
                               setActiveSubmenu(null);
                               navigate("/settings/theme");
-                      }}
-                      className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
-                    >
+                            }}
+                            className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
+                          >
                             Chế độ tối
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowAvatarMenu(false);
+                          </button>
+                          <button
+                            onClick={() => {
+                              setShowAvatarMenu(false);
                               setActiveSubmenu(null);
                               navigate("/settings/privacy");
-                      }}
-                      className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
-                    >
+                            }}
+                            className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
+                          >
                             Quyền riêng tư
-                    </button>
+                          </button>
                         </div>
                       )}
                     </div>
@@ -514,19 +523,17 @@ export default function HeaderLogin() {
             )}
           </div>
           <a
-            href="https://example.com/download-app" // TODO: thay link store/app thực tế
+            href="https://example.com/download-app"
             target="_blank"
             rel="noreferrer"
-            className="px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-full hover:shadow-lg"
+            className="px-4 py-2 text-sm font-semibold text-white bg-gray-400 rounded-full hover:shadow-lg"
           >
             Tải ứng dụng
           </a>
-
-          
         </div>
       </div>
 
-      {/* Mobile sheet theo form eDoctor (danh mục phẳng + nhóm Luyện tập) */}
+      {/* Mobile sheet */}
       {openMobile && (
         <div className="bg-white border-t border-gray-200 md:hidden">
           <div className="px-4 py-3 space-y-2">
@@ -579,7 +586,7 @@ export default function HeaderLogin() {
             </button>
 
             <a
-              href="https://example.com/download-app" // TODO: thay link store/app thực tế
+              href="https://example.com/download-app"
               target="_blank"
               rel="noreferrer"
               className="block w-full py-2 font-semibold text-left text-blue-600"

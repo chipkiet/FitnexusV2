@@ -28,6 +28,11 @@ export const endpoints = {
     checkEmail: "/api/auth/check-email",
     checkPhone: "/api/auth/check-phone",
     forgot: "/api/auth/forgot-password",
+    updatePersonalInfo: "/api/auth/personal-info",
+    avatar: "/api/auth/avatar",
+    logoutSession: "/api/auth/logout-session",
+    changePassword: "/api/auth/change-password",
+    // loginHistory removed
   },
 
   // Plans
@@ -350,6 +355,7 @@ export const getMyPlansApi = async ({ limit = 50, offset = 0 } = {}) => {
   return res.data; // expect { success, data: { items, total } } or similar
 };
 
+
 // ===== Admin: popular exercises =====
 export const getAdminPopularExercises = async ({ limit = 50, offset = 0, search = "" } = {}) => {
   const params = { limit, offset };
@@ -405,3 +411,34 @@ export const updatePlanExerciseApi = async (planId, planExerciseId, data) => {
     const res = await api.patch(endpoints.plans.updateExercise(planId, planExerciseId), data);
     return res.data;
 }
+
+// ===== Workout convenience APIs =====
+export const getActiveWorkoutSessionApi = async () => {
+  const res = await api.get('/api/workout/active');
+  return res.data;
+};
+
+export const createWorkoutSessionApi = async ({ plan_id, notes }) => {
+  const res = await api.post('/api/workout', { plan_id, notes });
+  return res.data;
+};
+
+export const getCurrentExerciseApi = async (sessionId) => {
+  const res = await api.get(`/api/workout/${sessionId}/current`);
+  return res.data;
+};
+
+export const completeCurrentExerciseApi = async (sessionId) => {
+  const res = await api.post(`/api/workout/${sessionId}/current/complete`);
+  return res.data;
+};
+
+export const skipCurrentExerciseApi = async (sessionId) => {
+  const res = await api.post(`/api/workout/${sessionId}/current/skip`);
+  return res.data;
+};
+
+export const completeWorkoutSessionApi = async (sessionId, payload = {}) => {
+  const res = await api.post(`/api/workout/${sessionId}/complete`, payload);
+  return res.data;
+};

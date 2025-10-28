@@ -5,6 +5,7 @@ import Exercise from "../models/exercise.model.js";
 import WorkoutPlan from "../models/workout.plan.model.js";
 import { Op } from "sequelize";
 import {sequelize} from "../config/database.js";
+import PlanExerciseDetail from "../models/plan.exercise.detail.model.js";
 
 
 export async function getActiveSession(req, res) {
@@ -17,7 +18,7 @@ export async function getActiveSession(req, res) {
             });
         }
 
-        // Tìm session đang in_progress hoặc paused (ưu tiên cập nhật gần nhất)
+        // Tìm session đang in_progress hoặc paused
         const session = await WorkoutSession.findOne({
             where: {
                 user_id: userId,
@@ -25,13 +26,13 @@ export async function getActiveSession(req, res) {
                     [Op.in]: ['in_progress', 'paused']
                 }
             },
-            order: [['updated_at', 'DESC'], ['started_at', 'DESC']],
+            order: [['started_at', 'DESC']], // Lấy session gần nhất
             include: [
                 {
                     model: WorkoutPlan,
                     as: 'plan',
                     attributes: ['plan_id', 'name', 'description'],
-                    required: false, 
+                    required: false, // LEFT JOIN - vì plan có thể null
                 }
             ],
         });
@@ -45,25 +46,7 @@ export async function getActiveSession(req, res) {
             });
         }
 
-        const includeMode = String(req.query.include || 'summary').toLowerCase();
-        if (includeMode !== 'full') {
-            return res.status(200).json({
-                success: true,
-                data: {
-                    session: {
-                        session_id: session.session_id,
-                        plan_id: session.plan_id,
-                        plan_name: session.plan?.name || null,
-                        status: session.status,
-                        started_at: session.started_at,
-                        current_exercise_index: session.current_exercise_index,
-                        notes: session.notes,
-                    },
-                },
-            });
-        }
-
-        // Có session active → lấy chi tiết exercises và sets (đủ dữ liệu)
+        // Có session active → lấy chi tiết exercises và sets
         const exercises = await WorkoutSessionExercise.findAll({
             where: { session_id: session.session_id },
             order: [['session_order', 'ASC']],
@@ -83,57 +66,61 @@ export async function getActiveSession(req, res) {
                 {
                     model: WorkoutSessionSet,
                     as: 'sets',
-                    separate: true,
                     order: [['set_index', 'ASC']],
-                    required: false,
+                    required: false, // LEFT JOIN - exercise có thể chưa có set nào
                 }
             ],
         });
 
+        // Format response - Summary cho Resume/Restart decision
+        const responseData = {
+            session: {
+                session_id: session.session_id,
+                plan_id: session.plan_id,
+                plan_name: session.plan?.name || null,
+                status: session.status,
+                started_at: session.started_at,
+                updated_at: session.updated_at, // Để tính "Lần cuối tập: X giờ trước"
+                current_exercise_index: session.current_exercise_index,
+                exercises_count: exercises.length,
+                notes: session.notes,
+            },
+            exercises: exercises.map(ex => ({
+                session_exercise_id: ex.session_exercise_id,
+                exercise_id: ex.exercise_id,
+                session_order: ex.session_order,
+                target_sets: ex.target_sets,
+                target_reps: ex.target_reps,
+                target_rest_seconds: ex.target_rest_seconds,
+                completed_sets: ex.completed_sets,
+                status: ex.status,
+                exercise: {
+                    exercise_id: ex.exercise?.exercise_id,
+                    name: ex.exercise?.name,
+                    difficulty_level: ex.exercise?.difficulty_level,
+                    equipment_needed: ex.exercise?.equipment_needed,
+                    image_url: ex.exercise?.thumbnail_url || ex.exercise?.gif_demo_url,
+                },
+                sets: (ex.sets || []).map(set => ({
+                    set_id: set.set_id,
+                    set_index: set.set_index,
+                    actual_reps: set.actual_reps,
+                    actual_weight_kg: set.actual_weight_kg,
+                    rest_seconds: set.rest_seconds,
+                    completed_at: set.completed_at,
+                    notes: set.notes,
+                })),
+            })),
+            summary: {
+                total_exercises: exercises.length,
+                completed_exercises: exercises.filter(ex => ex.status === 'completed').length,
+                current_exercise: exercises[session.current_exercise_index] || null,
+            }
+        };
+
         return res.status(200).json({
             success: true,
-            data: {
-                session: {
-                    session_id: session.session_id,
-                    plan_id: session.plan_id,
-                    plan_name: session.plan?.name || null,
-                    status: session.status,
-                    started_at: session.started_at,
-                    current_exercise_index: session.current_exercise_index,
-                    notes: session.notes,
-                },
-                exercises: exercises.map(ex => ({
-                    session_exercise_id: ex.session_exercise_id,
-                    exercise_id: ex.exercise_id,
-                    session_order: ex.session_order,
-                    target_sets: ex.target_sets,
-                    target_reps: ex.target_reps,
-                    target_rest_seconds: ex.target_rest_seconds,
-                    completed_sets: ex.completed_sets,
-                    status: ex.status,
-                    exercise: {
-                        exercise_id: ex.exercise?.exercise_id,
-                        name: ex.exercise?.name,
-                        difficulty_level: ex.exercise?.difficulty_level,
-                        equipment_needed: ex.exercise?.equipment_needed,
-                        image_url: ex.exercise?.thumbnail_url || ex.exercise?.gif_demo_url,
-                    },
-                    sets: (ex.sets || []).map(set => ({
-                        set_id: set.set_id,
-                        set_index: set.set_index,
-                        actual_reps: set.actual_reps,
-                        actual_weight_kg: set.actual_weight_kg,
-                        rest_seconds: set.rest_seconds,
-                        completed_at: set.completed_at,
-                        notes: set.notes,
-                    })),
-                })),
-                summary: {
-                    total_exercises: exercises.length,
-                    completed_exercises: exercises.filter(ex => ex.status === 'completed').length,
-                    current_exercise: exercises[session.current_exercise_index] || null,
-                }
-            },
+            data: responseData,
         });
 
     } catch (err) {
@@ -339,3 +326,326 @@ export async function createWorkoutSession(req, res) {
     });
   }
 }
+
+// ========== RUN MODE: CURRENT EXERCISE ==========
+export async function getCurrentExercise(req, res) {
+  try {
+    const userId = req.userId;
+    const sessionId = parseInt(req.params.sessionId, 10);
+    if (!userId) return res.status(401).json({ success: false, message: 'Unauthorized' });
+    if (!Number.isFinite(sessionId) || sessionId <= 0) return res.status(400).json({ success: false, message: 'sessionId không hợp lệ' });
+
+    const session = await WorkoutSession.findOne({ where: { session_id: sessionId, user_id: userId } });
+    if (!session) return res.status(404).json({ success: false, message: 'Session không tồn tại' });
+
+    const idx = Number(session.current_exercise_index) || 0;
+
+    const ex = await WorkoutSessionExercise.findOne({
+      where: { session_id: sessionId, session_order: idx + 1 },
+      include: [
+        { model: Exercise, as: 'exercise', attributes: ['exercise_id','name','description','difficulty_level','equipment_needed','thumbnail_url','gif_demo_url'] }
+      ]
+    });
+    const total = await WorkoutSessionExercise.count({ where: { session_id: sessionId } });
+
+    if (!ex) {
+      return res.status(200).json({
+        success: true,
+        data: {
+          session: { session_id: session.session_id, plan_id: session.plan_id, status: session.status, current_exercise_index: idx },
+          exercise: null,
+          is_done: true,
+          total_exercises: total,
+        }
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        session: { session_id: session.session_id, plan_id: session.plan_id, status: session.status, current_exercise_index: idx },
+        exercise: {
+          session_exercise_id: ex.session_exercise_id,
+          exercise_id: ex.exercise_id,
+          name: ex.exercise?.name,
+          description: ex.exercise?.description,
+          image_url: ex.exercise?.thumbnail_url || ex.exercise?.gif_demo_url || null,
+          target_sets: ex.target_sets,
+          target_reps: ex.target_reps,
+          target_rest_seconds: ex.target_rest_seconds,
+          status: ex.status,
+        },
+        is_done: false,
+        total_exercises: total,
+      }
+    });
+  } catch (err) {
+    console.error('getCurrentExercise error:', err);
+    return res.status(500).json({ success: false, message: 'Internal server error', error: err.message });
+  }
+}
+
+export async function completeCurrentExercise(req, res) {
+  const t = await sequelize.transaction();
+  try {
+    const userId = req.userId;
+    const sessionId = parseInt(req.params.sessionId, 10);
+    if (!userId) { await t.rollback(); return res.status(401).json({ success: false, message: 'Unauthorized' }); }
+    if (!Number.isFinite(sessionId) || sessionId <= 0) { await t.rollback(); return res.status(400).json({ success: false, message: 'sessionId không hợp lệ' }); }
+
+    const session = await WorkoutSession.findOne({ where: { session_id: sessionId, user_id: userId }, transaction: t, lock: t.LOCK.UPDATE });
+    if (!session) { await t.rollback(); return res.status(404).json({ success: false, message: 'Session không tồn tại' }); }
+    if (!['in_progress','paused'].includes(session.status)) { await t.rollback(); return res.status(409).json({ success: false, message: 'Session không ở trạng thái đang tập' }); }
+
+    const idx = Number(session.current_exercise_index) || 0;
+    const curr = await WorkoutSessionExercise.findOne({ where: { session_id: sessionId, session_order: idx + 1 }, transaction: t, lock: t.LOCK.UPDATE });
+    if (!curr) {
+      await t.commit();
+      return res.status(200).json({ success: true, data: { done: true } });
+    }
+
+    await WorkoutSessionExercise.update({ status: 'completed' }, { where: { session_exercise_id: curr.session_exercise_id }, transaction: t });
+
+    const total = await WorkoutSessionExercise.count({ where: { session_id: sessionId }, transaction: t });
+    const nextIdx = Math.min(idx + 1, Math.max(0, total));
+    await WorkoutSession.update({ current_exercise_index: nextIdx, status: 'in_progress' }, { where: { session_id: sessionId }, transaction: t });
+
+    await t.commit();
+    return res.status(200).json({ success: true, data: { next_index: nextIdx, total } });
+  } catch (err) {
+    await t.rollback();
+    console.error('completeCurrentExercise error:', err);
+    return res.status(500).json({ success: false, message: 'Internal server error', error: err.message });
+  }
+}
+
+export async function skipCurrentExercise(req, res) {
+  const t = await sequelize.transaction();
+  try {
+    const userId = req.userId;
+    const sessionId = parseInt(req.params.sessionId, 10);
+    if (!userId) { await t.rollback(); return res.status(401).json({ success: false, message: 'Unauthorized' }); }
+    if (!Number.isFinite(sessionId) || sessionId <= 0) { await t.rollback(); return res.status(400).json({ success: false, message: 'sessionId không hợp lệ' }); }
+
+    const session = await WorkoutSession.findOne({ where: { session_id: sessionId, user_id: userId }, transaction: t, lock: t.LOCK.UPDATE });
+    if (!session) { await t.rollback(); return res.status(404).json({ success: false, message: 'Session không tồn tại' }); }
+    if (!['in_progress','paused'].includes(session.status)) { await t.rollback(); return res.status(409).json({ success: false, message: 'Session không ở trạng thái đang tập' }); }
+
+    const idx = Number(session.current_exercise_index) || 0;
+    const curr = await WorkoutSessionExercise.findOne({ where: { session_id: sessionId, session_order: idx + 1 }, transaction: t, lock: t.LOCK.UPDATE });
+    if (!curr) {
+      await t.commit();
+      return res.status(200).json({ success: true, data: { done: true } });
+    }
+
+    await WorkoutSessionExercise.update({ status: 'skipped' }, { where: { session_exercise_id: curr.session_exercise_id }, transaction: t });
+
+    const total = await WorkoutSessionExercise.count({ where: { session_id: sessionId }, transaction: t });
+    const nextIdx = Math.min(idx + 1, Math.max(0, total));
+    await WorkoutSession.update({ current_exercise_index: nextIdx, status: 'in_progress' }, { where: { session_id: sessionId }, transaction: t });
+
+    await t.commit();
+    return res.status(200).json({ success: true, data: { next_index: nextIdx, total } });
+  } catch (err) {
+    await t.rollback();
+    console.error('skipCurrentExercise error:', err);
+    return res.status(500).json({ success: false, message: 'Internal server error', error: err.message });
+  }
+}
+
+// POST /api/workout/:sessionId/complete
+// Đánh dấu buổi tập đã hoàn thành, tính tổng thời gian buổi
+export async function completeSession(req, res) {
+  try {
+    const userId = req.userId;
+    const sessionId = parseInt(req.params.sessionId, 10);
+    if (!userId) return res.status(401).json({ success: false, message: 'Unauthorized' });
+    if (!Number.isFinite(sessionId) || sessionId <= 0) {
+      return res.status(400).json({ success: false, message: 'sessionId không hợp lệ' });
+    }
+
+    const session = await WorkoutSession.findOne({ where: { session_id: sessionId, user_id: userId } });
+    if (!session) return res.status(404).json({ success: false, message: 'Session không tồn tại' });
+
+    if (['completed', 'cancelled'].includes(session.status)) {
+      return res.status(200).json({
+        success: true,
+        data: {
+          session_id: sessionId,
+          status: session.status,
+          total_duration_seconds: session.total_duration_seconds ?? 0,
+        },
+      });
+    }
+
+    const endedAt = new Date();
+    const startedAt = session.started_at ? new Date(session.started_at) : endedAt;
+    const duration = Math.max(0, Math.floor((endedAt.getTime() - startedAt.getTime()) / 1000));
+
+    await WorkoutSession.update(
+      { status: 'completed', ended_at: endedAt, total_duration_seconds: duration },
+      { where: { session_id: sessionId, user_id: userId } }
+    );
+
+    return res.status(200).json({ success: true, data: { session_id: sessionId, status: 'completed', total_duration_seconds: duration } });
+  } catch (err) {
+    console.error('completeSession error:', err);
+    return res.status(500).json({ success: false, message: 'Internal server error', error: err.message });
+  }
+}
+export async function restartSession(req, res) {
+    const t = await sequelize.transaction();
+
+    try {
+        const userId = req.userId;
+        const oldSessionId = parseInt(req.params?.sessionId, 10);
+
+        if (!userId) {
+            await t.rollback();
+            return res.status(401).json({ success: false, message: "Unauthorized" });
+        }
+
+        if (!Number.isFinite(oldSessionId) || oldSessionId <= 0) {
+            await t.rollback();
+            return res.status(400).json({ success: false, message: "Invalid sessionId" });
+        }
+
+        // ============ 1. GET OLD SESSION ============
+        const oldSession = await WorkoutSession.findOne({
+            where: {
+                session_id: oldSessionId,
+                user_id: userId
+            },
+            transaction: t
+        });
+
+        if (!oldSession) {
+            await t.rollback();
+            return res.status(404).json({ success: false, message: "Session not found" });
+        }
+
+        // Only allow restart if session is active
+        if (!['in_progress', 'paused'].includes(oldSession.status)) {
+            await t.rollback();
+            return res.status(422).json({
+                success: false,
+                message: "Can only restart active sessions"
+            });
+        }
+
+        const planId = oldSession.plan_id;
+        if (!planId) {
+            await t.rollback();
+            return res.status(422).json({
+                success: false,
+                message: "Cannot restart session without plan"
+            });
+        }
+
+        // ============ 2. COMPLETE OLD SESSION ============
+        const endedAt = new Date();
+        const durationSeconds = Math.floor((endedAt - oldSession.started_at) / 1000);
+
+        await oldSession.update({
+            status: 'completed',
+            ended_at: endedAt,
+            total_duration_seconds: durationSeconds,
+            notes: (oldSession.notes || '') + '\n[Auto-completed for restart]'
+        }, { transaction: t });
+
+        // ============ 3. CREATE NEW SESSION (same as createWorkoutSession) ============
+
+        // Get plan
+        const plan = await WorkoutPlan.findOne({
+            where: { plan_id: planId },
+            transaction: t
+        });
+
+        if (!plan) {
+            await t.rollback();
+            return res.status(404).json({ success: false, message: "Plan not found" });
+        }
+
+        // Check permission
+        const hasAccess = plan.creator_id === userId || plan.is_public === true;
+        if (!hasAccess) {
+            await t.rollback();
+            return res.status(403).json({
+                success: false,
+                message: "No permission to use this plan"
+            });
+        }
+
+        // Get plan exercises
+        const planExercises = await PlanExerciseDetail.findAll({
+            where: { plan_id: planId },
+            order: [['session_order', 'ASC'], ['plan_exercise_id', 'ASC']],
+            transaction: t
+        });
+
+        const normalizedExercises = planExercises.map((ex, index) => ({
+            plan_exercise_id: ex.plan_exercise_id,
+            exercise_id: ex.exercise_id,
+            session_order: index + 1,
+            target_sets: ex.sets_recommended,
+            target_reps: ex.reps_recommended,
+            target_rest_seconds: ex.rest_period_seconds
+        }));
+
+        // Create new session
+        const newSession = await WorkoutSession.create({
+            user_id: userId,
+            plan_id: planId,
+            status: 'in_progress',
+            started_at: new Date(),
+            current_exercise_index: 0,
+            notes: null
+        }, { transaction: t });
+
+        // Bulk insert exercises
+        const sessionExercises = normalizedExercises.map(ex => ({
+            session_id: newSession.session_id,
+            plan_exercise_id: ex.plan_exercise_id,
+            exercise_id: ex.exercise_id,
+            session_order: ex.session_order,
+            target_sets: ex.target_sets,
+            target_reps: ex.target_reps,
+            target_rest_seconds: ex.target_rest_seconds,
+            completed_sets: 0,
+            status: 'pending'
+        }));
+
+        if (sessionExercises.length > 0) {
+            sessionExercises[0].status = 'in_progress';
+        }
+
+        await WorkoutSessionExercise.bulkCreate(sessionExercises, { transaction: t });
+
+        // ============ 4. COMMIT ============
+        await t.commit();
+
+        return res.status(201).json({
+            success: true,
+            message: "Session restarted successfully",
+            data: {
+                old_session_id: oldSessionId,
+                new_session_id: newSession.session_id,
+                plan_id: planId,
+                plan_name: plan.name,
+                exercises_count: sessionExercises.length,
+                started_at: newSession.started_at
+            }
+        });
+
+    } catch (err) {
+        await t.rollback();
+        console.error("restartSession error:", err);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: err.message
+        });
+    }
+}
+
+

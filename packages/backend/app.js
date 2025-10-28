@@ -6,6 +6,8 @@ import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import session from 'express-session';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 import passport from './config/passport.js';
 import googleAuthRoutes from './routes/auth.js';   // Google OAuth
@@ -14,11 +16,13 @@ import adminRouter from './routes/admin.routes.js';
 import trainerRouter from './routes/trainer.routes.js';
 import exerciseRouter from './routes/exercise.routes.js';
 import planRouter from './routes/plan.routes.js';
-import adminPlanRouter from './routes/admin.plan.routes.js';
-import workoutRoute from "./routes/workout.routes.js"; // ✅ giữ cả hai import
 
 import onboardingRouter from './routes/onboarding.routes.js';
 import nutritionRouter from './routes/nutrition.routes.js';
+
+
+import workoutRouter from './routes/workout.routes.js';
+
 
 dotenv.config();
 import activityTracker from "./middleware/activity.tracker.js";
@@ -99,12 +103,11 @@ app.use("/api", activityTracker);
 
 // Sau middleware này, mọi request có token hợp lệ sẽ tự cập nhật lastActiveAt
 app.use('/api/admin', adminRouter);
-app.use('/api/admin', adminPlanRouter); // Quản lý plans của user
 app.use('/api/trainer', trainerRouter);
 app.use('/api/onboarding', onboardingRouter);
 app.use('/api/exercises', exerciseRouter);
 app.use('/api/plans', planRouter);
-app.use('/api/workout', workoutRoute);
+app.use('/api/workout', workoutRouter);
 
 /* -------------------- Health & Root -------------------- */
 app.get('/api/health', (_req, res) => {

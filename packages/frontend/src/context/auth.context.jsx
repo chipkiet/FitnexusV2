@@ -28,6 +28,11 @@ export function AuthProvider({ children }) {
     );
   };
 
+  // Cập nhật thông tin user sau khi edit profile
+  const updateUserData = (newUserData) => {
+    setUser((u) => u ? { ...u, ...newUserData } : u);
+  };
+
   /**
    * Sau khi có token/user -> hỏi BE xem còn Onboarding không để điều hướng.
    * - Nếu còn: nhảy tới /onboarding/<nextStepKey>
@@ -84,6 +89,22 @@ export function AuthProvider({ children }) {
   // Làm tươi thông tin user (ưu tiên session OAuth, fallback JWT)
   const refreshUser = async () => {
     try {
+      // Prefer JWT if we already have a token
+      try {
+        const token = getToken();
+        if (token) {
+          const r2 = await api.get(endpoints.auth.me, {
+            params: { t: Date.now() },
+            headers: { "Cache-Control": "no-cache", Pragma: "no-cache" },
+            withCredentials: true,
+          });
+          const u2 = r2?.data?.data;
+          if (r2?.data?.success && u2) {
+            setUser(u2);
+            return true;
+          }
+        }
+      } catch {}
       // Thử lấy từ OAuth session
       const r = await api.get(endpoints.oauth.me, {
         params: { t: Date.now() },
@@ -122,6 +143,23 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const initializeAuth = async () => {
       try {
+        // 0) If JWT token exists, prefer JWT user first
+        try {
+          const token = getToken();
+          if (token) {
+            const r2 = await api.get(endpoints.auth.me, {
+              params: { t: Date.now() },
+              headers: { "Cache-Control": "no-cache", Pragma: "no-cache" },
+              withCredentials: true,
+            });
+            if (r2?.data?.success && r2?.data?.data) {
+              setUser(r2.data.data);
+              return;
+            }
+          }
+        } catch {
+          // ignore and try OAuth session next
+        }
         // 1) OAuth session
         try {
           const r = await api.get(endpoints.oauth.me, {
@@ -182,6 +220,8 @@ export function AuthProvider({ children }) {
       if (data?.user && data?.token) {
         setUser(data.user);
         setTokens(data.token, data.refreshToken, !!payload?.rememberMe);
+        // Clear any old OAuth session cookie to avoid stale user data
+        try { await api.get(endpoints.auth.logoutSession); } catch {}
         // Làm tươi & điều hướng theo onboarding (nếu có navigate)
         await refreshUser();
         if (navigate) await redirectAfterAuth(navigate);
@@ -215,6 +255,8 @@ export function AuthProvider({ children }) {
         // Lưu token và user info
         setUser(data.user);
         setTokens(data.token, data.refreshToken, !!payload?.rememberMe);
+        // Clear any old OAuth session cookie to avoid stale user data
+        try { await api.get(endpoints.auth.logoutSession); } catch {}
         
         // Kiểm tra role và redirect
         if (navigate) {
@@ -301,6 +343,7 @@ export function AuthProvider({ children }) {
       redirectAfterAuth,
       // helpers
       markOnboarded,
+      updateUserData,
       isAuthenticated,
       getAuthStatus,
       clearError: () => setError(null),

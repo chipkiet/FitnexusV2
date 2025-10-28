@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import HeaderLogin from "../../components/header/HeaderLogin.jsx";
+import Alert from "../../components/common/Alert.jsx";
+import { api, endpoints } from "../../lib/api.js";
 
 export default function ChangePassword() {
   const [formData, setFormData] = useState({
@@ -9,6 +11,8 @@ export default function ChangePassword() {
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [success, setSuccess] = useState("");
+  const [error, setError] = useState("");
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -23,6 +27,8 @@ export default function ChangePassword() {
         [name]: ""
       }));
     }
+    if (error) setError("");
+    if (success) setSuccess("");
   };
 
   const validateForm = () => {
@@ -61,18 +67,25 @@ export default function ChangePassword() {
 
     setIsLoading(true);
     try {
-      // TODO: Implement API call to change password
-      console.log("Changing password...");
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
-      alert("Mật khẩu đã được thay đổi thành công!");
-      setFormData({
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: "",
-      });
+      const payload = {
+        currentPassword: formData.currentPassword,
+        newPassword: formData.newPassword,
+        confirmPassword: formData.confirmPassword,
+      };
+      const resp = await api.post(endpoints.auth.changePassword, payload);
+      if (resp?.data?.success) {
+        setSuccess(resp?.data?.message || "Mật khẩu đã được thay đổi thành công!");
+        setError("");
+        setFormData({ currentPassword: "", newPassword: "", confirmPassword: "" });
+      } else {
+        setError(resp?.data?.message || "Không thể thay đổi mật khẩu");
+        setSuccess("");
+      }
     } catch (error) {
       console.error("Error changing password:", error);
-      alert("Có lỗi xảy ra khi thay đổi mật khẩu");
+      const msg = error?.response?.data?.message || "Có lỗi xảy ra khi thay đổi mật khẩu";
+      setError(msg);
+      setSuccess("");
     } finally {
       setIsLoading(false);
     }
@@ -90,6 +103,8 @@ export default function ChangePassword() {
           </div>
 
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
+            {success && <Alert type="success">{success}</Alert>}
+            {error && <Alert type="error">{error}</Alert>}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Mật khẩu hiện tại

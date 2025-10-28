@@ -10,14 +10,10 @@
     "dev:backend": "npm run dev --workspace=backend",
     "dev:frontend": "npm run dev --workspace=frontend",
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
-    
     "xwalk:score": "node scripts/compute_popularity_score.js",
     "xwalk:prepare": "node scripts/normalize_exercise_muscles.js",
-
     "xwalk:import": "node scripts/import_exercises.js",
-
     "xwalk:steps": "node scripts/import_exercise_steps_json.js",
-    
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build"
   },
@@ -35,7 +31,9 @@
     "@google/genai": "^1.23.0",
     "@tensorflow-models/mobilenet": "^2.1.1",
     "@tensorflow/tfjs": "^4.22.0",
+    "cloudinary": "^2.8.0",
     "ioredis": "^5.8.0",
-    "lucide-react": "^0.544.0"
+    "lucide-react": "^0.544.0",
+    "multer": "^2.0.2"
   }
 }

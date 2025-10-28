@@ -11,6 +11,7 @@ import PlanExerciseDetail from "./plan.exercise.detail.model.js";
 import UserWorkoutLog from "./user.workout.log.model.js";
 import UserWorkoutLogDetail from "./user.workout.log.detail.model.js";
 import ExerciseImage from "./exercise.image.model.js";
+import LoginHistory from "./login.history.model.js";
 import ExerciseFavorite from "./exercise.favorite.model.js"; // ✅ giữ lại phần local
 import WorkoutSession from "./workout.session.model.js"; // ✅ giữ lại phần remote
 import WorkoutSessionExercise from "./workout.session.exercise.model.js";
@@ -95,6 +96,12 @@ export function initModels() {
   WorkoutSessionExercise.hasMany(WorkoutSessionSet, { foreignKey: 'session_exercise_id', sourceKey: 'session_exercise_id', as: 'sets' });
   WorkoutSessionSet.belongsTo(WorkoutSessionExercise, { foreignKey: 'session_exercise_id', targetKey: 'session_exercise_id', as: 'sessionExercise' });
   
+  // Users + LoginHistory
+  User.hasMany(LoginHistory, { foreignKey: 'user_id', sourceKey: 'user_id', as: 'loginHistory' });
+  LoginHistory.belongsTo(User, { foreignKey: 'user_id', targetKey: 'user_id', as: 'user' });
+  
+  // Trả ra để dùng nếu bạn muốn
+
   return {
     User,
     PasswordReset,
@@ -109,6 +116,7 @@ export function initModels() {
     PlanExerciseDetail,
     UserWorkoutLog,
     UserWorkoutLogDetail,
+    LoginHistory,
     WorkoutSession,
     WorkoutSessionExercise,
     WorkoutSessionSet,
