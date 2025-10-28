@@ -346,6 +346,7 @@ export async function getCurrentExercise(req, res) {
         { model: Exercise, as: 'exercise', attributes: ['exercise_id','name','description','difficulty_level','equipment_needed','thumbnail_url','gif_demo_url'] }
       ]
     });
+    const total = await WorkoutSessionExercise.count({ where: { session_id: sessionId } });
 
     if (!ex) {
       return res.status(200).json({
@@ -354,6 +355,7 @@ export async function getCurrentExercise(req, res) {
           session: { session_id: session.session_id, plan_id: session.plan_id, status: session.status, current_exercise_index: idx },
           exercise: null,
           is_done: true,
+          total_exercises: total,
         }
       });
     }
@@ -374,6 +376,7 @@ export async function getCurrentExercise(req, res) {
           status: ex.status,
         },
         is_done: false,
+        total_exercises: total,
       }
     });
   } catch (err) {
@@ -644,6 +647,5 @@ export async function restartSession(req, res) {
         });
     }
 }
-
 
 

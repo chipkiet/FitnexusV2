@@ -430,7 +430,7 @@ export default function PlanDetail() {
                       
                       <div className="flex items-center gap-2 shrink-0">
                         <button
-                          className="px-3 py-1.5 text-sm text-blue-600 border border-blue-200 rounded hover:bg-blue-50"
+                          className="px-3 py-1.5 text-sm text-blue-400 border border-blue-200 rounded hover:bg-blue-50"
                           onClick={(e) => {
                             e.stopPropagation();
                             setEditingExercise(it);
