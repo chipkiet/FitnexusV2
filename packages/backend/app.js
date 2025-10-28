@@ -20,6 +20,10 @@ import planRouter from './routes/plan.routes.js';
 import onboardingRouter from './routes/onboarding.routes.js';
 import nutritionRouter from './routes/nutrition.routes.js';
 
+
+import workoutRouter from './routes/workout.routes.js';
+
+
 dotenv.config();
 import activityTracker from "./middleware/activity.tracker.js";
 
@@ -103,6 +107,7 @@ app.use('/api/trainer', trainerRouter);
 app.use('/api/onboarding', onboardingRouter);
 app.use('/api/exercises', exerciseRouter);
 app.use('/api/plans', planRouter);
+app.use('/api/workout', workoutRouter);
 
 /* -------------------- Health & Root -------------------- */
 app.get('/api/health', (_req, res) => {
