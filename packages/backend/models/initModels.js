@@ -11,7 +11,10 @@ import PlanExerciseDetail from "./plan.exercise.detail.model.js";
 import UserWorkoutLog from "./user.workout.log.model.js";
 import UserWorkoutLogDetail from "./user.workout.log.detail.model.js";
 import ExerciseImage from "./exercise.image.model.js";
-import ExerciseFavorite from "./exercise.favorite.model.js";
+import ExerciseFavorite from "./exercise.favorite.model.js"; // ✅ giữ lại phần local
+import WorkoutSession from "./workout.session.model.js"; // ✅ giữ lại phần remote
+import WorkoutSessionExercise from "./workout.session.exercise.model.js";
+import WorkoutSessionSet from "./workout.session.set.model.js";
 
 export function initModels() {
   // Khai báo quan hệ 1-n: User hasMany PasswordReset
@@ -21,7 +24,6 @@ export function initModels() {
     onDelete: "CASCADE",
   });
 
-  // PasswordReset belongsTo User
   PasswordReset.belongsTo(User, {
     foreignKey: "user_id",
     targetKey: "user_id",
@@ -29,19 +31,15 @@ export function initModels() {
   });
 
   // Onboarding relations
-  // Steps ↔ Fields
   OnboardingStep.hasMany(OnboardingField, { foreignKey: 'step_id', sourceKey: 'step_id', as: 'fields' });
   OnboardingField.belongsTo(OnboardingStep, { foreignKey: 'step_id', targetKey: 'step_id', as: 'step' });
 
-  // User ↔ Sessions
   User.hasMany(OnboardingSession, { foreignKey: 'user_id', sourceKey: 'user_id', as: 'onboardingSessions' });
   OnboardingSession.belongsTo(User, { foreignKey: 'user_id', targetKey: 'user_id', as: 'user' });
 
-  // Sessions ↔ Answers
   OnboardingSession.hasMany(OnboardingAnswer, { foreignKey: 'session_id', sourceKey: 'session_id', as: 'answers' });
   OnboardingAnswer.belongsTo(OnboardingSession, { foreignKey: 'session_id', targetKey: 'session_id', as: 'session' });
 
-  // Steps ↔ Answers
   OnboardingStep.hasMany(OnboardingAnswer, { foreignKey: 'step_id', sourceKey: 'step_id', as: 'answers' });
   OnboardingAnswer.belongsTo(OnboardingStep, { foreignKey: 'step_id', targetKey: 'step_id', as: 'step' });
 
@@ -49,15 +47,12 @@ export function initModels() {
   User.hasMany(WorkoutPlan, { foreignKey: 'creator_id', sourceKey: 'user_id', as: 'plans' });
   WorkoutPlan.belongsTo(User, { foreignKey: 'creator_id', targetKey: 'user_id', as: 'creator' });
 
-  // WorkoutPlans ↔ PlanExerciseDetails
   WorkoutPlan.hasMany(PlanExerciseDetail, { foreignKey: 'plan_id', sourceKey: 'plan_id', as: 'items' });
   PlanExerciseDetail.belongsTo(WorkoutPlan, { foreignKey: 'plan_id', targetKey: 'plan_id', as: 'plan' });
 
-  // ExercisesDemo ↔ PlanExerciseDetails
   Exercise.hasMany(PlanExerciseDetail, { foreignKey: 'exercise_id', sourceKey: 'exercise_id', as: 'planItems' });
   PlanExerciseDetail.belongsTo(Exercise, { foreignKey: 'exercise_id', targetKey: 'exercise_id', as: 'exercise' });
 
-  // Exercises ↔ ExerciseImages
   Exercise.hasMany(ExerciseImage, { foreignKey: 'exercise_id', sourceKey: 'exercise_id', as: 'images' });
   ExerciseImage.belongsTo(Exercise, { foreignKey: 'exercise_id', targetKey: 'exercise_id', as: 'exercise' });
 
@@ -65,7 +60,6 @@ export function initModels() {
   Exercise.hasMany(ExerciseFavorite, { foreignKey: 'exercise_id', sourceKey: 'exercise_id', as: 'favorites' });
   ExerciseFavorite.belongsTo(Exercise, { foreignKey: 'exercise_id', targetKey: 'exercise_id', as: 'exercise' });
 
-  // Users ↔ ExerciseFavorites
   User.hasMany(ExerciseFavorite, { foreignKey: 'user_id', sourceKey: 'user_id', as: 'favoriteExercises' });
   ExerciseFavorite.belongsTo(User, { foreignKey: 'user_id', targetKey: 'user_id', as: 'user' });
 
@@ -73,19 +67,34 @@ export function initModels() {
   User.hasMany(UserWorkoutLog, { foreignKey: 'user_id', sourceKey: 'user_id', as: 'workoutLogs' });
   UserWorkoutLog.belongsTo(User, { foreignKey: 'user_id', targetKey: 'user_id', as: 'user' });
 
-  // WorkoutPlans ↔ UserWorkoutLogs
   WorkoutPlan.hasMany(UserWorkoutLog, { foreignKey: 'plan_id', sourceKey: 'plan_id', as: 'logs' });
   UserWorkoutLog.belongsTo(WorkoutPlan, { foreignKey: 'plan_id', targetKey: 'plan_id', as: 'plan' });
 
-  // UserWorkoutLogs ↔ UserWorkoutLogDetails
   UserWorkoutLog.hasMany(UserWorkoutLogDetail, { foreignKey: 'log_id', sourceKey: 'log_id', as: 'sets' });
   UserWorkoutLogDetail.belongsTo(UserWorkoutLog, { foreignKey: 'log_id', targetKey: 'log_id', as: 'log' });
 
-  // ExercisesDemo ↔ UserWorkoutLogDetails
   Exercise.hasMany(UserWorkoutLogDetail, { foreignKey: 'exercise_id', sourceKey: 'exercise_id', as: 'performedSets' });
   UserWorkoutLogDetail.belongsTo(Exercise, { foreignKey: 'exercise_id', targetKey: 'exercise_id', as: 'exercise' });
+
+  // ===== Workout tracking (session-based) =====
+  User.hasMany(WorkoutSession, { foreignKey: 'user_id', sourceKey: 'user_id', as: 'workoutSessions' });
+  WorkoutSession.belongsTo(User, { foreignKey: 'user_id', targetKey: 'user_id', as: 'user' });
+
+  WorkoutPlan.hasMany(WorkoutSession, { foreignKey: 'plan_id', sourceKey: 'plan_id', as: 'sessions' });
+  WorkoutSession.belongsTo(WorkoutPlan, { foreignKey: 'plan_id', targetKey: 'plan_id', as: 'plan' });
+
+  WorkoutSession.hasMany(WorkoutSessionExercise, { foreignKey: 'session_id', sourceKey: 'session_id', as: 'exercises' });
+  WorkoutSessionExercise.belongsTo(WorkoutSession, { foreignKey: 'session_id', targetKey: 'session_id', as: 'session' });
+
+  Exercise.hasMany(WorkoutSessionExercise, { foreignKey: 'exercise_id', sourceKey: 'exercise_id', as: 'sessionExercises' });
+  WorkoutSessionExercise.belongsTo(Exercise, { foreignKey: 'exercise_id', targetKey: 'exercise_id', as: 'exercise' });
+
+  PlanExerciseDetail.hasMany(WorkoutSessionExercise, { foreignKey: 'plan_exercise_id', sourceKey: 'plan_exercise_id', as: 'sessionItems' });
+  WorkoutSessionExercise.belongsTo(PlanExerciseDetail, { foreignKey: 'plan_exercise_id', targetKey: 'plan_exercise_id', as: 'planItem' });
+
+  WorkoutSessionExercise.hasMany(WorkoutSessionSet, { foreignKey: 'session_exercise_id', sourceKey: 'session_exercise_id', as: 'sets' });
+  WorkoutSessionSet.belongsTo(WorkoutSessionExercise, { foreignKey: 'session_exercise_id', targetKey: 'session_exercise_id', as: 'sessionExercise' });
   
-  // Trả ra để dùng nếu bạn muốn
   return {
     User,
     PasswordReset,
@@ -94,11 +103,14 @@ export function initModels() {
     OnboardingSession,
     OnboardingAnswer,
     Exercise,
-  ExerciseImage,
-  ExerciseFavorite,
+    ExerciseImage,
+    ExerciseFavorite,
     WorkoutPlan,
     PlanExerciseDetail,
     UserWorkoutLog,
     UserWorkoutLogDetail,
+    WorkoutSession,
+    WorkoutSessionExercise,
+    WorkoutSessionSet,
   };
 }

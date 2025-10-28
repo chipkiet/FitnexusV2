@@ -11,9 +11,11 @@
     "preview": "vite preview",
     "fetch-mobilenet": "node ./scripts/fetch-tfjs-model.mjs https://storage.googleapis.com/tfjs-models/tfjs/mobilenet_v2_1.0_224 ./public/model/mobilenet_v2_1.0_224",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "deploy": "gh-pages -d dist",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest --runInBand"
   },
   "dependencies": {
+    "@hello-pangea/dnd": "^18.0.1",
     "@react-three/drei": "^10.7.6",
     "@react-three/fiber": "^9.3.0",
     "@tensorflow-models/mobilenet": "^2.1.1",
@@ -37,6 +39,7 @@
     "eslint-plugin-react-refresh": "^0.4.20",
     "gh-pages": "^6.1.1",
     "globals": "^16.3.0",
+    "jest": "^30.2.0",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.17",
     "vite": "^7.1.2"

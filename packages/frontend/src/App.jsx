@@ -15,11 +15,13 @@ import NutritionPersonalize from "./pages/nutrition/NutritionPersonalize.jsx";
 import Dashboard from "./pages/user/Dashboard.jsx";
 import Modeling from "./pages/model3D/Modeling.jsx";
 import ModelingDemo from "./pages/model3D/ModelingDemo.jsx";
+import AiTrainer from "./components/AiTrainer.jsx";
 import ExerciseDetail from "./pages/exercises/ExerciseDetail.jsx";
 import ExercisesDemo from "./pages/exercises/ExercisesDemo.jsx";
 import Exercise from "./pages/exercises/Exercise.jsx";
 import PlanNew from "./pages/plans/PlanNew.jsx";
 import PlanPicker from "./pages/plans/PlanPicker.jsx";
+import PlanDetail from "./pages/plans/PlanDetail.jsx";
 import Logout from "./pages/authentication/Logout.jsx";
 import NotFoundRedirect from "./pages/system/NotFoundRedirect.jsx";
 import AdminPlanDetail from "./pages/admin/AdminPlanDetail.jsx";
@@ -51,6 +53,30 @@ import UserPlanDetails from "./pages/admin/UserPlanDetails.jsx";
 
 import AdminUsers from "./pages/admin/AdminUsers.jsx";
 import AdminPopularExercises from "./pages/admin/PopularExercises.jsx";
+
+// Account pages
+import PersonalInfo from "./pages/account/PersonalInfo.jsx";
+import ChangePassword from "./pages/account/ChangePassword.jsx";
+import Security from "./pages/account/Security.jsx";
+import Activity from "./pages/account/Activity.jsx";
+
+// Profile pages
+import EditProfile from "./pages/profile/EditProfile.jsx";
+import Avatar from "./pages/profile/Avatar.jsx";
+import Goals from "./pages/profile/Goals.jsx";
+import Statistics from "./pages/profile/Statistics.jsx";
+
+// Support pages
+import FAQ from "./pages/support/FAQ.jsx";
+import Contact from "./pages/support/Contact.jsx";
+import BugReport from "./pages/support/BugReport.jsx";
+import Guide from "./pages/support/Guide.jsx";
+
+// Settings pages
+import Notifications from "./pages/settings/Notifications.jsx";
+import Language from "./pages/settings/Language.jsx";
+import Theme from "./pages/settings/Theme.jsx";
+import Privacy from "./pages/settings/Privacy.jsx";
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
@@ -116,6 +142,14 @@ function App() {
           <Route path="/modeling-preview" element={<Navigate to="/modeling-demo" replace />} />
           <Route path="/exercises-demo" element={<ExercisesDemo/>}/>
           <Route
+            path="/ai"
+            element={
+              <PrivateRoute>
+                <AiTrainer />
+              </PrivateRoute>
+            }
+          />
+          <Route
             path="/exercises"
             element={
               <PrivateRoute>
@@ -129,6 +163,14 @@ function App() {
             element={
               <PrivateRoute>
                 <PlanPicker />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/plans/:planId"
+            element={
+              <PrivateRoute>
+                <PlanDetail />
               </PrivateRoute>
             }
           />
@@ -171,6 +213,114 @@ function App() {
             element={
               <PrivateRoute>
                 <Modeling />
+              </PrivateRoute>
+            }
+          />
+
+          {/* Account Routes */}
+          <Route
+            path="/account/personal-info"
+            element={
+              <PrivateRoute>
+                <PersonalInfo />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/account/change-password"
+            element={
+              <PrivateRoute>
+                <ChangePassword />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/account/security"
+            element={
+              <PrivateRoute>
+                <Security />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/account/activity"
+            element={
+              <PrivateRoute>
+                <Activity />
+              </PrivateRoute>
+            }
+          />
+
+          {/* Profile Routes */}
+          <Route
+            path="/profile/edit"
+            element={
+              <PrivateRoute>
+                <EditProfile />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/profile/avatar"
+            element={
+              <PrivateRoute>
+                <Avatar />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/profile/goals"
+            element={
+              <PrivateRoute>
+                <Goals />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/profile/statistics"
+            element={
+              <PrivateRoute>
+                <Statistics />
+              </PrivateRoute>
+            }
+          />
+
+          {/* Support Routes */}
+          <Route path="/support/faq" element={<FAQ />} />
+          <Route path="/support/contact" element={<Contact />} />
+          <Route path="/support/bug-report" element={<BugReport />} />
+          <Route path="/support/guide" element={<Guide />} />
+
+          {/* Settings Routes */}
+          <Route
+            path="/settings/notifications"
+            element={
+              <PrivateRoute>
+                <Notifications />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/settings/language"
+            element={
+              <PrivateRoute>
+                <Language />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/settings/theme"
+            element={
+              <PrivateRoute>
+                <Theme />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/settings/privacy"
+            element={
+              <PrivateRoute>
+                <Privacy />
               </PrivateRoute>
             }
           />

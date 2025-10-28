@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../../assets/logo.png";
 
+
 import absIcon from "../../assets/body/coreIcon.svg";
 import backIcon from "../../assets/body/backIcon.svg";
 import bicepsIcon from "../../assets/body/bicepsIcon.svg";
@@ -24,7 +25,7 @@ const Fitnexus3DLanding = () => {
   const navigate = useNavigate();
   const [controlsActive, setControlsActive] = useState(false);
   const canvasWrapRef = useRef(null);
-  
+
 
   const handleStartOnboarding = async () => {
     if (!isAuthenticated()) {
@@ -40,6 +41,16 @@ const Fitnexus3DLanding = () => {
       });
 
       const data = response?.data?.data || {};
+      if (response?.status === 200 && response?.data?.success) {
+        console.log("[Landing] /api/onboarding/session OK", {
+          required: data.required,
+          completed: data.completed,
+          sessionId: data.sessionId || null,
+          nextStepKey: data.nextStepKey || data.currentStepKey || null,
+        });
+      } else {
+        console.warn("[Landing] /api/onboarding/session unexpected response", response?.status, response?.data);
+      }
       if (data.required && !data.completed) {
         const nextStep = String(
           data.nextStepKey || data.currentStepKey || "age"
@@ -49,7 +60,11 @@ const Fitnexus3DLanding = () => {
         navigate("/dashboard");
       }
     } catch (error) {
-      console.error("Error starting onboarding:", error);
+      console.error("[Landing] Error calling /api/onboarding/session", {
+        message: error?.message,
+        status: error?.response?.status,
+        body: error?.response?.data,
+      });
       navigate("/onboarding/age");
     }
   };

@@ -15,6 +15,7 @@ import trainerRouter from './routes/trainer.routes.js';
 import exerciseRouter from './routes/exercise.routes.js';
 import planRouter from './routes/plan.routes.js';
 import adminPlanRouter from './routes/admin.plan.routes.js';
+import workoutRoute from "./routes/workout.routes.js"; // ✅ giữ cả hai import
 
 import onboardingRouter from './routes/onboarding.routes.js';
 import nutritionRouter from './routes/nutrition.routes.js';
@@ -103,6 +104,7 @@ app.use('/api/trainer', trainerRouter);
 app.use('/api/onboarding', onboardingRouter);
 app.use('/api/exercises', exerciseRouter);
 app.use('/api/plans', planRouter);
+app.use('/api/workout', workoutRoute);
 
 /* -------------------- Health & Root -------------------- */
 app.get('/api/health', (_req, res) => {

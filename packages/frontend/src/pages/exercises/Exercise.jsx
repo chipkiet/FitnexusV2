@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { addExerciseToPlanApi, getPlanByIdApi } from "../../lib/api.js";
 import HeaderLogin from "../../components/header/HeaderLogin.jsx";
 import axios from "axios";
 
@@ -60,6 +61,34 @@ const groupSynonyms = {
 
 export default function Exercise() {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Thông báo trong sidebar: nội dung + tên bài tập + tổng số bài tập trong kế hoạch
+  const [sidebarNotice, setSidebarNotice] = useState(() => {
+    const st = location.state;
+    if (st && st.toast) {
+      return {
+        message: st.toast,
+        addedExerciseName: st.addedExerciseName || "",
+        planItemCount: typeof st.planItemCount === 'number' ? st.planItemCount : undefined,
+        visible: true,
+      };
+    }
+    return { message: "", addedExerciseName: "", planItemCount: undefined, visible: false };
+  });
+  useEffect(() => {
+    const st = location.state;
+    if (st && st.toast) {
+      setSidebarNotice({
+        message: st.toast,
+        addedExerciseName: st.addedExerciseName || "",
+        planItemCount: typeof st.planItemCount === 'number' ? st.planItemCount : undefined,
+        visible: true,
+      });
+      const t = setTimeout(() => setSidebarNotice((v) => ({ ...v, visible: false })), 10000);
+      return () => clearTimeout(t);
+    }
+  }, [location.state]);
 
   // Filters state
   const muscleGroups = [
@@ -103,6 +132,53 @@ export default function Exercise() {
   useEffect(() => {
     try { sessionStorage.setItem("today_workout", JSON.stringify(todayList)); } catch {}
   }, [todayList]);
+
+  // ========== Current Plan Context (from Plan Detail) ==========
+  const [currentPlan, setCurrentPlan] = useState(() => {
+    try {
+      const raw = sessionStorage.getItem("current_plan_context");
+      if (!raw) return null;
+      const obj = JSON.parse(raw);
+      if (obj && obj.plan_id) return obj;
+    } catch {}
+    return null;
+  });
+  const [planItemsSet, setPlanItemsSet] = useState(new Set());
+  const [planItemsCount, setPlanItemsCount] = useState(undefined);
+
+  // Load plan items to mark membership when a current plan is active
+  useEffect(() => {
+    let alive = true;
+    async function loadPlanItems(pid) {
+      try {
+        const res = await getPlanByIdApi(pid);
+        // Expect res.success and res.data.items
+        const list = res?.data?.items || [];
+        const ids = new Set(list.map((it) => String(it.exercise?.id ?? it.exercise_id)));
+        if (!alive) return;
+        setPlanItemsSet(ids);
+        setPlanItemsCount(list.length);
+      } catch (e) {
+        if (!alive) return;
+        setPlanItemsSet(new Set());
+        setPlanItemsCount(undefined);
+      }
+    }
+    if (currentPlan?.plan_id) {
+      loadPlanItems(currentPlan.plan_id);
+    } else {
+      setPlanItemsSet(new Set());
+      setPlanItemsCount(undefined);
+    }
+    return () => { alive = false; };
+  }, [currentPlan?.plan_id]);
+
+  const clearCurrentPlan = () => {
+    try { sessionStorage.removeItem("current_plan_context"); } catch {}
+    setCurrentPlan(null);
+    setPlanItemsSet(new Set());
+    setPlanItemsCount(undefined);
+  };
 
   const toggleGroup = (id) => {
     setSelectedGroups((prev) =>
@@ -170,13 +246,14 @@ export default function Exercise() {
   const normalized = useMemo(() => {
     const list = rawExercises || [];
     return list.map((ex) => {
-      const imageUrlRaw = ex.imageUrl || ex.thumbnail_url || '';
-      const isGif = /\.gif($|\?)/i.test(imageUrlRaw);
-      const safeImage = isGif ? '' : imageUrlRaw; // avoid external gif for cards
+      const id = ex.id ?? ex.exercise_id;
+      // Prefer GIF from DB when available; otherwise use whatever BE provided
+      const mediaUrl = ex.gif_demo_url || ex.imageUrl || ex.thumbnail_url || '';
+      const fallback = `https://picsum.photos/seed/exercise-${encodeURIComponent(id ?? Math.random().toString(36).slice(2))}/800/450`;
       return {
-        id: ex.id ?? ex.exercise_id,
+        id,
         name: ex.name || '',
-        imageUrl: safeImage,
+        imageUrl: mediaUrl || fallback,
         description: ex.description || '',
         difficulty: ex.difficulty || ex.difficulty_level || '',
         impact: ex.impact_level || '',
@@ -253,8 +330,55 @@ export default function Exercise() {
     setTodayList((prev) => prev.filter((x) => x.id !== id));
   };
 
-  const addToPlan = (ex) => {
-    navigate(`/plans/select?exerciseId=${encodeURIComponent(ex.id)}`);
+  const addToPlan = async (ex) => {
+    // If a current plan is active, add directly to that plan; otherwise go pick a plan
+    if (!currentPlan?.plan_id) {
+      navigate(`/plans/select?exerciseId=${encodeURIComponent(ex.id)}`, { state: { exerciseName: ex.name } });
+      return;
+    }
+    try {
+      const res = await addExerciseToPlanApi({
+        planId: currentPlan.plan_id,
+        exercise_id: ex.id,
+        sets_recommended: 3,
+        reps_recommended: "8-12",
+        rest_period_seconds: 60,
+      });
+      // Optimistically update membership set
+      setPlanItemsSet((prev) => new Set([...prev, String(ex.id)]));
+      // Try to get new count from response; otherwise reload plan
+      const fromRes = (() => {
+        if (!res || typeof res !== 'object') return undefined;
+        if (typeof res.plan_item_count === 'number') return res.plan_item_count;
+        if (typeof res.items_count === 'number') return res.items_count;
+        if (typeof res.total_items === 'number') return res.total_items;
+        if (typeof res.total === 'number') return res.total;
+        if (typeof res.count === 'number') return res.count;
+        return undefined;
+      })();
+      let newCount = fromRes;
+      if (typeof fromRes === 'number') setPlanItemsCount(fromRes);
+      else {
+        // Fallback: reload plan to count items
+        try {
+          const r = await getPlanByIdApi(currentPlan.plan_id);
+          const list = r?.data?.items || [];
+          newCount = list.length;
+          setPlanItemsCount(newCount);
+        } catch {}
+      }
+      // Show notice in sidebar
+      setSidebarNotice({
+        message: "Thêm bài tập thành công",
+        addedExerciseName: ex.name || '',
+        planItemCount: typeof newCount === 'number' ? newCount : (typeof planItemsCount === 'number' ? planItemsCount + 1 : undefined),
+        visible: true,
+      });
+      // Auto-hide after 10s
+      setTimeout(() => setSidebarNotice((v) => ({ ...v, visible: false })), 10000);
+    } catch (e) {
+      alert(e?.response?.data?.message || e?.message || 'Không thể thêm vào kế hoạch');
+    }
   };
 
   return (
@@ -372,6 +496,11 @@ export default function Exercise() {
                         {ex.difficulty && <Badge tone="amber">{ex.difficulty}</Badge>}
                         {ex.__raw?.exercise_type && <Badge tone="purple">{ex.__raw.exercise_type}</Badge>}
                         {ex.equipment && <Badge tone="blue">{ex.equipment}</Badge>}
+                        {currentPlan?.plan_id && planItemsSet.has(String(ex.id)) && (
+                          <span className="inline-flex items-center px-2 py-1 text-xs text-green-700 bg-green-50 border border-green-200 rounded">
+                            Thuộc plan {currentPlan.plan_id} - {currentPlan.name || '(Không có tên)'}
+                          </span>
+                        )}
                       </div>
                       <div className="flex items-center gap-2 mt-4">
                         <button
@@ -419,6 +548,64 @@ export default function Exercise() {
           {/* Right: Today dock */}
           <aside className="md:col-span-3">
             <div className="sticky top-20">
+              {/* Current plan context box */}
+              {currentPlan?.plan_id && (
+                <div className="p-3 mb-4 text-sm text-blue-900 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1">
+                      <div className="font-semibold">Plan hiện tại: {currentPlan.plan_id} - {currentPlan.name || '(Không có tên)'}
+                      </div>
+                      {typeof planItemsCount === 'number' && (
+                        <div className="mt-1 text-xs">Hiện có {planItemsCount} bài tập trong kế hoạch này.</div>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        className="text-xs text-blue-700 hover:underline"
+                        onClick={() => navigate(`/plans/${currentPlan.plan_id}`)}
+                      >
+                        Xem
+                      </button>
+                      <button
+                        className="text-xs text-gray-600 hover:underline"
+                        onClick={() => navigate(`/plans/select`)}
+                      >
+                        Đổi
+                      </button>
+                      <button
+                        className="text-xs text-red-600 hover:underline"
+                        onClick={clearCurrentPlan}
+                      >
+                        Bỏ chọn
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {sidebarNotice.visible && (
+                <div className="p-3 mb-4 text-sm text-white bg-green-600 rounded-lg shadow">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1">
+                      <div className="font-semibold">{sidebarNotice.message}</div>
+                      <div className="mt-1 text-xs opacity-90">
+                        {sidebarNotice.addedExerciseName ? (
+                          <span>Đã thêm: <b>{sidebarNotice.addedExerciseName}</b>.</span>
+                        ) : null}
+                        {typeof sidebarNotice.planItemCount === 'number' ? (
+                          <span> Hiện tại kế hoạch có <b>{sidebarNotice.planItemCount}</b> bài tập.</span>
+                        ) : null}
+                      </div>
+                    </div>
+                    <button
+                      className="text-white/90 hover:text-white"
+                      aria-label="Đóng thông báo"
+                      onClick={() => setSidebarNotice((v) => ({ ...v, visible: false }))}
+                    >
+                      ×
+                    </button>
+                  </div>
+                </div>
+              )}
               <div className="p-4 bg-white border rounded-xl">
                 <div className="flex items-center justify-between mb-2">
                   <h2 className="text-lg font-semibold">Buổi tập hôm nay</h2>

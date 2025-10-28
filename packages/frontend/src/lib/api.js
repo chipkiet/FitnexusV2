@@ -7,6 +7,7 @@ import {
   setTokens,
   isTokenExpired,
 } from "./tokenManager.js";
+import {exp} from "@tensorflow/tfjs";
 
 const BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3001";
 
@@ -34,6 +35,8 @@ export const endpoints = {
     base: "/api/plans",
     byId: (id) => `/api/plans/${id}`,
     items: (id) => `/api/plans/${id}/exercises`,
+    reorder: (id) => `/api/plans/${id}/exercises/reorder`,
+    updateExercise: (planId, planExerciseId) => `/api/plans/${planId}/exercises/${planExerciseId}`,
   },
 
   // OAuth session-based (Passport)
@@ -52,6 +55,7 @@ export const endpoints = {
   // Nutrition endpoints
   nutrition: {
     plan: "/api/nutrition/plan",
+    planFromOnboarding: "/api/nutrition/plan/from-onboarding",
   },
 
   admin: {
@@ -95,6 +99,7 @@ const PASS_THROUGH = [
   // Passport callback (nếu dùng)
   "/auth/google/callback",
   "/api/nutrition/plan",
+  "/api/trainer/upload",
 ];
 
 const isPassThroughUrl = (u = "") => PASS_THROUGH.some((p) => u.startsWith(p));
@@ -389,3 +394,14 @@ export const getExerciseFavoriteStatus = async (exerciseId) => {
 };
 
 export default api;
+
+
+export const reorderPlanExercisesApi = async (planId, exercises) => {
+    const res = await api.put(endpoints.plans.reorder(planId), {exercises});
+    return res.data;
+};
+
+export const updatePlanExerciseApi = async (planId, planExerciseId, data) => {
+    const res = await api.patch(endpoints.plans.updateExercise(planId, planExerciseId), data);
+    return res.data;
+}
