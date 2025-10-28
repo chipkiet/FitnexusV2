@@ -14,6 +14,7 @@ import {
   Dumbbell,
   Wallet,
   MessageSquare,
+  Star,
   Bell,
   Search,
   Sun,
@@ -59,6 +60,7 @@ export default function AdminLayout() {
           { icon: IdCard, label: "Admin", to: "/admin/user-detail" },
           { icon: IdCard, label: "Role", to: "/admin/role" }, // trang tách riêng
           { icon: IdCard, label: "Plan", to: "/admin/plan" }, // trang tách riêng
+          { icon: FolderKanban, label: "Quản lý Plans", to: "/admin/user-plans" },
           { icon: Unlock, label: "Lock & Unlock", to: "/admin/lock-unlock" },
           { icon: KeyRound, label: "Reset password", to: "/admin/reset-password" },
         ],
@@ -67,7 +69,10 @@ export default function AdminLayout() {
         key: "content",
         icon: FolderKanban,
         label: "Content Manage",
-        children: [{ label: "Overview", to: "/admin/content" }],
+        children: [
+          { label: "Overview", to: "/admin/content" },
+          { icon: Star, label: "Bài tập được ưa thích", to: "/admin/popular-exercises" },
+        ],
       },
       {
         key: "trainer",

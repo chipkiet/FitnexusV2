@@ -1,6 +1,14 @@
 import { Router } from "express";
 import authOrSession from "../middleware/authOrSession.guard.js";
-import { createPlan, getPlanById, addExerciseToPlan, listMyPlans } from "../controllers/plan.controller.js";
+import authGuard from "../middleware/auth.guard.js";
+import {
+    createPlan,
+    getPlanById,
+    addExerciseToPlan,
+    listMyPlans,
+    reorderPlanExercises,
+    updatePlanExercise
+} from "../controllers/plan.controller.js";
 
 const router = Router();
 
@@ -13,5 +21,10 @@ router.post("/", authOrSession, createPlan);
 router.get("/:planId", authOrSession, getPlanById);
 
 router.post("/:planId/exercises", authOrSession, addExerciseToPlan);
+
+router.put("/:planId/exercises/reorder", authGuard, reorderPlanExercises)
+
+router.patch("/:planId/exercises/:planExerciseId", authGuard, updatePlanExercise);
+
 
 export default router;

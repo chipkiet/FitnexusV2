@@ -7,6 +7,7 @@ import {
   setTokens,
   isTokenExpired,
 } from "./tokenManager.js";
+import {exp} from "@tensorflow/tfjs";
 
 const BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3001";
 
@@ -39,6 +40,8 @@ export const endpoints = {
     base: "/api/plans",
     byId: (id) => `/api/plans/${id}`,
     items: (id) => `/api/plans/${id}/exercises`,
+    reorder: (id) => `/api/plans/${id}/exercises/reorder`,
+    updateExercise: (planId, planExerciseId) => `/api/plans/${planId}/exercises/${planExerciseId}`,
   },
 
   // OAuth session-based (Passport)
@@ -57,6 +60,7 @@ export const endpoints = {
   // Nutrition endpoints
   nutrition: {
     plan: "/api/nutrition/plan",
+    planFromOnboarding: "/api/nutrition/plan/from-onboarding",
   },
 
   admin: {
@@ -66,6 +70,14 @@ export const endpoints = {
     userLock: (id) => `/api/admin/users/${id}/lock`,
     userUnlock: (id) => `/api/admin/users/${id}/unlock`,
 
+    // Plans management
+    plans: {
+      list: "/api/admin/user-plans",
+      byId: (id) => `/api/admin/user-plans/${id}`,
+      updateStatus: (id) => `/api/admin/user-plans/${id}/status`
+    },
+    userPlans: (userId) => `/api/admin/users/${userId}/plans`,
+    userPlanDetail: (userId, planId) => `/api/admin/users/${userId}/plans/${planId}`,
     // ⬇️ NEW: sub-admin endpoints
     listSubAdmins: "/api/admin/subadmins",
     createSubAdmin: "/api/admin/subadmins",
@@ -343,6 +355,90 @@ export const getMyPlansApi = async ({ limit = 50, offset = 0 } = {}) => {
   return res.data; // expect { success, data: { items, total } } or similar
 };
 
-// getLoginHistoryApi removed
+
+// ===== Admin: popular exercises =====
+export const getAdminPopularExercises = async ({ limit = 50, offset = 0, search = "" } = {}) => {
+  const params = { limit, offset };
+  if (search) params.search = search;
+  const res = await api.get('/api/admin/popular-exercises', { params });
+  return res.data;
+};
+
+// Admin User Plans API
+export const getAdminUserPlans = async ({ limit = 50, offset = 0, search = "", status = "" } = {}) => {
+  const params = { limit, offset };
+  if (search) params.search = search;
+  if (status) params.status = status;
+  const res = await api.get('/api/admin/user-plans', { params });
+  return res.data;
+};
+
+export const updatePlanStatus = async (planId, status) => {
+  const res = await api.put(`/api/admin/user-plans/${planId}/status`, { status });
+  return res.data;
+};
+
+export const deletePlan = async (planId) => {
+  const res = await api.delete(`/api/admin/user-plans/${planId}`);
+  return res.data;
+};
+
+// ===== Favorite APIs (user) =====
+export const favoriteExercise = async (exerciseId) => {
+  const res = await api.post(`/api/exercises/${exerciseId}/favorite`);
+  return res.data;
+};
+
+export const unfavoriteExercise = async (exerciseId) => {
+  const res = await api.delete(`/api/exercises/${exerciseId}/favorite`);
+  return res.data;
+};
+
+export const getExerciseFavoriteStatus = async (exerciseId) => {
+  const res = await api.get(`/api/exercises/${exerciseId}/favorite`);
+  return res.data;
+};
 
 export default api;
+
+
+export const reorderPlanExercisesApi = async (planId, exercises) => {
+    const res = await api.put(endpoints.plans.reorder(planId), {exercises});
+    return res.data;
+};
+
+export const updatePlanExerciseApi = async (planId, planExerciseId, data) => {
+    const res = await api.patch(endpoints.plans.updateExercise(planId, planExerciseId), data);
+    return res.data;
+}
+
+// ===== Workout convenience APIs =====
+export const getActiveWorkoutSessionApi = async () => {
+  const res = await api.get('/api/workout/active');
+  return res.data;
+};
+
+export const createWorkoutSessionApi = async ({ plan_id, notes }) => {
+  const res = await api.post('/api/workout', { plan_id, notes });
+  return res.data;
+};
+
+export const getCurrentExerciseApi = async (sessionId) => {
+  const res = await api.get(`/api/workout/${sessionId}/current`);
+  return res.data;
+};
+
+export const completeCurrentExerciseApi = async (sessionId) => {
+  const res = await api.post(`/api/workout/${sessionId}/current/complete`);
+  return res.data;
+};
+
+export const skipCurrentExerciseApi = async (sessionId) => {
+  const res = await api.post(`/api/workout/${sessionId}/current/skip`);
+  return res.data;
+};
+
+export const completeWorkoutSessionApi = async (sessionId, payload = {}) => {
+  const res = await api.post(`/api/workout/${sessionId}/complete`, payload);
+  return res.data;
+};

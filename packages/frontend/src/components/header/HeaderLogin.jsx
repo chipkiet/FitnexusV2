@@ -301,7 +301,7 @@ export default function HeaderLogin() {
                         </svg>
                       </button>
                       {activeSubmenu === 'account' && (
-                        <div className="absolute left-full top-0 w-48 ml-1 bg-white border border-gray-200 rounded-md shadow-lg">
+                        <div className="absolute top-0 w-48 ml-1 bg-white border border-gray-200 rounded-md shadow-lg left-full">
                           <button
                             onClick={() => {
                               setShowAvatarMenu(false);
@@ -346,7 +346,7 @@ export default function HeaderLogin() {
                         </svg>
                       </button>
                       {activeSubmenu === 'profile' && (
-                        <div className="absolute left-full top-0 w-48 ml-1 bg-white border border-gray-200 rounded-md shadow-lg">
+                        <div className="absolute top-0 w-48 ml-1 bg-white border border-gray-200 rounded-md shadow-lg left-full">
                           <button
                             onClick={() => {
                               setShowAvatarMenu(false);
@@ -369,6 +369,64 @@ export default function HeaderLogin() {
                       Hỗ trợ
                     </button>
                     {/* Settings */}
+                    {/* Hỗ trợ */}
+                    <div className="relative">
+                      <button
+                        onClick={() => setActiveSubmenu(activeSubmenu === 'support' ? null : 'support')}
+                        className="flex items-center justify-between w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
+                      >
+                        <span>Hỗ trợ</span>
+                        <svg className={`w-4 h-4 transition-transform ${activeSubmenu === 'support' ? 'rotate-180' : ''}`} fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                        </svg>
+                      </button>
+                      {activeSubmenu === 'support' && (
+                        <div className="absolute top-0 w-48 ml-1 bg-white border border-gray-200 rounded-md shadow-lg left-full">
+                          <button
+                            onClick={() => {
+                              setShowAvatarMenu(false);
+                              setActiveSubmenu(null);
+                              navigate("/support/faq");
+                            }}
+                            className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
+                          >
+                            FAQ
+                          </button>
+                          <button
+                            onClick={() => {
+                              setShowAvatarMenu(false);
+                              setActiveSubmenu(null);
+                              navigate("/support/contact");
+                            }}
+                            className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
+                          >
+                            Liên hệ
+                          </button>
+                          <button
+                            onClick={() => {
+                              setShowAvatarMenu(false);
+                              setActiveSubmenu(null);
+                              navigate("/support/bug-report");
+                            }}
+                            className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
+                          >
+                            Báo lỗi
+                          </button>
+                          <button
+                            onClick={() => {
+                              setShowAvatarMenu(false);
+                              setActiveSubmenu(null);
+                              navigate("/support/guide");
+                            }}
+                            className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
+                          >
+                            Hướng dẫn sử dụng
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Cài đặt */}
                     <div className="relative">
                       <button
                         onClick={() => setActiveSubmenu(activeSubmenu === 'settings' ? null : 'settings')}
@@ -388,7 +446,7 @@ export default function HeaderLogin() {
                         </svg>
                       </button>
                       {activeSubmenu === 'settings' && (
-                        <div className="absolute left-full top-0 w-48 ml-1 bg-white border border-gray-200 rounded-md shadow-lg">
+                        <div className="absolute top-0 w-48 ml-1 bg-white border border-gray-200 rounded-md shadow-lg left-full">
                           <button
                             onClick={() => {
                               setShowAvatarMenu(false);
@@ -468,7 +526,7 @@ export default function HeaderLogin() {
             href="https://example.com/download-app"
             target="_blank"
             rel="noreferrer"
-            className="px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-full hover:shadow-lg"
+            className="px-4 py-2 text-sm font-semibold text-white bg-gray-400 rounded-full hover:shadow-lg"
           >
             Tải ứng dụng
           </a>

@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import api from '../lib/api.js';
-import HeaderDemo from './header/HeaderDemo.jsx';
+import HeaderLogin from './header/HeaderLogin.jsx';
 
 const AiTrainer = () => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -67,11 +67,11 @@ const AiTrainer = () => {
 
   return (
     <div>
-      <HeaderDemo />
-      <div className="w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+      <HeaderLogin />
+      <div className="w-full p-4 mx-auto max-w-7xl sm:p-6 lg:p-8">
       {/* Header */}
-      <header className="text-center mb-8">
-        <h1 className="text-4xl sm:text-5xl font-bold text-sky-400">Fitnexus - AI Trainer</h1>
+      <header className="mb-8 text-center">
+        <h1 className="text-4xl font-bold sm:text-5xl text-sky-400">Fitnexus - AI Trainer</h1>
         <p className="mt-2 text-lg text-slate-300">
           Tải lên ảnh chụp toàn thân để phân tích tỉ lệ cơ thể và nhận gợi ý bài tập
         </p>
@@ -79,47 +79,47 @@ const AiTrainer = () => {
 
       {/* Upload Section */}
       <main>
-        <div className="bg-slate-800 shadow-xl rounded-2xl p-6 max-w-3xl mx-auto mb-10">
+        <div className="max-w-3xl p-6 mx-auto mb-10 shadow-xl bg-slate-800 rounded-2xl">
           <form onSubmit={handleSubmit} className="flex flex-col items-center gap-4">
-            <label htmlFor="file-upload" className="w-full cursor-pointer border-2 border-dashed border-sky-500 text-sky-400 font-bold py-3 px-6 rounded-xl text-center transition-colors duration-300 hover:bg-sky-500 hover:text-slate-900">
+            <label htmlFor="file-upload" className="w-full px-6 py-3 font-bold text-center transition-colors duration-300 border-2 border-dashed cursor-pointer border-sky-500 text-sky-400 rounded-xl hover:bg-sky-500 hover:text-slate-900">
               {selectedFile ? 'Ảnh đã được chọn!' : 'Nhấn vào đây để chọn ảnh'}
             </label>
             <input id="file-upload" type="file" accept="image/png, image/jpeg" onChange={handleFileChange} ref={fileInputRef} className="hidden" />
             {selectedFile && <p className="text-sm text-slate-400">{selectedFile.name}</p>}
             
             <div className="flex gap-4 mt-2">
-              <button type="submit" className="bg-green-500 text-white font-bold py-2 px-8 rounded-lg transition-transform duration-200 hover:scale-105 disabled:bg-gray-500 disabled:cursor-not-allowed disabled:scale-100" disabled={isLoading || !selectedFile}>
+              <button type="submit" className="px-8 py-2 font-bold text-white transition-transform duration-200 bg-green-500 rounded-lg hover:scale-105 disabled:bg-gray-500 disabled:cursor-not-allowed disabled:scale-100" disabled={isLoading || !selectedFile}>
                 {isLoading ? 'Đang xử lý...' : 'Phân tích'}
               </button>
-              {selectedFile && <button type="button" onClick={handleReset} className="bg-red-500 text-white font-bold py-2 px-8 rounded-lg transition-transform duration-200 hover:scale-105">Reset</button>}
+              {selectedFile && <button type="button" onClick={handleReset} className="px-8 py-2 font-bold text-white transition-transform duration-200 bg-red-500 rounded-lg hover:scale-105">Reset</button>}
             </div>
           </form>
-          {error && <p className="text-red-400 mt-4 font-semibold">{error}</p>}
+          {error && <p className="mt-4 font-semibold text-red-400">{error}</p>}
         </div>
 
         {/* Results Section */}
         {(isLoading || analysisResult) && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-10">
+          <div className="grid grid-cols-1 gap-8 mt-10 lg:grid-cols-2">
             {/* Original Image */}
-            <div className="bg-slate-800 shadow-xl rounded-2xl p-6">
-              <h3 className="text-2xl font-bold text-sky-400 mb-4">Ảnh gốc</h3>
+            <div className="p-6 shadow-xl bg-slate-800 rounded-2xl">
+              <h3 className="mb-4 text-2xl font-bold text-sky-400">Ảnh gốc</h3>
               {previewImage && <img src={previewImage} alt="Preview" className="rounded-lg" />}
             </div>
 
             {/* Processed Image & Analysis */}
-            <div className="bg-slate-800 shadow-xl rounded-2xl p-6">
-              <h3 className="text-2xl font-bold text-sky-400 mb-4">Kết quả phân tích</h3>
+            <div className="p-6 shadow-xl bg-slate-800 rounded-2xl">
+              <h3 className="mb-4 text-2xl font-bold text-sky-400">Kết quả phân tích</h3>
               {isLoading && (
-                <div className="flex justify-center items-center h-full">
-                  <div className="w-16 h-16 border-8 border-slate-600 border-t-sky-500 rounded-full animate-spin"></div>
+                <div className="flex items-center justify-center h-full">
+                  <div className="w-16 h-16 border-8 rounded-full border-slate-600 border-t-sky-500 animate-spin"></div>
                 </div>
               )}
               {analysisResult && (
                 <div>
-                  <img src={analysisResult.processed_image_url} alt="Processed" className="rounded-lg mb-6" />
-                  <div className="text-left text-slate-200 space-y-4">
+                  <img src={analysisResult.processed_image_url} alt="Processed" className="mb-6 rounded-lg" />
+                  <div className="space-y-4 text-left text-slate-200">
                     <h4 className="text-xl font-bold text-sky-400">{analysisResult.analysis_data.title}</h4>
-                    <ul className="list-disc list-inside space-y-1">
+                    <ul className="space-y-1 list-disc list-inside">
                       {analysisResult.analysis_data.exercises.map((ex, index) => (
                         <li key={index}>{ex}</li>
                       ))}

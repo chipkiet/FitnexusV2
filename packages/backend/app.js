@@ -16,7 +16,6 @@ import adminRouter from './routes/admin.routes.js';
 import trainerRouter from './routes/trainer.routes.js';
 import exerciseRouter from './routes/exercise.routes.js';
 import planRouter from './routes/plan.routes.js';
-import usersRouter from './routes/users.routes.js';
 
 import onboardingRouter from './routes/onboarding.routes.js';
 import nutritionRouter from './routes/nutrition.routes.js';
@@ -104,12 +103,6 @@ app.use('/api/trainer', trainerRouter);
 app.use('/api/onboarding', onboardingRouter);
 app.use('/api/exercises', exerciseRouter);
 app.use('/api/plans', planRouter);
-app.use('/api/users', usersRouter);
-
-/* -------------------- Static uploads -------------------- */
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 /* -------------------- Health & Root -------------------- */
 app.get('/api/health', (_req, res) => {

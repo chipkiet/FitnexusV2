@@ -1,8 +1,10 @@
 // packages/backend/controllers/admin.controller.js
-import { Op } from "sequelize";
+import { Op, fn, col, literal } from "sequelize";
 import { sequelize } from "../config/database.js";
 import User from "../models/user.model.js";
 import PasswordReset from "../models/passwordReset.model.js";
+import Exercise from "../models/exercise.model.js";
+import ExerciseFavorite from "../models/exercise.favorite.model.js";
 import {
   sendMail,
   lockEmailTemplate,
@@ -118,7 +120,6 @@ export async function listUsers(req, res) {
     const search = String(req.query.search ?? "").trim();
     const planRaw = String(req.query.plan ?? "").trim().toUpperCase();
     const roleRaw = String(req.query.role ?? "").trim().toUpperCase();
-
     const where = {};
     const iLikeOp =
       typeof sequelize?.getDialect === "function" &&
@@ -154,6 +155,23 @@ export async function listUsers(req, res) {
         "lockedAt",
         "created_at",
         "updated_at",
+        [
+          sequelize.literal(`(
+            SELECT COUNT(*) 
+            FROM workout_plans 
+            WHERE workout_plans.creator_id = "User".user_id
+          )`),
+          'total_plans'
+        ],
+        [
+          sequelize.literal(`(
+            SELECT COUNT(*) 
+            FROM workout_plans 
+            WHERE workout_plans.creator_id = "User".user_id
+              AND workout_plans.is_public = true
+          )`),
+          'has_public_plans'
+        ],
       ],
     });
 
@@ -172,6 +190,8 @@ export async function listUsers(req, res) {
         email: json.email,
         role: json.role,
         plan: json.plan,
+        total_plans: Number(json.total_plans) || 0,
+        has_public_plans: Boolean(Number(json.has_public_plans)),
         status: activityStatus,      // dùng cho cột STATUS bên FE
         lastLoginAt: json.lastLoginAt,
         lastActiveAt: json.lastActiveAt,
@@ -190,6 +210,96 @@ export async function listUsers(req, res) {
   } catch (err) {
     console.error("Admin listUsers error:", err);
     return res.status(500).json({ success: false, message: "Internal server error" });
+  }
+}
+
+
+/**
+ * GET /api/admin/popular-exercises
+ * Query: limit, offset, search
+ * Trả về danh sách các bài tập có lượt yêu thích (favorite_count) giảm dần
+ */
+export async function getPopularExercises(req, res) {
+  try {
+    const limitRaw = parseInt(req.query.limit ?? "50", 10);
+    const offsetRaw = parseInt(req.query.offset ?? "0", 10);
+    const limit = Math.min(Math.max(1, isNaN(limitRaw) ? 50 : limitRaw), 200);
+    const offset = Math.max(0, isNaN(offsetRaw) ? 0 : offsetRaw);
+
+    const search = String(req.query.search ?? "").trim();
+
+    const iLikeOp =
+      typeof sequelize?.getDialect === "function" && sequelize.getDialect() === "postgres"
+        ? Op.iLike
+        : Op.like;
+
+    const exerciseWhere = {};
+    if (search) {
+      exerciseWhere[Op.or] = [
+        { name: { [iLikeOp]: `%${search}%` } },
+        { name_en: { [iLikeOp]: `%${search}%` } },
+        { slug: { [iLikeOp]: `%${search}%` } },
+      ];
+    }
+
+    // Query exercises joined with favorites and count favorites
+    const items = await Exercise.findAll({
+      where: exerciseWhere,
+      include: [
+        {
+          model: ExerciseFavorite,
+          as: 'favorites',
+          attributes: [],
+          required: false,
+        },
+      ],
+      attributes: [
+        'exercise_id',
+        'name',
+        'name_en',
+        'slug',
+        'thumbnail_url',
+        [fn('COUNT', col('favorites.favorite_id')), 'favorite_count'],
+      ],
+      group: ['Exercise.exercise_id', 'Exercise.name', 'Exercise.name_en', 'Exercise.slug', 'Exercise.thumbnail_url'],
+      having: literal('COUNT(favorites.favorite_id) > 0'),
+      order: [[literal('favorite_count'), 'DESC']],
+      limit,
+      offset,
+      subQuery: false,
+    });
+
+    // Total count (distinct exercises with favorites and matching search)
+    const totalRows = await Exercise.count({
+      where: exerciseWhere,
+      include: [
+        {
+          model: ExerciseFavorite,
+          as: 'favorites',
+          attributes: [],
+          required: true, // Chỉ đếm bài tập có yêu thích
+        },
+      ],
+      distinct: true,
+      col: 'exercise_id'
+    });
+
+    const resultItems = items.map((e) => {
+      const json = e.toJSON();
+      return {
+        exercise_id: json.exercise_id,
+        name: json.name,
+        name_en: json.name_en,
+        slug: json.slug,
+        thumbnail_url: json.thumbnail_url,
+        favorite_count: Number(json.favorite_count || 0),
+      };
+    });
+
+    return res.json({ success: true, data: { items: resultItems, total: totalRows, limit, offset } });
+  } catch (err) {
+    console.error('Admin getPopularExercises error:', err);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 }
 
