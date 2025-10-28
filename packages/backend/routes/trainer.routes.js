@@ -9,6 +9,7 @@ import { fileURLToPath } from "url";
 import authGuard from "../middleware/auth.guard.js";
 import authOrSession from "../middleware/authOrSession.guard.js";
 import { requireTrainer } from "../middleware/role.guard.js";
+import aiQuota from "../middleware/ai.quota.js";
 const router = Router();
 // Resolve a stable uploads directory next to backend root
 const __filename = fileURLToPath(import.meta.url);
@@ -55,6 +56,7 @@ router.post(
   "/upload",
   authOrSession,
   uploadLimiter,
+  aiQuota('trainer_image_analyze'),
   upload.single("image"),
   async (req, res, next) => {
     if (!req.file) {
