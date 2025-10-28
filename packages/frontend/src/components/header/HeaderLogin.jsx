@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/auth.context.jsx";
 import logo from "../../assets/logo.png";
+import { Crown } from "lucide-react";
 
 export default function HeaderLogin() {
   const navigate = useNavigate();
@@ -27,6 +28,8 @@ export default function HeaderLogin() {
         return "bg-gray-100 text-gray-700 border-gray-300";
     }
   }, [accountType]);
+  const isAdmin = accountType === "admin";
+  const isPremium = accountType === "premium";
 
   const [openMobile, setOpenMobile] = useState(false);
   const [openWorkout, setOpenWorkout] = useState(false);
@@ -283,12 +286,22 @@ export default function HeaderLogin() {
                       const abs = raw.startsWith("http") ? raw : `${be}${raw}`;
                       if (!isMailProviderAvatar(abs)) src = abs;
                     }
-                    if (src) {
-                      return <img src={src} alt="Avatar" className="w-10 h-10 rounded-full object-cover" />;
-                    }
                     return (
-                      <div className="flex items-center justify-center w-10 h-10 text-white rounded-full bg-gradient-to-r from-blue-400 to-blue-600 font-semibold">
-                        {getInitial(user)}
+                      <div className={`relative ${isPremium ? "p-[2px] rounded-full bg-gradient-to-r from-pink-500 via-yellow-400 to-blue-500" : ""}`}>
+                        <div className="relative w-10 h-10 rounded-full overflow-hidden bg-white">
+                          {src ? (
+                            <img src={src} alt="Avatar" className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="flex items-center justify-center w-full h-full text-white rounded-full bg-gradient-to-r from-blue-400 to-blue-600 font-semibold">
+                              {getInitial(user)}
+                            </div>
+                          )}
+                        </div>
+                        {isAdmin && (
+                          <div className="absolute -top-2 left-1/2 -translate-x-1/2" title="Admin">
+                            <Crown className="w-4 h-4 text-yellow-500 drop-shadow" />
+                          </div>
+                        )}
                       </div>
                     );
                   })()}
