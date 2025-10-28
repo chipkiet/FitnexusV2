@@ -1,12 +1,13 @@
 import { Router } from "express";
 import authGuard from "../middleware/auth.guard.js";
+import authOrSession from "../middleware/authOrSession.guard.js";
 import {
     getActiveSession,
     createWorkoutSession,
     restartSession,
     // Detail/list
     // getWorkoutSession,
-    // listWorkoutSessions,
+    listWorkoutSessions,
     // Progress
     // updateSessionProgress,
     // pauseSession,
@@ -27,18 +28,21 @@ import {
 
 const router = Router();
 
-router.get("/active", authGuard, getActiveSession)
+router.get("/active", authOrSession, getActiveSession)
 
-router.post("/", authGuard, createWorkoutSession);
+router.post("/", authOrSession, createWorkoutSession);
 
-router.post("/:sessionId/restart", authGuard, restartSession);
+router.post("/:sessionId/restart", authOrSession, restartSession);
 
 // Run mode: current exercise helpers
-router.get("/:sessionId/current", authGuard, getCurrentExercise);
-router.post("/:sessionId/current/complete", authGuard, completeCurrentExercise);
-router.post("/:sessionId/current/skip", authGuard, skipCurrentExercise);
+router.get("/:sessionId/current", authOrSession, getCurrentExercise);
+router.post("/:sessionId/current/complete", authOrSession, completeCurrentExercise);
+router.post("/:sessionId/current/skip", authOrSession, skipCurrentExercise);
 
-router.post("/:sessionId/complete", authGuard, completeSession);
+router.post("/:sessionId/complete", authOrSession, completeSession);
+
+// List sessions (history / active)
+router.get("/", authOrSession, listWorkoutSessions);
 
 
 /*

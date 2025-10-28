@@ -257,10 +257,10 @@ export default function HeaderLogin() {
                       if (!isMailProviderAvatar(abs)) src = abs;
                     }
                     if (src) {
-                      return <img src={src} alt="Avatar" className="w-10 h-10 rounded-full object-cover" />;
+                      return <img src={src} alt="Avatar" className="object-cover w-10 h-10 rounded-full" />;
                     }
                     return (
-                      <div className="flex items-center justify-center w-10 h-10 text-white rounded-full bg-gradient-to-r from-blue-400 to-blue-600 font-semibold">
+                      <div className="flex items-center justify-center w-10 h-10 font-semibold text-white rounded-full bg-gradient-to-r from-blue-400 to-blue-600">
                         {getInitial(user)}
                       </div>
                     );
@@ -360,16 +360,6 @@ export default function HeaderLogin() {
                         </div>
                       )}
                     </div>
-
-                    {/* Support → direct navigate */}
-                    <button
-                      onClick={() => { setShowAvatarMenu(false); setActiveSubmenu(null); navigate("/support/faq"); }}
-                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
-                    >
-                      Hỗ trợ
-                    </button>
-                    {/* Settings */}
-                    {/* Hỗ trợ */}
                     <div className="relative">
                       <button
                         onClick={() => setActiveSubmenu(activeSubmenu === 'support' ? null : 'support')}
