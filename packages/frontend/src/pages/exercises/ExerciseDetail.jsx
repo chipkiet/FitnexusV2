@@ -2,6 +2,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { favoriteExercise, unfavoriteExercise, getExerciseFavoriteStatus } from '../../lib/api.js';
+import { Heart } from 'lucide-react';
 import { useAuth } from "../../context/auth.context.jsx";
 
 function Badge({ children, tone = "gray" }) {
@@ -41,6 +43,8 @@ export default function ExerciseDetail() {
 
   const [mainMedia, setMainMedia] = useState(null); // url ảnh/gif đang hiển thị
   const { user } = useAuth();
+  const [favorited, setFavorited] = useState(false);
+  const [favoriteCount, setFavoriteCount] = useState(0);
 
   // Scroll to top when switching exercise
   useEffect(() => {
@@ -204,9 +208,20 @@ export default function ExerciseDetail() {
           const arr = Array.isArray(payload) ? payload : [];
           setSteps(arr);
         }
-      } catch {}
+      } catch {
+  
+      }
+      // fetch favorite status/count
+      try {
+        const favRes = await getExerciseFavoriteStatus(exercise.exercise_id).catch(() => null);
+        if (alive && favRes?.data) {
+          setFavorited(!!favRes.data.favorited);
+          setFavoriteCount(Number(favRes.data.favorite_count || 0));
+        }
+      } catch (e) {
+        // ignore
+      }
     }
-
     fetchExtra();
   }, [exercise]);
 
@@ -375,13 +390,39 @@ export default function ExerciseDetail() {
                     <p className="text-sm text-gray-500">{exercise.name_en}</p>
                   )}
                 </div>
-                <button
-                  type="button"
-                  onClick={handleAddToPlan}
-                  className="inline-flex items-center px-3 py-2 text-sm font-medium text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50"
-                >
-                  + Thêm vào Plan
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleAddToPlan}
+                    className="inline-flex items-center px-3 py-2 text-sm font-medium text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50"
+                  >
+                    + Thêm vào Plan
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (!user) return navigate('/login', { state: { from: `/exercises/${exercise.slug}` } });
+                      try {
+                        if (!favorited) {
+                          const r = await favoriteExercise(exercise.exercise_id);
+                          setFavorited(true);
+                          setFavoriteCount(Number(r.data.favorite_count || favoriteCount + 1));
+                        } else {
+                          const r = await unfavoriteExercise(exercise.exercise_id);
+                          setFavorited(false);
+                          setFavoriteCount(Number(r.data.favorite_count || Math.max(0, favoriteCount - 1)));
+                        }
+                      } catch (e) {
+                        alert(e?.response?.data?.message || 'Lỗi xử lý yêu thích');
+                      }
+                    }}
+                    className={`inline-flex items-center px-3 py-2 text-sm font-medium rounded-lg ${favorited ? 'bg-red-50 text-red-600 border border-red-200' : 'text-gray-700 border border-gray-200 hover:bg-gray-50'}`}
+                  >
+                    <Heart className={`w-4 h-4 mr-2 ${favorited ? 'text-red-600' : 'text-gray-500'}`} />
+                    {favorited ? 'Đã yêu thích' : 'Yêu thích'} ({favoriteCount})
+                  </button>
+                </div>
               </div>
 
               <div className="flex flex-wrap items-center gap-2 mb-4">
