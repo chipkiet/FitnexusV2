@@ -22,7 +22,7 @@ import PlanNew from "./pages/plans/PlanNew.jsx";
 import PlanPicker from "./pages/plans/PlanPicker.jsx";
 import Logout from "./pages/authentication/Logout.jsx";
 import NotFoundRedirect from "./pages/system/NotFoundRedirect.jsx";
-
+import AdminPlanDetail from "./pages/admin/AdminPlanDetail.jsx";
 // Onboarding
 import OnboardingAge from "./pages/boardings/OnboardingAge.jsx";
 import OnboardingBody from "./pages/boardings/OnboardingBody.jsx";
@@ -45,9 +45,12 @@ import Role from "./pages/admin/Role.jsx";
 import Plan from "./pages/admin/Plan.jsx";
 import AdminLockUnlock from "./pages/admin/LockUnlock.jsx";
 import AdminResetPassword from "./pages/admin/ResetPassword.jsx";
+import AdminUserPlans from "./pages/admin/UserPlans.jsx";
+import UserPlanDetails from "./pages/admin/UserPlanDetails.jsx";
 
 
 import AdminUsers from "./pages/admin/AdminUsers.jsx";
+import AdminPopularExercises from "./pages/admin/PopularExercises.jsx";
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
@@ -190,6 +193,11 @@ function App() {
             <Route path="reset-password" element={<AdminResetPassword />} />
             <Route path="content" element={<AdminContentManage />} />
             <Route path="finance" element={<AdminFinancialManage />} />
+            <Route path="popular-exercises" element={<AdminPopularExercises />} />
+            <Route path="user-plans" element={<AdminUserPlans />} />
+            <Route path="user-plans/:userId" element={<UserPlanDetails />} />
+<Route path="user-plans/:userId/plan/:planId" element={<AdminPlanDetail />} />
+
             {/* Thêm route này nếu bạn dùng trang AdminUsers */}
             <Route path="users" element={<AdminUsers />} />
           </Route>

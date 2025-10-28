@@ -1,5 +1,7 @@
 import Exercise from "../models/exercise.model.js";
 import { sequelize } from "../config/database.js";
+import ExerciseFavorite from "../models/exercise.favorite.model.js";
+import { Op, fn, col } from 'sequelize';
 
 function normalize(str = "") {
   return String(str)
@@ -440,5 +442,84 @@ export const getExerciseStepsBySlug = async (req, res) => {
   } catch (error) {
     console.error('Error fetching steps by slug:', error);
     return res.status(500).json({ success: false, message: 'Error fetching steps', error: error.message });
+  }
+};
+
+// POST /api/exercises/:exerciseId/favorite
+export const postFavorite = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const exerciseId = Number(req.params.exerciseId);
+    if (!userId) return res.status(401).json({ success: false, message: 'Unauthorized' });
+    if (!exerciseId) return res.status(400).json({ success: false, message: 'Invalid exercise id' });
+
+    // Ensure exercise exists
+    const ex = await Exercise.findByPk(exerciseId);
+    if (!ex) return res.status(404).json({ success: false, message: 'Exercise not found' });
+
+    try {
+      await ExerciseFavorite.create({ user_id: userId, exercise_id: exerciseId });
+    } catch (err) {
+      // ignore unique constraint (already favorited)
+      if (err.name !== 'SequelizeUniqueConstraintError') throw err;
+    }
+
+    // return new favorite count
+    const favCount = await ExerciseFavorite.count({ where: { exercise_id: exerciseId } });
+    return res.json({ success: true, data: { exercise_id: exerciseId, favorite_count: favCount } });
+  } catch (err) {
+    console.error('postFavorite error:', err);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+// DELETE /api/exercises/:exerciseId/favorite
+export const deleteFavorite = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const exerciseId = Number(req.params.exerciseId);
+    if (!userId) return res.status(401).json({ success: false, message: 'Unauthorized' });
+    if (!exerciseId) return res.status(400).json({ success: false, message: 'Invalid exercise id' });
+
+    await ExerciseFavorite.destroy({ where: { user_id: userId, exercise_id: exerciseId } });
+
+    const favCount = await ExerciseFavorite.count({ where: { exercise_id: exerciseId } });
+    return res.json({ success: true, data: { exercise_id: exerciseId, favorite_count: favCount } });
+  } catch (err) {
+    console.error('deleteFavorite error:', err);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+// GET /api/exercises/:exerciseId/favorite
+export const getFavoriteStatus = async (req, res) => {
+  try {
+    const exerciseId = Number(req.params.exerciseId);
+    if (!exerciseId) return res.status(400).json({ success: false, message: 'Invalid exercise id' });
+
+    const favCount = await ExerciseFavorite.count({ where: { exercise_id: exerciseId } });
+    let favorited = false;
+    // if auth header provided, try to detect whether current user favorited
+    try {
+      const authHeader = req.get('authorization') || req.get('Authorization') || '';
+      if (authHeader.startsWith('Bearer ')) {
+        // authGuard not applied for this route; try to decode token
+        const token = authHeader.split(' ')[1];
+        const jwt = await import('jsonwebtoken');
+        const payload = jwt.verify(token, process.env.JWT_SECRET);
+        const userId = payload.sub || payload.userId || payload.id;
+        if (userId) {
+          const row = await ExerciseFavorite.findOne({ where: { user_id: userId, exercise_id: exerciseId } });
+          favorited = !!row;
+        }
+      }
+    } catch (e) {
+      // ignore token errors
+    }
+
+    return res.json({ success: true, data: { exercise_id: exerciseId, favorite_count: favCount, favorited } });
+  } catch (err) {
+    console.error('getFavoriteStatus error:', err);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };

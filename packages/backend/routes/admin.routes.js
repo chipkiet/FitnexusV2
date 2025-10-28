@@ -12,7 +12,13 @@ import {
   resetPassword,
   lockUser,
   unlockUser,
+  getPopularExercises,
 } from '../controllers/admin.controller.js';
+
+import {
+  getUserPlans,
+  getUserPlanById, // ⬅️ NEW
+} from '../controllers/admin.plan.controller.js';
 
 import {
   listSubAdmins,
@@ -24,6 +30,26 @@ const router = express.Router();
 router.patch('/users/:id/lock',   authGuard, requireAdmin, lockUser);
 router.patch('/users/:id/unlock', authGuard, requireAdmin, unlockUser);
 
+// Get all plans of a specific user
+router.get('/users/:userId/plans', authGuard, requireAdmin, getUserPlans);
+
+// ⬇️ NEW: Get a specific plan of a user (admin)
+router.get(
+  '/users/:userId/plans/:planId',
+  authGuard,
+  requireAdmin,
+  [
+    param('userId').isInt({ min: 1 }).toInt(),
+    param('planId').isInt({ min: 1 }).toInt(),
+  ],
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(422).json({ success: false, message: 'Validation error', errors: errors.array() });
+    }
+    return getUserPlanById(req, res, next);
+  }
+);
 
 router.get('/health', authGuard, requireAdmin, (_req, res) => {
   res.json({ success: true, message: 'Admin route OK', timestamp: new Date().toISOString() });
@@ -121,7 +147,6 @@ router.post(
   }
 );
 
-
 router.get(
   '/subadmins',
   authGuard,
@@ -136,6 +161,24 @@ router.get(
       return res.status(422).json({ success: false, message: 'Validation error', errors: errors.array() });
     }
     return listSubAdmins(req, res, next);
+  }
+);
+
+router.get(
+  '/popular-exercises',
+  authGuard,
+  requireAdmin,
+  [
+    query('limit').optional().isInt({ min: 1, max: 200 }).toInt(),
+    query('offset').optional().isInt({ min: 0 }).toInt(),
+    query('search').optional().isString().trim().isLength({ max: 255 }),
+  ],
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(422).json({ success: false, message: 'Validation error', errors: errors.array() });
+    }
+    return getPopularExercises(req, res, next);
   }
 );
 
@@ -162,6 +205,5 @@ router.post(
     return createSubAdmin(req, res, next);
   }
 );
-
 
 export default router;

@@ -14,6 +14,7 @@ import adminRouter from './routes/admin.routes.js';
 import trainerRouter from './routes/trainer.routes.js';
 import exerciseRouter from './routes/exercise.routes.js';
 import planRouter from './routes/plan.routes.js';
+import adminPlanRouter from './routes/admin.plan.routes.js';
 
 import onboardingRouter from './routes/onboarding.routes.js';
 import nutritionRouter from './routes/nutrition.routes.js';
@@ -97,6 +98,7 @@ app.use("/api", activityTracker);
 
 // Sau middleware này, mọi request có token hợp lệ sẽ tự cập nhật lastActiveAt
 app.use('/api/admin', adminRouter);
+app.use('/api/admin', adminPlanRouter); // Quản lý plans của user
 app.use('/api/trainer', trainerRouter);
 app.use('/api/onboarding', onboardingRouter);
 app.use('/api/exercises', exerciseRouter);

@@ -61,6 +61,14 @@ export const endpoints = {
     userLock: (id) => `/api/admin/users/${id}/lock`,
     userUnlock: (id) => `/api/admin/users/${id}/unlock`,
 
+    // Plans management
+    plans: {
+      list: "/api/admin/user-plans",
+      byId: (id) => `/api/admin/user-plans/${id}`,
+      updateStatus: (id) => `/api/admin/user-plans/${id}/status`
+    },
+    userPlans: (userId) => `/api/admin/users/${userId}/plans`,
+    userPlanDetail: (userId, planId) => `/api/admin/users/${userId}/plans/${planId}`,
     // ⬇️ NEW: sub-admin endpoints
     listSubAdmins: "/api/admin/subadmins",
     createSubAdmin: "/api/admin/subadmins",
@@ -335,6 +343,49 @@ export const addExerciseToPlanApi = async ({ planId, exercise_id, session_order,
 export const getMyPlansApi = async ({ limit = 50, offset = 0 } = {}) => {
   const res = await api.get(endpoints.plans.base, { params: { mine: 1, limit, offset } });
   return res.data; // expect { success, data: { items, total } } or similar
+};
+
+// ===== Admin: popular exercises =====
+export const getAdminPopularExercises = async ({ limit = 50, offset = 0, search = "" } = {}) => {
+  const params = { limit, offset };
+  if (search) params.search = search;
+  const res = await api.get('/api/admin/popular-exercises', { params });
+  return res.data;
+};
+
+// Admin User Plans API
+export const getAdminUserPlans = async ({ limit = 50, offset = 0, search = "", status = "" } = {}) => {
+  const params = { limit, offset };
+  if (search) params.search = search;
+  if (status) params.status = status;
+  const res = await api.get('/api/admin/user-plans', { params });
+  return res.data;
+};
+
+export const updatePlanStatus = async (planId, status) => {
+  const res = await api.put(`/api/admin/user-plans/${planId}/status`, { status });
+  return res.data;
+};
+
+export const deletePlan = async (planId) => {
+  const res = await api.delete(`/api/admin/user-plans/${planId}`);
+  return res.data;
+};
+
+// ===== Favorite APIs (user) =====
+export const favoriteExercise = async (exerciseId) => {
+  const res = await api.post(`/api/exercises/${exerciseId}/favorite`);
+  return res.data;
+};
+
+export const unfavoriteExercise = async (exerciseId) => {
+  const res = await api.delete(`/api/exercises/${exerciseId}/favorite`);
+  return res.data;
+};
+
+export const getExerciseFavoriteStatus = async (exerciseId) => {
+  const res = await api.get(`/api/exercises/${exerciseId}/favorite`);
+  return res.data;
 };
 
 export default api;

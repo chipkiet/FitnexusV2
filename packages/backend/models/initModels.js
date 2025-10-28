@@ -11,6 +11,7 @@ import PlanExerciseDetail from "./plan.exercise.detail.model.js";
 import UserWorkoutLog from "./user.workout.log.model.js";
 import UserWorkoutLogDetail from "./user.workout.log.detail.model.js";
 import ExerciseImage from "./exercise.image.model.js";
+import ExerciseFavorite from "./exercise.favorite.model.js";
 
 export function initModels() {
   // Khai báo quan hệ 1-n: User hasMany PasswordReset
@@ -60,6 +61,14 @@ export function initModels() {
   Exercise.hasMany(ExerciseImage, { foreignKey: 'exercise_id', sourceKey: 'exercise_id', as: 'images' });
   ExerciseImage.belongsTo(Exercise, { foreignKey: 'exercise_id', targetKey: 'exercise_id', as: 'exercise' });
 
+  // Exercises ↔ ExerciseFavorites
+  Exercise.hasMany(ExerciseFavorite, { foreignKey: 'exercise_id', sourceKey: 'exercise_id', as: 'favorites' });
+  ExerciseFavorite.belongsTo(Exercise, { foreignKey: 'exercise_id', targetKey: 'exercise_id', as: 'exercise' });
+
+  // Users ↔ ExerciseFavorites
+  User.hasMany(ExerciseFavorite, { foreignKey: 'user_id', sourceKey: 'user_id', as: 'favoriteExercises' });
+  ExerciseFavorite.belongsTo(User, { foreignKey: 'user_id', targetKey: 'user_id', as: 'user' });
+
   // Users ↔ UserWorkoutLogs
   User.hasMany(UserWorkoutLog, { foreignKey: 'user_id', sourceKey: 'user_id', as: 'workoutLogs' });
   UserWorkoutLog.belongsTo(User, { foreignKey: 'user_id', targetKey: 'user_id', as: 'user' });
@@ -85,7 +94,8 @@ export function initModels() {
     OnboardingSession,
     OnboardingAnswer,
     Exercise,
-    ExerciseImage,
+  ExerciseImage,
+  ExerciseFavorite,
     WorkoutPlan,
     PlanExerciseDetail,
     UserWorkoutLog,
