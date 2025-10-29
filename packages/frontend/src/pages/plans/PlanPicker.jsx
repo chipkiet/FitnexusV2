@@ -21,8 +21,6 @@ export default function PlanPicker() {
   const [selectedPlanId, setSelectedPlanId] = useState(null);
   const [saving, setSaving] = useState(false);
 
-  // Quick create form
-  // Removed quick-create state per request
 
   const load = async () => {
     setLoading(true);
