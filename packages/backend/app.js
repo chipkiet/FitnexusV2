@@ -50,7 +50,21 @@ app.use(cors(corsOptions));
 /* -------------------- Security & Logging -------------------- */
 app.use(helmet());
 if (process.env.NODE_ENV !== 'test') {
-  app.use(morgan(isDev ? 'dev' : 'combined'));
+  const morganFormat = isDev ? 'dev' : 'combined';
+  app.use(
+    morgan(morganFormat, {
+      // Reduce spam: skip non-API redirects (e.g., SPA client routes during dev)
+      skip: (req, res) => {
+        const url = req.originalUrl || req.url || '';
+        const isApiOrAuth = url.startsWith('/api') || url.startsWith('/auth');
+        const isRedirect = res.statusCode === 301 || res.statusCode === 302 || res.statusCode === 307 || res.statusCode === 308;
+        const isAsset = url.startsWith('/assets') || url.startsWith('/static') || url.includes('favicon.ico');
+        // In dev, skip logs for non-API redirects and common static requests
+        if (isDev && ((isRedirect && !isApiOrAuth) || isAsset)) return true;
+        return false;
+      },
+    })
+  );
 }
 
 /* -------------------- Body & Cookies -------------------- */
@@ -123,6 +137,17 @@ app.get('/', (_req, res) => {
 });
 
 /* -------------------- 404 -------------------- */
+// In development, redirect non-API routes to the frontend dev server
+// This fixes reloads on client-side routes (e.g., /patients) hitting backend 404
+if (isDev && FRONTEND) {
+  app.get(/^\/(?!api|auth|static|assets|uploads).*/, (req, res, next) => {
+    // Let known routes continue
+    // Otherwise, redirect to Vite dev server preserving path/query
+    const target = `${FRONTEND}${req.originalUrl || ''}`;
+    return res.redirect(target);
+  });
+}
+
 app.use('*', (_req, res) => {
   res.status(404).json({
     success: false,
