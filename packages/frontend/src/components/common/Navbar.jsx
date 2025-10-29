@@ -6,6 +6,8 @@ import { useAuth } from '../../context/auth.context.jsx';
 export default function Navbar() {
   const navigate = useNavigate();
   const { user, loading, logout, refreshUser } = useAuth();
+  const isPremium = !!(user && ((user.user_type && String(user.user_type).toLowerCase() === 'premium') || user.plan === 'PREMIUM'));
+  const isAdmin = !!(user && String(user.role || '').toUpperCase() === 'ADMIN');
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
@@ -68,6 +70,17 @@ export default function Navbar() {
           >
             Dinh dưỡng
           </button>
+
+          {/* CTA: Upgrade to Premium - only for logged-in non-premium users */}
+          {user && !isPremium && !isAdmin && (
+            <button
+              type="button"
+              onClick={() => navigate('/pricing')}
+              className="px-3 py-1.5 text-sm font-semibold text-white bg-indigo-600 rounded hover:bg-indigo-700"
+            >
+              Nâng cấp Premium
+            </button>
+          )}
         </nav>
 
         <div className="flex items-center gap-4">

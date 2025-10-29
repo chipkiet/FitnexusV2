@@ -30,14 +30,16 @@ async function resolveUserFromReq(req) {
   if (req.user && (req.user.id || req.user.user_id)) {
     const role = req.user.role;
     const plan = req.user.plan;
+    const user_type = req.user.user_type;
     const isSuperAdmin = !!req.user.isSuperAdmin;
-    return { role, plan, isSuperAdmin };
+    return { role, plan, user_type, isSuperAdmin };
   }
 
   // Nếu auth.guard đã gắn userRole/userId
   const userId = req.userId || null;
   let role = req.userRole || null;
   let plan = null;
+  let user_type = null;
   let isSuperAdmin = false;
 
   // Thử lấy từ JWT nếu chưa có userId
@@ -52,7 +54,7 @@ async function resolveUserFromReq(req) {
         if (id) {
           const u = await User.findByPk(id);
           if (u) {
-            return { role: u.role, plan: u.plan, isSuperAdmin: !!u.isSuperAdmin };
+            return { role: u.role, plan: u.plan, user_type: u.user_type, isSuperAdmin: !!u.isSuperAdmin };
           }
         }
       }
@@ -65,12 +67,13 @@ async function resolveUserFromReq(req) {
       if (u) {
         role = u.role;
         plan = u.plan;
+        user_type = u.user_type;
         isSuperAdmin = !!u.isSuperAdmin;
       }
     } catch (_) {}
   }
 
-  return { role, plan, isSuperAdmin };
+  return { role, plan, user_type, isSuperAdmin };
 }
 
 /**
@@ -79,7 +82,7 @@ async function resolveUserFromReq(req) {
  */
 const permissionGuard = (requiredPermission) => async (req, res, next) => {
   try {
-    const { role, plan, isSuperAdmin } = await resolveUserFromReq(req);
+    const { role, plan, user_type, isSuperAdmin } = await resolveUserFromReq(req);
 
     if (!role) {
       return res.status(401).json({ message: 'Unauthorized' });
@@ -87,7 +90,7 @@ const permissionGuard = (requiredPermission) => async (req, res, next) => {
 
     // Xử lý logic cho "premium_user" (virtual role)
     const normalizedRole = normalizeRole(role, isSuperAdmin);
-    const normalizedPlan = normalizePlan(plan);
+    const normalizedPlan = normalizePlan(user_type || plan);
 
     let effectiveRole = normalizedRole;
     if (normalizedRole === 'user' && normalizedPlan === 'premium') {
@@ -105,4 +108,3 @@ const permissionGuard = (requiredPermission) => async (req, res, next) => {
 };
 
 export default permissionGuard;
-

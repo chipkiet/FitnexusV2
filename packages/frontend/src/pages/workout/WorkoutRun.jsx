@@ -46,6 +46,7 @@ export default function WorkoutRun() {
   const [seconds, setSeconds] = useState(60);
   const [running, setRunning] = useState(false);
   const timerRef = useRef(null);
+  const autoCompleteRef = useRef(false);
 
   const loadCurrent = async () => {
     setLoading(true);
@@ -62,6 +63,8 @@ export default function WorkoutRun() {
         const preset = Number(res.data?.exercise?.target_rest_seconds);
         setSeconds(Number.isFinite(preset) && preset > 0 ? preset : 60);
         setRunning(false);
+        // reset auto-complete guard for new/current exercise
+        autoCompleteRef.current = false;
         if (timerRef.current) { 
           clearInterval(timerRef.current); 
           timerRef.current = null; 
@@ -117,6 +120,24 @@ export default function WorkoutRun() {
       if (timerRef.current) clearInterval(timerRef.current); 
     };
   }, [running]);
+
+  // Auto-complete when timer hits zero
+  useEffect(() => {
+    if (seconds !== 0) return;
+    if (isDone) return;
+    if (!exercise?.session_exercise_id) return;
+    if (autoCompleteRef.current) return;
+    autoCompleteRef.current = true;
+    (async () => {
+      try {
+        const res = await completeCurrentExerciseApi(sessionId);
+        if (res?.success) await loadCurrent();
+      } catch (e) {
+        // swallow, user can retry manually
+      }
+    })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [seconds, exercise?.session_exercise_id]);
 
   const adjust = (delta) => setSeconds((s) => Math.max(0, s + delta));
 

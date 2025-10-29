@@ -202,6 +202,8 @@ export default function AdminUsers() {
                   <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Email</th>
                   <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Role</th>
                   <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Plan</th>
+                  <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Loại tài khoản</th>
+                  <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Hết hạn Premium</th>
                   <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Status</th>
                   <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Last Login</th>
                 </tr>
@@ -209,7 +211,7 @@ export default function AdminUsers() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {loading ? (
                   <tr>
-                    <td colSpan={7} className="px-6 py-4 text-sm text-center text-gray-500">
+                    <td colSpan={9} className="px-6 py-4 text-sm text-center text-gray-500">
                       <div className="flex items-center justify-center">
                         <svg className="w-5 h-5 mr-3 text-indigo-600 animate-spin" viewBox="0 0 24 24">
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
@@ -221,7 +223,7 @@ export default function AdminUsers() {
                   </tr>
                 ) : items.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-6 py-4 text-sm text-center text-gray-500">
+                    <td colSpan={9} className="px-6 py-4 text-sm text-center text-gray-500">
                       No users found
                     </td>
                   </tr>
@@ -242,8 +244,11 @@ export default function AdminUsers() {
                         <PlanBadge plan={u.plan} />
                       </td>
 
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <StatusBadge user={u} />
+                      <td className="px-6 py-4 whitespace-nowrap"><StatusBadge user={u} /></td>
+
+                      <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{u.user_type || '-'}</td>
+                      <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
+                        {u.user_exp_date ? new Date(u.user_exp_date).toLocaleString() : '-'}
                       </td>
 
                       <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">

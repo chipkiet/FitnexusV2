@@ -12,10 +12,11 @@ export default function HeaderLogin() {
 
   // Derive account type for display: guest | premium | admin
   const accountType = React.useMemo(() => {
-    if (!user) return "guest";
-    if (String(user.role).toUpperCase() === "ADMIN") return "admin";
-    if (String(user.plan || "").toUpperCase() === "PREMIUM") return "premium";
-    return "guest"; // fallback for FREE or unknown
+    if (!user) return 'guest';
+    if (String(user.role || '').toUpperCase() === 'ADMIN') return 'admin';
+    const premiumByType = user?.user_type && String(user.user_type).toLowerCase() === 'premium';
+    const premiumByPlan = String(user?.plan || '').toUpperCase() === 'PREMIUM';
+    return (premiumByType || premiumByPlan) ? 'premium' : 'free';
   }, [user]);
 
   const accountBadgeClass = React.useMemo(() => {
@@ -288,20 +289,18 @@ export default function HeaderLogin() {
                     }
                     return (
                       <div className={`relative ${isPremium ? "p-[2px] rounded-full bg-gradient-to-r from-pink-500 via-yellow-400 to-blue-500" : ""}`}>
-                        <div className="relative w-10 h-10 rounded-full overflow-hidden bg-white">
+                        <div className="relative w-10 h-10 overflow-hidden bg-white rounded-full">
                           {src ? (
-                            <img src={src} alt="Avatar" className="w-full h-full object-cover" />
+                            <img src={src} alt="Avatar" className="object-cover w-full h-full" />
                           ) : (
-                            <div className="flex items-center justify-center w-full h-full text-white rounded-full bg-gradient-to-r from-blue-400 to-blue-600 font-semibold">
+                            <div className="flex items-center justify-center w-full h-full font-semibold text-white rounded-full bg-gradient-to-r from-blue-400 to-blue-600">
                               {getInitial(user)}
                             </div>
                           )}
+                          {isPremium && (
+                            <Crown className="w-4 h-4 text-yellow-500 drop-shadow absolute -bottom-1 -right-1" />
+                          )}
                         </div>
-                        {isAdmin && (
-                          <div className="absolute -top-2 left-1/2 -translate-x-1/2" title="Admin">
-                            <Crown className="w-4 h-4 text-yellow-500 drop-shadow" />
-                          </div>
-                        )}
                       </div>
                     );
                   })()}
@@ -400,16 +399,6 @@ export default function HeaderLogin() {
                         </div>
                       )}
                     </div>
-
-                    {/* Support → direct navigate */}
-                    <button
-                      onClick={() => { setShowAvatarMenu(false); setActiveSubmenu(null); navigate("/support/faq"); }}
-                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
-                    >
-                      Hỗ trợ
-                    </button>
-                    {/* Settings */}
-                    {/* Hỗ trợ */}
                     <div className="relative">
                       {activeSubmenu === 'support' && (
                         <div className="absolute top-0 w-48 ml-1 bg-white border border-gray-200 rounded-md shadow-lg left-full">
@@ -553,6 +542,14 @@ export default function HeaderLogin() {
               </>
             )}
           </div>
+          {user && !isPremium && !isAdmin && (
+            <button
+              onClick={() => navigate('/pricing')}
+              className="px-4 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-full hover:bg-indigo-700"
+            >
+              Nâng cấp Premium
+            </button>
+          )}
           <a
             href="https://example.com/download-app"
             target="_blank"
@@ -620,6 +617,15 @@ export default function HeaderLogin() {
             <button className="block w-full py-2 text-left" onClick={() => navigate("/community")}>
               Cộng đồng
             </button>
+
+            {user && !isPremium && !isAdmin && (
+              <button
+                className="block w-full px-4 py-2 mt-2 font-semibold text-left text-white bg-indigo-600 rounded"
+                onClick={() => navigate('/pricing')}
+              >
+                Nâng cấp Premium
+              </button>
+            )}
 
             <a
               href="https://example.com/download-app"

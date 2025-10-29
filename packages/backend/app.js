@@ -19,9 +19,12 @@ import planRouter from './routes/plan.routes.js';
 
 import onboardingRouter from './routes/onboarding.routes.js';
 import nutritionRouter from './routes/nutrition.routes.js';
+import billingRouter from './routes/billing.routes.js';
+import paymentRouter from './routes/payment.routes.js';
 
 
 import workoutRouter from './routes/workout.routes.js';
+import { scheduleSubscriptionExpiryJob } from './jobs/subscription.cron.js';
 
 
 dotenv.config();
@@ -111,6 +114,8 @@ app.use('/api/auth', authLimiter, authRouter);
 app.use('/auth', googleAuthRoutes);
 app.use('/api/onboarding', onboardingRouter);
 app.use('/api/nutrition', nutritionRouter);
+app.use('/api/billing', billingRouter);
+app.use('/api/payment', paymentRouter);
 
 // Theo dõi hoạt động người dùng (cập nhật lastActiveAt)
 app.use("/api", activityTracker);
@@ -122,6 +127,9 @@ app.use('/api/onboarding', onboardingRouter);
 app.use('/api/exercises', exerciseRouter);
 app.use('/api/plans', planRouter);
 app.use('/api/workout', workoutRouter);
+
+// Schedule background jobs
+scheduleSubscriptionExpiryJob();
 
 /* -------------------- Health & Root -------------------- */
 app.get('/api/health', (_req, res) => {

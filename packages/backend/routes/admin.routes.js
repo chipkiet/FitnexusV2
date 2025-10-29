@@ -110,6 +110,7 @@ router.patch(
       .customSanitizer((v) => String(v).trim().toUpperCase())
       .isIn(['FREE', 'PREMIUM'])
       .withMessage('Invalid plan'),
+    body('duration_days').optional().isInt({ min: 1 }).toInt(),
   ],
   (req, res, next) => {
     const errors = validationResult(req);

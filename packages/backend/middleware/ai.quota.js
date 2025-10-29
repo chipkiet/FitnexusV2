@@ -37,6 +37,7 @@ async function resolveCaller(req) {
   let userId = req.userId || null;
   let role = req.userRole || null;
   let plan = null;
+  let user_type = null;
   let isSuperAdmin = false;
 
   // Try parse JWT if not already available
@@ -58,12 +59,13 @@ async function resolveCaller(req) {
       if (user) {
         role = user.role;
         plan = user.plan;
+        user_type = user.user_type;
         isSuperAdmin = !!user.isSuperAdmin;
       }
     } catch (_) {}
   }
 
-  return { userId, role, plan, isSuperAdmin };
+  return { userId, role, plan, user_type, isSuperAdmin };
 }
 
 function normalizeRole(role, isSuperAdmin = false) {
@@ -93,10 +95,11 @@ export default function aiQuota(feature, options = {}) {
     try {
       if (!enabled) return next();
 
-      const { userId, role, plan, isSuperAdmin } = await resolveCaller(req);
+      const { userId, role, plan, user_type, isSuperAdmin } = await resolveCaller(req);
 
       const normalizedRole = normalizeRole(role, isSuperAdmin);
-      const normalizedPlan = normalizePlan(plan);
+      // Support new user_type mapping by checking resolved user_type first
+      const normalizedPlan = normalizePlan(user_type || req.user?.user_type || plan);
       let effectiveRole = normalizedRole;
       if (normalizedRole === 'user' && normalizedPlan === 'premium') {
         effectiveRole = 'premium_user';

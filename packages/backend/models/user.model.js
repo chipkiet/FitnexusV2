@@ -44,6 +44,19 @@ const User = sequelize.define(
       defaultValue: "FREE",
     },
 
+    // Subscription fields for SaaS billing
+    user_type: {
+      type: DataTypes.STRING(32),
+      allowNull: false,
+      defaultValue: 'free',
+      field: 'user_type',
+    },
+    user_exp_date: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      field: 'user_exp_date',
+    },
+
     status: {
       type: DataTypes.ENUM("ACTIVE", "INACTIVE", "BANNED"),
       allowNull: false,

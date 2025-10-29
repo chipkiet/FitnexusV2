@@ -26,6 +26,9 @@ import Logout from "./pages/authentication/Logout.jsx";
 import NotFoundRedirect from "./pages/system/NotFoundRedirect.jsx";
 import WorkoutRun from "./pages/workout/WorkoutRun.jsx";
 import AdminPlanDetail from "./pages/admin/AdminPlanDetail.jsx";
+import Pricing from "./pages/pricing/Pricing.jsx";
+import PaymentSuccess from "./pages/payment/PaymentSuccess.jsx";
+import PaymentCancel from "./pages/payment/PaymentCancel.jsx";
 // Onboarding
 import OnboardingAge from "./pages/boardings/OnboardingAge.jsx";
 import OnboardingBody from "./pages/boardings/OnboardingBody.jsx";
@@ -130,6 +133,9 @@ function App() {
           <Route path="/" element={<Landing />} />
           <Route path="/nutrition-ai" element={<NutritionAI />} />
           <Route path="/nutrition-ai/personalize" element={<NutritionPersonalize />} />
+          <Route path="/pricing" element={<Pricing />} />
+          <Route path="/payment/success" element={<PaymentSuccess />} />
+          <Route path="/payment/cancel" element={<PaymentCancel />} />
 
           <Route path="/modeling-demo" element={<ModelingDemo />} />
           {/* Backward compat: redirect old preview path to new demo path */}

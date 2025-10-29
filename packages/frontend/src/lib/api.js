@@ -63,6 +63,17 @@ export const endpoints = {
     planFromOnboarding: "/api/nutrition/plan/from-onboarding",
   },
 
+  // Billing / Subscription endpoints
+  billing: {
+    plans: "/api/billing/plans",
+  },
+
+  payment: {
+    createLink: "/api/payment/create-link",
+    return: "/api/payment/return",
+    cancel: "/api/payment/cancel",
+  },
+
   admin: {
     users: "/api/admin/users",
     userRole: (id) => `/api/admin/users/${id}/role`,
@@ -418,6 +429,17 @@ export const getActiveWorkoutSessionApi = async () => {
   return res.data;
 };
 
+// ===== Subscription convenience APIs =====
+export const getActiveSubscriptionPlans = async () => {
+  const res = await api.get(endpoints.billing.plans);
+  return res.data;
+};
+
+export const createPaymentLinkApi = async (planId) => {
+  const res = await api.post(endpoints.payment.createLink, { planId });
+  return res.data;
+};
+
 export const createWorkoutSessionApi = async ({ plan_id, notes }) => {
   const res = await api.post('/api/workout', { plan_id, notes });
   return res.data;
@@ -440,5 +462,13 @@ export const skipCurrentExerciseApi = async (sessionId) => {
 
 export const completeWorkoutSessionApi = async (sessionId, payload = {}) => {
   const res = await api.post(`/api/workout/${sessionId}/complete`, payload);
+  return res.data;
+};
+
+export const listWorkoutSessionsApi = async ({ planId, status, limit = 20, offset = 0 } = {}) => {
+  const params = { limit, offset };
+  if (planId) params.planId = planId;
+  if (status) params.status = status;
+  const res = await api.get('/api/workout', { params });
   return res.data;
 };

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/auth.context.jsx";
-import { getMyPlansApi, addExerciseToPlanApi } from "../../lib/api.js";
+import { getMyPlansApi, addExerciseToPlanApi, listWorkoutSessionsApi } from "../../lib/api.js";
 
 export default function PlanPicker() {
   const navigate = useNavigate();
@@ -17,11 +17,10 @@ export default function PlanPicker() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [items, setItems] = useState([]);
+  const [completedPlanIds, setCompletedPlanIds] = useState(new Set());
   const [selectedPlanId, setSelectedPlanId] = useState(null);
   const [saving, setSaving] = useState(false);
 
-  // Quick create form
-  // Removed quick-create state per request
 
   const load = async () => {
     setLoading(true);
@@ -29,10 +28,20 @@ export default function PlanPicker() {
     try {
       const res = await getMyPlansApi({ limit: 100, offset: 0 });
       const list = res?.data?.items ?? res?.data ?? [];
-      setItems(Array.isArray(list) ? list : []);
+      const plans = Array.isArray(list) ? list : [];
+      setItems(plans);
+
+      // Fetch completed sessions to partition plans
+      try {
+        const sess = await listWorkoutSessionsApi({ status: 'completed', limit: 100, offset: 0 });
+        const itemsSess = sess?.data?.items ?? sess?.data ?? [];
+        const setIds = new Set((Array.isArray(itemsSess) ? itemsSess : []).map((s) => s.plan_id).filter((v) => Number.isFinite(v)));
+        setCompletedPlanIds(setIds);
+      } catch {}
     } catch (e) {
       // Nếu BE chưa có endpoint list, im lặng và để người dùng tạo mới
       setItems([]);
+      setCompletedPlanIds(new Set());
     } finally {
       setLoading(false);
     }
@@ -128,34 +137,79 @@ export default function PlanPicker() {
           ) : items.length === 0 ? (
             <div className="text-sm text-gray-500">Chưa có plan nào. Hãy tạo nhanh bên dưới.</div>
           ) : (
-            <div className="space-y-2">
-              {items.map((p) => (
-                <label key={p.plan_id} className="flex items-center justify-between gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
-                  <input
-                    type="radio"
-                    name="picked_plan"
-                    value={p.plan_id}
-                    checked={selectedPlanId === p.plan_id}
-                    onChange={() => setSelectedPlanId(p.plan_id)}
-                  />
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-gray-900 truncate">{p.name || '(Không có tên)'}</div>
-                    {p.description && (
-                      <div className="text-xs text-gray-600 truncate">{p.description}</div>
-                    )}
-                    {p.difficulty_level && (
-                      <div className="text-xs text-gray-500">Độ khó: {p.difficulty_level}</div>
-                    )}
+            <div className="space-y-4">
+              {/* Chưa hoàn thành */}
+              <div>
+                <div className="mb-2 text-sm font-semibold text-gray-800">Chưa hoàn thành</div>
+                <div className="space-y-2">
+                  {items.filter((p) => !completedPlanIds.has(p.plan_id)).map((p) => (
+                    <label key={p.plan_id} className="flex items-center justify-between gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                      <input
+                        type="radio"
+                        name="picked_plan"
+                        value={p.plan_id}
+                        checked={selectedPlanId === p.plan_id}
+                        onChange={() => setSelectedPlanId(p.plan_id)}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium text-gray-900 truncate">{p.name || '(Không có tên)'}</div>
+                        {p.description && (
+                          <div className="text-xs text-gray-600 truncate">{p.description}</div>
+                        )}
+                        {p.difficulty_level && (
+                          <div className="text-xs text-gray-500">Độ khó: {p.difficulty_level}</div>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        className="px-3 py-1.5 text-xs text-blue-600 border border-blue-200 rounded hover:bg-blue-50 shrink-0"
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate(`/plans/${p.plan_id}`); }}
+                      >
+                        Xem kế hoạch
+                      </button>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Đã hoàn thành */}
+              <div>
+                <div className="mb-2 text-sm font-semibold text-gray-800">Đã hoàn thành</div>
+                {Array.from(completedPlanIds).length === 0 ? (
+                  <div className="text-xs text-gray-500">Chưa có kế hoạch hoàn thành</div>
+                ) : (
+                  <div className="space-y-2">
+                    {items.filter((p) => completedPlanIds.has(p.plan_id)).map((p) => (
+                      <label key={p.plan_id} className="flex items-center justify-between gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                        <input
+                          type="radio"
+                          name="picked_plan"
+                          value={p.plan_id}
+                          checked={selectedPlanId === p.plan_id}
+                          onChange={() => setSelectedPlanId(p.plan_id)}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-medium text-gray-900 truncate">{p.name || '(Không có tên)'}</div>
+                          {p.description && (
+                            <div className="text-xs text-gray-600 truncate">{p.description}</div>
+                          )}
+                          {p.difficulty_level && (
+                            <div className="text-xs text-gray-500">Độ khó: {p.difficulty_level}</div>
+                          )}
+                          <div className="mt-1 text-xs text-green-700">Đã từng hoàn thành</div>
+                        </div>
+                        <button
+                          type="button"
+                          className="px-3 py-1.5 text-xs text-blue-600 border border-blue-200 rounded hover:bg-blue-50 shrink-0"
+                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate(`/plans/${p.plan_id}`); }}
+                        >
+                          Xem kế hoạch
+                        </button>
+                      </label>
+                    ))}
                   </div>
-                  <button
-                    type="button"
-                    className="px-3 py-1.5 text-xs text-blue-600 border border-blue-200 rounded hover:bg-blue-50 shrink-0"
-                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate(`/plans/${p.plan_id}`); }}
-                  >
-                    Xem kế hoạch
-                  </button>
-                </label>
-              ))}
+                )}
+              </div>
             </div>
           )}
 

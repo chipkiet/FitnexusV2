@@ -354,7 +354,8 @@ export function AuthProvider({ children }) {
         try {
           if (!user) return false;
           const roleRaw = user.role || 'GUEST';
-          const planRaw = user.plan || 'FREE';
+          // Prefer new subscription field user_type, fallback to legacy plan
+          const planRaw = (user.user_type ? (user.user_type.toUpperCase() === 'PREMIUM' ? 'PREMIUM' : 'FREE') : (user.plan || 'FREE'));
           const isSuperAdmin = !!user.isSuperAdmin;
           const role = String(roleRaw).toUpperCase();
           const plan = String(planRaw).toUpperCase();

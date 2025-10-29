@@ -493,6 +493,54 @@ export async function completeSession(req, res) {
     return res.status(500).json({ success: false, message: 'Internal server error', error: err.message });
   }
 }
+
+// GET /api/workout?planId=&status=&limit=&offset=
+// List user's workout sessions, optionally filtered by plan and status
+export async function listWorkoutSessions(req, res) {
+  try {
+    const userId = req.userId;
+    if (!userId) return res.status(401).json({ success: false, message: 'Unauthorized' });
+    const planId = req.query.planId ? parseInt(String(req.query.planId), 10) : null;
+    const status = String(req.query.status || '').toLowerCase();
+    const limit = Math.min(100, parseInt(String(req.query.limit || '20'), 10) || 20);
+    const offset = parseInt(String(req.query.offset || '0'), 10) || 0;
+
+    const where = { user_id: userId };
+    if (Number.isFinite(planId) && planId > 0) where.plan_id = planId;
+    if (status === 'completed') where.status = 'completed';
+    else if (status === 'active' || status === 'incomplete' || status === 'in_progress') where.status = { [Op.in]: ['in_progress', 'paused'] };
+
+    const sessions = await WorkoutSession.findAll({
+      where,
+      order: [['started_at', 'DESC']],
+      limit,
+      offset,
+    });
+
+    // Gather counts per session
+    const out = [];
+    for (const s of sessions) {
+      const total = await WorkoutSessionExercise.count({ where: { session_id: s.session_id } });
+      const completedCount = await WorkoutSessionExercise.count({ where: { session_id: s.session_id, status: 'completed' } });
+      out.push({
+        session_id: s.session_id,
+        plan_id: s.plan_id,
+        status: s.status,
+        started_at: s.started_at,
+        ended_at: s.ended_at,
+        total_duration_seconds: s.total_duration_seconds,
+        current_exercise_index: s.current_exercise_index,
+        completed_exercises: completedCount,
+        total_exercises: total,
+      });
+    }
+
+    return res.status(200).json({ success: true, data: { items: out, total: out.length } });
+  } catch (err) {
+    console.error('listWorkoutSessions error:', err);
+    return res.status(500).json({ success: false, message: 'Internal server error', error: err.message });
+  }
+}
 export async function restartSession(req, res) {
     const t = await sequelize.transaction();
 
@@ -647,5 +695,4 @@ export async function restartSession(req, res) {
         });
     }
 }
-
 
