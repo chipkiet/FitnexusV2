@@ -2,12 +2,34 @@ import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/auth.context.jsx";
 import logo from "../../assets/logo.png";
+import { Crown } from "lucide-react";
 
 export default function HeaderLogin() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
   const isAuthenticated = !!user;
+
+  // Derive account type for display: guest | premium | admin
+  const accountType = React.useMemo(() => {
+    if (!user) return "guest";
+    if (String(user.role).toUpperCase() === "ADMIN") return "admin";
+    if (String(user.plan || "").toUpperCase() === "PREMIUM") return "premium";
+    return "guest"; // fallback for FREE or unknown
+  }, [user]);
+
+  const accountBadgeClass = React.useMemo(() => {
+    switch (accountType) {
+      case "admin":
+        return "bg-red-100 text-red-700 border-red-300";
+      case "premium":
+        return "bg-amber-100 text-amber-700 border-amber-300";
+      default:
+        return "bg-gray-100 text-gray-700 border-gray-300";
+    }
+  }, [accountType]);
+  const isAdmin = accountType === "admin";
+  const isPremium = accountType === "premium";
 
   const [openMobile, setOpenMobile] = useState(false);
   const [openWorkout, setOpenWorkout] = useState(false);
@@ -241,6 +263,14 @@ export default function HeaderLogin() {
         </nav>
 
         <div className="items-center hidden gap-3 md:flex">
+          {/* Account type badge */}
+          <span
+            className={`px-2 py-1 text-xs font-semibold rounded-full border ${accountBadgeClass}`}
+            title="Loại tài khoản"
+            aria-label="Loại tài khoản"
+          >
+            {accountType}
+          </span>
           <div className="flex items-center gap-4">
             {user ? (
               <div className="relative" ref={avatarMenuRef}>
@@ -256,12 +286,18 @@ export default function HeaderLogin() {
                       const abs = raw.startsWith("http") ? raw : `${be}${raw}`;
                       if (!isMailProviderAvatar(abs)) src = abs;
                     }
-                    if (src) {
-                      return <img src={src} alt="Avatar" className="object-cover w-10 h-10 rounded-full" />;
-                    }
                     return (
-                      <div className="flex items-center justify-center w-10 h-10 font-semibold text-white rounded-full bg-gradient-to-r from-blue-400 to-blue-600">
-                        {getInitial(user)}
+                      <div className={`relative ${isPremium ? "p-[2px] rounded-full bg-gradient-to-r from-pink-500 via-yellow-400 to-blue-500" : ""}`}>
+                        <div className="relative w-10 h-10 overflow-hidden bg-white rounded-full">
+                          {src ? (
+                            <img src={src} alt="Avatar" className="object-cover w-full h-full" />
+                          ) : (
+                            <div className="flex items-center justify-center w-full h-full font-semibold text-white rounded-full bg-gradient-to-r from-blue-400 to-blue-600">
+                              {getInitial(user)}
+                            </div>
+                          )}
+                            <Crown className="w-4 h-4 text-yellow-500 drop-shadow" />
+                          </div>
                       </div>
                     );
                   })()}
@@ -527,6 +563,11 @@ export default function HeaderLogin() {
       {openMobile && (
         <div className="bg-white border-t border-gray-200 md:hidden">
           <div className="px-4 py-3 space-y-2">
+            {/* Mobile: account type indicator */}
+            <div className="flex items-center justify-between p-2 text-xs border rounded-md bg-gray-50">
+              <span className="text-gray-600">Loại tài khoản</span>
+              <span className={`px-2 py-0.5 rounded-full border ${accountBadgeClass}`}>{accountType}</span>
+            </div>
             <button className="block w-full py-2 text-left" onClick={() => navigate("/")}>
               Trang chủ
             </button>
