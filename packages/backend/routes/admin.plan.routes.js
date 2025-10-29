@@ -1,7 +1,7 @@
 // packages/backend/routes/admin.plan.routes.js
 import express from 'express';
 import authGuard from '../middleware/auth.guard.js';
-import { requireAdmin } from '../middleware/role.guard.js';
+import permissionGuard from '../middleware/permission.guard.js';
 import {
   listUserPlans,
   getUserPlan,
@@ -13,7 +13,7 @@ const router = express.Router();
 
 // Tất cả routes đều yêu cầu đăng nhập và role ADMIN
 router.use(authGuard);
-router.use(requireAdmin);
+router.use(permissionGuard('manage:users'));
 
 // Danh sách plan của users
 router.get('/user-plans', listUserPlans);

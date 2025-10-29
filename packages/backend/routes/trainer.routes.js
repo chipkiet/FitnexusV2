@@ -6,9 +6,8 @@ import FormData from "form-data";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import authGuard from "../middleware/auth.guard.js";
 import authOrSession from "../middleware/authOrSession.guard.js";
-import { requireTrainer } from "../middleware/role.guard.js";
+import permissionGuard from "../middleware/permission.guard.js";
 import aiQuota from "../middleware/ai.quota.js";
 const router = Router();
 // Resolve a stable uploads directory next to backend root
@@ -33,7 +32,7 @@ const upload = multer({
 const AI_API_URL =
   process.env.AI_API_URL || "http://127.0.0.1:8000/analyze-image/";
 // Health/feature probe for trainers
-router.get("/tools", authOrSession, requireTrainer, (_req, res) => {
+router.get("/tools", authOrSession, permissionGuard('manage:clients'), (_req, res) => {
   res.json({
     success: true,
     message: "Trainer tools accessible",
@@ -55,6 +54,7 @@ const uploadLimiter = rateLimit({
 router.post(
   "/upload",
   authOrSession,
+  permissionGuard('manage:clients'),
   uploadLimiter,
   aiQuota('trainer_image_analyze'),
   upload.single("image"),

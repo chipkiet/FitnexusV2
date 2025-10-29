@@ -90,7 +90,8 @@ function AdminRoute({ children }) {
   if (!user) {
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
-  return user.role === "ADMIN" ? children : <Navigate to="/" replace />;
+  const isAdmin = user && (user.role === "ADMIN" || user.isSuperAdmin === true);
+  return isAdmin ? children : <Navigate to="/" replace />;
 }
 
 
