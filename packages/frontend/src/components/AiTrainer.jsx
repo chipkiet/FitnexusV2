@@ -1,8 +1,11 @@
 import React, { useState, useRef } from 'react';
 import api from '../lib/api.js';
 import HeaderLogin from './header/HeaderLogin.jsx';
+import { useNavigate } from 'react-router-dom';
+import { createPlanApi, addExerciseToPlanApi } from '../lib/api.js';
 
 const AiTrainer = () => {
+  const navigate = useNavigate();
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
   const [analysisResult, setAnalysisResult] = useState(null);
@@ -10,7 +13,8 @@ const AiTrainer = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const fileInputRef = useRef(null);
-  const [showPlan, setShowPlan] = useState(false);
+  const [isCreatingPlan, setIsCreatingPlan] = useState(false);
+  const [planCreateMsg, setPlanCreateMsg] = useState("");
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
@@ -36,7 +40,6 @@ const AiTrainer = () => {
     setIsLoading(true);
     setError("");
     setAnalysisResult(null);
-    setShowPlan(false);
 
     const formData = new FormData();
     formData.append("image", selectedFile);
@@ -72,6 +75,86 @@ const AiTrainer = () => {
     setError("");
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
+    }
+  };
+
+  // --- Create Plan from AI suggestions ---
+  const normalize = (s = "") => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+  const extractExercise = (line) => {
+    if (!line) return { name: null, sets: null, reps: null };
+    let name = String(line);
+    if (name.includes(':')) name = name.split(':')[0];
+    if (name.includes('-')) name = name.split('-')[0];
+    name = name.replace(/\(.*?\)/g, '').trim();
+    const setsMatch = line.match(/(\d+)\s*x\s*\d+|(\d+)\s*sets?/i);
+    const repsMatch = line.match(/x\s*(\d+)|reps?\s*:?\s*(\d+(?:-\d+)?)/i);
+    let sets = null;
+    if (setsMatch) sets = parseInt(setsMatch[1] || setsMatch[2], 10) || null;
+    let reps = null;
+    if (repsMatch) reps = repsMatch[1] || repsMatch[2] || null;
+    return { name: name.trim(), sets, reps };
+  };
+
+  const findBestExerciseId = (targetName, catalog) => {
+    if (!targetName) return null;
+    const t = normalize(targetName);
+    let best = null;
+    let bestScore = 0;
+    for (const ex of catalog) {
+      const n = normalize(ex.name || ex.name_en || "");
+      if (!n) continue;
+      let score = 0;
+      if (n === t) score = 100;
+      else if (n.includes(t)) score = 90;
+      else if (t.includes(n)) score = 80;
+      else {
+        const ts = new Set(t.split(/\s+/));
+        const ns = new Set(n.split(/\s+/));
+        let overlap = 0;
+        ts.forEach((w) => { if (ns.has(w)) overlap += 1; });
+        score = overlap;
+      }
+      if (score > bestScore) { bestScore = score; best = ex; }
+      if (bestScore >= 100) break;
+    }
+    return best ? best.id || best.exercise_id : null;
+  };
+
+  const handleCreatePlanFromAI = async () => {
+    try {
+      setIsCreatingPlan(true);
+      setPlanCreateMsg("");
+      const analysis = analysisResult?.analysis_data;
+      if (!analysis) throw new Error('Thiếu dữ liệu phân tích để tạo plan.');
+
+      const planName = `AI Plan - ${new Date().toLocaleDateString()}`;
+      const description = `${analysis.title || 'Plan từ AI'}${analysis.shape_type ? ' | ' + analysis.shape_type : ''}`;
+      const planRes = await createPlanApi({ name: planName, description, difficulty_level: 'beginner', is_public: false });
+      const planId = planRes?.data?.plan_id || planRes?.plan_id || planRes?.data?.plan?.plan_id;
+      if (!planId) throw new Error('Không lấy được plan_id sau khi tạo plan.');
+
+      const catalogRes = await api.get('/api/exercises', { params: { page: 1, pageSize: 1000 } });
+      const catalog = catalogRes?.data?.data || [];
+
+      const lines = Array.isArray(analysis.exercises) ? analysis.exercises : [];
+      let order = 1;
+      for (const line of lines) {
+        const { name, sets, reps } = extractExercise(line);
+        if (!name) continue;
+        const exId = findBestExerciseId(name, catalog);
+        if (!exId) continue;
+        try {
+          await addExerciseToPlanApi({ planId, exercise_id: exId, session_order: order, sets_recommended: sets, reps_recommended: reps });
+          order += 1;
+        } catch (_) { }
+      }
+
+      setPlanCreateMsg('Đã tạo plan từ gợi ý.');
+      navigate(`/plans/${planId}`);
+    } catch (e) {
+      setPlanCreateMsg(`Không thể tạo plan: ${e.message}`);
+    } finally {
+      setIsCreatingPlan(false);
     }
   };
 
@@ -202,47 +285,56 @@ const AiTrainer = () => {
                       heightCm={heightCm}
                     />
 
-                    {/* CTA to reveal workout plan */}
-                    {!showPlan && (
-                      <div className="pt-2">
-                        <button
-                          type="button"
-                          onClick={() => setShowPlan(true)}
-                          className="px-6 py-2 font-semibold text-white transition bg-blue-500 rounded-lg hover:bg-blue-400"
-                        >
-                          Nhận kế hoạch bài tập ngay
-                        </button>
-                      </div>
-                    )}
-
-                    {/* Plan and advice (hidden until user requests) */}
-                    {showPlan && (
-                      <div className="space-y-4">
-                        <h4 className="text-xl font-bold text-rose-600">
-                          {analysisResult.analysis_data.title}
-                        </h4>
-                        {Array.isArray(
-                          analysisResult.analysis_data.exercises
-                        ) &&
-                          analysisResult.analysis_data.exercises.length > 0 && (
-                            <ul className="space-y-1 list-disc list-inside">
-                              {analysisResult.analysis_data.exercises.map(
-                                (ex, index) => (
-                                  <li key={index}>{ex}</li>
-                                )
-                              )}
-                            </ul>
-                          )}
-                        {analysisResult.analysis_data.advice && (
-                          <p>
-                            <strong className="font-semibold text-blue-600">
-                              Lời khuyên:
-                            </strong>{" "}
-                            {analysisResult.analysis_data.advice}
-                          </p>
+                    {/* Textual analysis and exercise suggestions combined */}
+                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                      {/* Textual analysis */}
+                      <div className="p-4 bg-rose-50 border border-rose-200 rounded-lg">
+                        <h4 className="mb-2 text-lg font-extrabold text-rose-600">Phân tích chi tiết</h4>
+                        {analysisResult.analysis_data?.body_type && (
+                          <p className="mb-1"><strong className="text-rose-700">Dáng:</strong> {analysisResult.analysis_data.body_type}</p>
+                        )}
+                        {analysisResult.analysis_data?.body_analysis && (
+                          <p className="mb-2 text-slate-700 whitespace-pre-line">{analysisResult.analysis_data.body_analysis}</p>
+                        )}
+                        {analysisResult.analysis_data?.nutrition_advice && (
+                          <p className="mb-1"><strong className="text-blue-700">Dinh dưỡng:</strong> {analysisResult.analysis_data.nutrition_advice}</p>
+                        )}
+                        {analysisResult.analysis_data?.lifestyle_tips && (
+                          <p className="mb-1"><strong className="text-blue-700">Lối sống:</strong> {analysisResult.analysis_data.lifestyle_tips}</p>
+                        )}
+                        {analysisResult.analysis_data?.estimated_timeline && (
+                          <p className="mb-1"><strong className="text-blue-700">Lộ trình ước tính:</strong> {analysisResult.analysis_data.estimated_timeline}</p>
+                        )}
+                        {analysisResult.analysis_data?.advice && (
+                          <p className="mt-2"><strong className="text-blue-700">Lời khuyên:</strong> {analysisResult.analysis_data.advice}</p>
                         )}
                       </div>
-                    )}
+
+                      {/* Exercise suggestions + create plan */}
+                      <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <h4 className="mb-2 text-lg font-extrabold text-blue-700">Đề xuất bài tập</h4>
+                        {Array.isArray(analysisResult.analysis_data?.exercises) && analysisResult.analysis_data.exercises.length > 0 ? (
+                          <ul className="mb-3 space-y-1 list-disc list-inside text-slate-800">
+                            {analysisResult.analysis_data.exercises.map((ex, i) => (
+                              <li key={i}>{ex}</li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <p className="mb-3 text-slate-700">Chưa có danh sách bài tập gợi ý.</p>
+                        )}
+                        <button
+                          type="button"
+                          onClick={handleCreatePlanFromAI}
+                          disabled={isCreatingPlan}
+                          className="px-5 py-2 font-semibold text-white rounded-lg bg-rose-500 hover:bg-rose-600 disabled:bg-rose-200"
+                        >
+                          {isCreatingPlan ? 'Đang tạo plan...' : 'Tạo plan từ gợi ý'}
+                        </button>
+                        {planCreateMsg && (
+                          <p className="mt-2 text-sm text-rose-700">{planCreateMsg}</p>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
@@ -261,23 +353,13 @@ function MetricsPanel({ analysisResult, heightCm }) {
   const m = analysisResult?.measurements || {};
   const px = m.pixel_measurements || {};
   const cm = m.cm_measurements || {};
-  const hasCmFromApi = cm && Object.keys(cm).length > 0;
-  const derivedScale =
-    !hasCmFromApi && heightCm && px.height
-      ? Number(heightCm) / Number(px.height)
-      : null;
-  const useCm = hasCmFromApi || !!derivedScale;
+  const apiScale = m?.scale_cm_per_px != null ? Number(m.scale_cm_per_px) : null;
+  const derivedScale = (!apiScale && heightCm && px.height) ? Number(heightCm) / Number(px.height) : null;
+  const scale = apiScale || derivedScale || null;
 
   const fmt = (key) => {
-    if (useCm) {
-      const value =
-        cm[key] != null
-          ? Number(cm[key])
-          : derivedScale && px[key] != null
-          ? Number(px[key]) * derivedScale
-          : null;
-      if (value != null) return `${value.toFixed(1)} cm`;
-    }
+    if (cm && cm[key] != null) return `${Number(cm[key]).toFixed(1)} cm`;
+    if (scale && px[key] != null) return `${(Number(px[key]) * Number(scale)).toFixed(1)} cm`;
     if (px[key] != null) return `${Number(px[key]).toFixed(1)} px`;
     return "—";
   };
