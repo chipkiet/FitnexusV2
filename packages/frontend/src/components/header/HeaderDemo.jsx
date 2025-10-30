@@ -90,7 +90,7 @@ export default function HeaderDemo() {
 
         <nav className="items-center hidden gap-5 md:flex">
           <button
-            onClick={() => (isAuthenticated ? navigate("/ai") : navigate("/login", { state: { from: "/ai" } }))}
+            onClick={() => navigate(isAuthenticated ? "/ai" : "/ai-guide")}
             className="text-sm text-gray-800 hover:text-blue-600"
           >
             AI
