@@ -6,6 +6,7 @@ const AiTrainer = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
   const [analysisResult, setAnalysisResult] = useState(null);
+  const [heightCm, setHeightCm] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const fileInputRef = useRef(null);
@@ -36,6 +37,9 @@ const AiTrainer = () => {
 
     const formData = new FormData();
     formData.append('image', selectedFile);
+    if (heightCm) {
+      formData.append('known_height_cm', String(heightCm));
+    }
 
     try {
       const response = await api.post(`/api/trainer/upload`, formData, {
@@ -86,6 +90,20 @@ const AiTrainer = () => {
             </label>
             <input id="file-upload" type="file" accept="image/png, image/jpeg" onChange={handleFileChange} ref={fileInputRef} className="hidden" />
             {selectedFile && <p className="text-sm text-slate-400">{selectedFile.name}</p>}
+            <div className="flex items-center w-full gap-3">
+              <label htmlFor="height-cm" className="text-sm text-slate-300 whitespace-nowrap">Chiều cao (cm, tuỳ chọn)</label>
+              <input
+                id="height-cm"
+                type="number"
+                min="100"
+                max="230"
+                step="0.1"
+                value={heightCm}
+                onChange={(e) => setHeightCm(e.target.value)}
+                placeholder="VD: 175"
+                className="flex-1 px-3 py-2 text-slate-200 placeholder-slate-500 bg-slate-700 rounded-md outline-none border border-slate-600 focus:border-sky-500"
+              />
+            </div>
             
             <div className="flex gap-4 mt-2">
               <button type="submit" className="px-8 py-2 font-bold text-white transition-transform duration-200 bg-green-500 rounded-lg hover:scale-105 disabled:bg-gray-500 disabled:cursor-not-allowed disabled:scale-100" disabled={isLoading || !selectedFile}>
@@ -124,6 +142,12 @@ const AiTrainer = () => {
                         <li key={index}>{ex}</li>
                       ))}
                     </ul>
+                    {analysisResult.analysis_data.shape_type && (
+                      <p><strong className="font-semibold text-sky-400">Kiểu hình:</strong> {analysisResult.analysis_data.shape_type}</p>
+                    )}
+                    {analysisResult.analysis_data.somatotype && (
+                      <p><strong className="font-semibold text-sky-400">Cơ địa:</strong> {analysisResult.analysis_data.somatotype}</p>
+                    )}
                     <p><strong className="font-semibold text-sky-400">Lời khuyên:</strong> {analysisResult.analysis_data.advice}</p>
                   </div>
                 </div>
