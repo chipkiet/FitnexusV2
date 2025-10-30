@@ -2,6 +2,7 @@
 import React, { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/auth.context.jsx";
+import { ThemeProvider } from "./context/theme.context.jsx";
 
 
 import Register from "./pages/authentication/Register.jsx";
@@ -69,10 +70,7 @@ import Avatar from "./pages/profile/Avatar.jsx";
 // Support pages
 import FAQ from "./pages/support/FAQ.jsx";
 // Settings pages
-import Notifications from "./pages/settings/Notifications.jsx";
-import Language from "./pages/settings/Language.jsx";
 import Theme from "./pages/settings/Theme.jsx";
-import Privacy from "./pages/settings/Privacy.jsx";
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
@@ -110,7 +108,8 @@ function App() {
 
 
   return (
-    <AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
       <Router>
         <Routes>
           <Route path="/login" element={<Login />} />
@@ -257,38 +256,15 @@ function App() {
           />
 
           {/* Support Routes */}
+          <Route path="/support" element={<FAQ />} />
           <Route path="/support/faq" element={<FAQ />} />
 
           {/* Settings Routes */}
-          <Route
-            path="/settings/notifications"
-            element={
-              <PrivateRoute>
-                <Notifications />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/settings/language"
-            element={
-              <PrivateRoute>
-                <Language />
-              </PrivateRoute>
-            }
-          />
           <Route
             path="/settings/theme"
             element={
               <PrivateRoute>
                 <Theme />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/settings/privacy"
-            element={
-              <PrivateRoute>
-                <Privacy />
               </PrivateRoute>
             }
           />
@@ -326,6 +302,7 @@ function App() {
         </Routes>
       </Router>
     </AuthProvider>
+    </ThemeProvider>
   );
 }
 

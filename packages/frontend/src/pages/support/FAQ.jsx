@@ -14,7 +14,7 @@ export default function FAQ() {
     { value: "billing", label: "Thanh toán" }
   ];
 
-  const faqData = legacyFaqData
+  const faqData = getLegacyFaq()
     .map(faq => (faq.id === 8 ? {
       ...faq,
       category: "technical",
@@ -36,7 +36,7 @@ export default function FAQ() {
       }
     ]);
 
-  const legacyFaqData = [
+  function getLegacyFaq() { return [
     {
       id: 1,
       category: "account",
@@ -85,7 +85,7 @@ export default function FAQ() {
       question: "Làm thế nào để theo dõi tiến độ tập luyện?",
       answer: "Vào Hồ sơ > Thống kê để xem tổng quan tiến độ. Bạn có thể theo dõi số buổi tập, thời gian, calo đốt cháy và các thành tích đạt được."
     }
-  ];
+  ]; }
 
   const toggleItem = (id) => {
     const newOpenItems = new Set(openItems);

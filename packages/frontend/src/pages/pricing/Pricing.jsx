@@ -7,6 +7,7 @@ export default function Pricing() {
   const [plans, setPlans] = useState([]);
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
+  // Luôn redirect tới PayOS, không hiện QR trong app
 
   useEffect(() => {
     (async () => {
@@ -23,8 +24,10 @@ export default function Pricing() {
     try {
       setBusy(true);
       const res = await createPaymentLinkApi(planId);
-      const url = res?.data?.checkoutUrl;
-      if (url) window.location.href = url;
+      const payload = res; // res is already res.data
+      const url = payload?.data?.checkoutUrl;
+      if (!url) throw new Error('Không nhận được checkoutUrl từ PayOS');
+      window.location.href = url;
     } catch (e) {
       setError(e?.response?.data || { message: e.message });
     } finally {
@@ -59,6 +62,8 @@ export default function Pricing() {
           </div>
         ))}
       </div>
+
+      {/* Không dùng modal QR – luôn redirect tới PayOS */}
     </div>
   );
 }

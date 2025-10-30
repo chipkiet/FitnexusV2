@@ -1,4 +1,5 @@
 import express from 'express';
+import dns from 'dns';
 import cors from 'cors';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
@@ -22,9 +23,19 @@ import nutritionRouter from './routes/nutrition.routes.js';
 import billingRouter from './routes/billing.routes.js';
 import paymentRouter from './routes/payment.routes.js';
 
+// Prefer IPv4 first to reduce DNS EAI_AGAIN/IPv6 resolution issues on some networks
+try { dns.setDefaultResultOrder?.('ipv4first'); } catch {}
+
 
 import workoutRouter from './routes/workout.routes.js';
-import { scheduleSubscriptionExpiryJob } from './jobs/subscription.cron.js';
+// Lazy-load subscription cron to avoid hard crash if optional deps missing
+let scheduleSubscriptionExpiryJob = null;
+try {
+  const mod = await import('./jobs/subscription.cron.js');
+  scheduleSubscriptionExpiryJob = mod.scheduleSubscriptionExpiryJob;
+} catch (err) {
+  console.warn('[WARN] Skipping subscription cron job:', err?.message || err);
+}
 
 
 dotenv.config();
@@ -128,8 +139,10 @@ app.use('/api/exercises', exerciseRouter);
 app.use('/api/plans', planRouter);
 app.use('/api/workout', workoutRouter);
 
-// Schedule background jobs
-scheduleSubscriptionExpiryJob();
+// Schedule background jobs (only if cron loaded)
+if (typeof scheduleSubscriptionExpiryJob === 'function') {
+  scheduleSubscriptionExpiryJob();
+}
 
 /* -------------------- Health & Root -------------------- */
 app.get('/api/health', (_req, res) => {

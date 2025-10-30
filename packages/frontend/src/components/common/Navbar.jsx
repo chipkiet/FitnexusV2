@@ -1,12 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logo from '../../assets/logo.png';
+import logoDark from '../../assets/logodark.png';
+import { useTheme } from '../../context/theme.context.jsx';
 import { useAuth } from '../../context/auth.context.jsx';
 
 export default function Navbar() {
   const navigate = useNavigate();
   const { user, loading, logout, refreshUser } = useAuth();
-  const isPremium = !!(user && ((user.user_type && String(user.user_type).toLowerCase() === 'premium') || user.plan === 'PREMIUM'));
+  const { isDark } = useTheme();
+  const isPremium = !!(
+    user && ((user.user_type && String(user.user_type).toLowerCase() === 'premium') || user.plan === 'PREMIUM')
+  );
   const isAdmin = !!(user && String(user.role || '').toUpperCase() === 'ADMIN');
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
@@ -38,7 +43,7 @@ export default function Navbar() {
           onClick={() => navigate('/')}
           className="shrink-0 -m-1.5 p-1.5"
         >
-          <img src={logo} alt="Fitnexus logo" className="h-10" />
+          <img src={isDark ? logoDark : logo} alt="Fitnexus logo" className="h-10" />
         </button>
 
         <nav className="items-center hidden gap-6 md:flex">
@@ -71,7 +76,6 @@ export default function Navbar() {
             Dinh dưỡng
           </button>
 
-          {/* CTA: Upgrade to Premium - only for logged-in non-premium users */}
           {user && !isPremium && !isAdmin && (
             <button
               type="button"
@@ -131,3 +135,4 @@ export default function Navbar() {
     </header>
   );
 }
+

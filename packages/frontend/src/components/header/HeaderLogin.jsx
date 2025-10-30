@@ -2,12 +2,15 @@ import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/auth.context.jsx";
 import logo from "../../assets/logo.png";
+import logoDark from "../../assets/logodark.png";
+import { useTheme } from "../../context/theme.context.jsx";
 import { Crown } from "lucide-react";
 
 export default function HeaderLogin() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
+  const { isDark } = useTheme();
   const isAuthenticated = !!user;
 
   // Derive account type for display: guest | premium | admin
@@ -125,7 +128,7 @@ export default function HeaderLogin() {
           className="-m-2.5 p-2.5 shrink-0"
           aria-label="Trang chủ"
         >
-          <img src={logo} alt="Fitnexus" className="w-auto h-16 " />
+          <img src={isDark ? logoDark : logo} alt="Fitnexus" className="w-auto h-16 " />
         </button>
 
         {/* Mobile toggle */}
@@ -399,52 +402,12 @@ export default function HeaderLogin() {
                         </div>
                       )}
                     </div>
-                    <div className="relative">
-                      {activeSubmenu === 'support' && (
-                        <div className="absolute top-0 w-48 ml-1 bg-white border border-gray-200 rounded-md shadow-lg left-full">
-                          <button
-                            onClick={() => {
-                              setShowAvatarMenu(false);
-                              setActiveSubmenu(null);
-                              navigate("/support/faq");
-                            }}
-                            className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
-                          >
-                            FAQ
-                          </button>
-                          <button
-                            onClick={() => {
-                              setShowAvatarMenu(false);
-                              setActiveSubmenu(null);
-                              navigate("/support/contact");
-                            }}
-                            className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
-                          >
-                            Liên hệ
-                          </button>
-                          <button
-                            onClick={() => {
-                              setShowAvatarMenu(false);
-                              setActiveSubmenu(null);
-                              navigate("/support/bug-report");
-                            }}
-                            className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
-                          >
-                            Báo lỗi
-                          </button>
-                          <button
-                            onClick={() => {
-                              setShowAvatarMenu(false);
-                              setActiveSubmenu(null);
-                              navigate("/support/guide");
-                            }}
-                            className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
-                          >
-                            Hướng dẫn sử dụng
-                          </button>
-                        </div>
-                      )}
-                    </div>
+                    <button
+                      onClick={() => { setShowAvatarMenu(false); setActiveSubmenu(null); navigate("/support"); }}
+                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      Hỗ trợ
+                    </button>
 
                     {/* Cài đặt */}
                     <div className="relative">
