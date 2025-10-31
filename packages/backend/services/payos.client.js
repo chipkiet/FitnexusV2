@@ -1,4 +1,6 @@
 // packages/backend/services/payos.client.js
+// Ensure environment variables are loaded before reading them
+import 'dotenv/config';
 // Lazily import @payos/node to avoid startup crash if the package isn't installed in dev
 const hasCreds = Boolean(
   process.env.PAYOS_CLIENT_ID &&

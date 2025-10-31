@@ -1,9 +1,9 @@
-// packages/backend/controllers/payment.controller.js
 import axios from "axios";
 import SubscriptionPlan from "../models/subscription.plan.model.js";
 import Transaction from "../models/transaction.model.js";
 import User from "../models/user.model.js";
 import dns from "dns";
+import payos, { payosEnabled } from "../services/payos.client.js";
 
 dns.setDefaultResultOrder?.("ipv4first");
 
@@ -44,59 +44,69 @@ export async function createPaymentLink(req, res) {
 
     const backendUrl = process.env.BACKEND_URL || "http://localhost:3001";
     const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+    const useBackendReturn = String(process.env.PAYOS_USE_BACKEND_RETURN ?? '0') !== '0';
+    const returnUrl = useBackendReturn
+      ? `${backendUrl}/api/payment/return`
+      : `${frontendUrl}/payment/success?orderCode=${orderCode}`;
+    const cancelUrl = useBackendReturn
+      ? `${backendUrl}/api/payment/cancel`
+      : `${frontendUrl}/payment/cancel`;
 
-    // Dữ liệu gửi lên PayOS
+    // === Payload chuẩn PayOS (v2) ===
     const payload = {
-      orderCode: Number(orderCode),
-      amount: Number(plan.price),
-      description: `Thanh toán gói ${plan.name}`,
-      returnUrl: `${backendUrl}/api/payment/return`,
-      cancelUrl: `${backendUrl}/api/payment/cancel`,
-      items: [{ name: plan.name, quantity: 1, price: Number(plan.price) }],
+      orderCode: Number(orderCode), // Phải là integer <= 15 chữ số
+      amount: Math.round(Number(plan.price)), // integer, không được có thập phân
+      description: `${plan.name}`,
+      // Use FE routes by default to avoid public backend in dev
+      returnUrl,
+      cancelUrl,
+      items: [
+        {
+          name: plan.name,
+          quantity: 1,
+          price: Math.round(Number(plan.price)),
+        },
+      ],
+      buyerName: req.user?.name || "Khách hàng",
+      buyerEmail: req.user?.email || "example@gmail.com",
     };
 
-    const baseAPI =
-      process.env.PAYOS_ENV === "sandbox"
-        ? "https://api-sandbox.payos.vn"
-        : "https://api.payos.vn";
-
-    // === Thử gọi PayOS ===
-    let resp;
-    try {
-      resp = await axios.post(`${baseAPI}/v1/payment-requests`, payload, {
+    // Prefer official SDK to ensure signature is correct
+    let checkoutUrl, qrCode;
+    if (payos && payosEnabled && payos.paymentRequests && typeof payos.paymentRequests.create === "function") {
+      console.log("[PayOS] Using SDK to create payment link");
+      const data = await payos.paymentRequests.create(payload);
+      checkoutUrl = data?.checkoutUrl || data?.paymentLink || data?.checkout_url;
+      qrCode = data?.qrCode || data?.qr_code || null;
+    } else {
+      // Fallback: direct API (requires correct headers and may be rejected without signature)
+      console.warn("[PayOS] SDK unavailable; falling back to direct API call");
+      const baseAPI = "https://api-merchant.payos.vn";
+      console.log("Sending payload to PayOS:", JSON.stringify(payload, null, 2));
+      console.log("Using headers:", {
+        clientId: process.env.PAYOS_CLIENT_ID,
+        apiKey: process.env.PAYOS_API_KEY?.slice(0, 6) + "...",
+      });
+      const resp = await axios.post(`${baseAPI}/v2/payment-requests`, payload, {
         headers: {
           "Content-Type": "application/json",
-          "x-client-id": process.env.PAYOS_CLIENT_ID,
-          "x-api-key": process.env.PAYOS_API_KEY,
+          "x-client-id": process.env.PAYOS_CLIENT_ID?.trim(),
+          "x-api-key": process.env.PAYOS_API_KEY?.trim(),
         },
         timeout: 10000,
       });
-    } catch (err) {
-      // fallback sang sandbox nếu lỗi mạng/DNS
-      console.warn(
-        "⚠️ PayOS prod unreachable, trying sandbox...",
-        err?.code || err?.message
-      );
-      resp = await axios.post(
-        "https://api-sandbox.payos.vn/v1/payment-requests",
-        payload,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            "x-client-id": process.env.PAYOS_CLIENT_ID,
-            "x-api-key": process.env.PAYOS_API_KEY,
-          },
-          timeout: 10000,
-        }
-      );
+      console.log("PayOS response:", resp.data);
+      if (resp.data.code !== "00") {
+        throw new Error(
+          `PayOS error ${resp.data.code}: ${resp.data.desc || "Unknown error"}`
+        );
+      }
+      const data = resp.data.data || {};
+      checkoutUrl = data.checkoutUrl;
+      qrCode = data.qrCode;
     }
 
-    const data = resp?.data?.data || resp?.data || {};
-    const checkoutUrl = data.checkoutUrl;
-    const qrCode = data.qrCode;
-
-    if (!checkoutUrl)
-      throw new Error("PAYOS response missing checkoutUrl field.");
+    if (!checkoutUrl) throw new Error("PAYOS response missing checkoutUrl field.");
 
     return res.json({
       success: true,
@@ -120,16 +130,31 @@ export async function createPaymentLink(req, res) {
 // === Xử lý webhook thanh toán PayOS ===
 export async function handlePayosWebhook(req, res) {
   try {
-    const data = req.body?.data || {};
-    const orderCode = data?.orderCode;
-    const status = String(data?.status || "").toUpperCase();
-    if (!orderCode) return res.status(200).json({ success: true });
+    // 1. Xác thực webhook từ PayOS (SDK v2)
+    let webhookObj;
+    if (Buffer.isBuffer(req.body)) {
+      try {
+        webhookObj = JSON.parse(req.body.toString("utf8"));
+      } catch (e) {
+        return res.status(400).json({ success: false, message: "Invalid raw webhook body" });
+      }
+    } else {
+      webhookObj = req.body || {};
+    }
+    const webhookData = await payos.webhooks.verify(webhookObj);
+    const { orderCode, status, paymentId } = webhookData;
 
+    // 2. Tìm giao dịch trong DB
     const tx = await Transaction.findOne({
       where: { payos_order_code: orderCode },
     });
-    if (!tx) return res.status(200).json({ success: true });
+    if (!tx || tx.status !== "pending") {
+      return res
+        .status(200)
+        .json({ success: true, message: "Old or invalid transaction" });
+    }
 
+    // 3. Cập nhật trạng thái dựa vào webhook
     if (status === "PAID") {
       const plan = await SubscriptionPlan.findByPk(tx.plan_id);
       if (plan) {
@@ -143,21 +168,27 @@ export async function handlePayosWebhook(req, res) {
         );
         await tx.update({
           status: "completed",
-          payos_payment_id: data.paymentId || null,
+          payos_payment_id: paymentId || null,
         });
       }
-    } else if (status === "FAILED" || status === "CANCELLED") {
+    } else if (["CANCELLED", "FAILED"].includes(status)) {
       await tx.update({ status: "failed" });
     }
 
+    // 4. Phản hồi cho PayOS
     return res.status(200).json({ success: true });
   } catch (err) {
-    console.error("handlePayosWebhook error:", err);
-    return res.status(400).json({ success: false, message: "Invalid webhook" });
+    console.error(
+      "handlePayosWebhook error (invalid signature or processing failed):",
+      err.message
+    );
+    return res
+      .status(400)
+      .json({ success: false, message: "Invalid webhook or signature" });
   }
 }
 
-// === Redirect trả về sau khi thanh toán ===
+// === Redirect sau khi thanh toán ===
 export async function returnUrl(req, res) {
   try {
     const frontend = process.env.FRONTEND_URL || "http://localhost:5173";
@@ -173,5 +204,55 @@ export async function cancelUrl(req, res) {
     return res.redirect(`${frontend}/payment/cancel`);
   } catch {
     return res.redirect("/");
+  }
+}
+
+// === Verify (polling) thanh toán không cần webhook ===
+export async function verifyPaymentStatus(req, res) {
+  try {
+    const userId = req.userId || req.user?.user_id;
+    if (!userId)
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+
+    const orderCodeRaw = req.body?.orderCode ?? req.query?.orderCode;
+    const orderCode = Number(orderCodeRaw);
+    if (!orderCode || Number.isNaN(orderCode)) {
+      return res.status(400).json({ success: false, message: "Missing or invalid orderCode" });
+    }
+
+    if (!(payos && payosEnabled && payos.paymentRequests?.get)) {
+      return res.status(503).json({ success: false, message: "PayOS SDK unavailable" });
+    }
+
+    const link = await payos.paymentRequests.get(orderCode);
+    const status = link?.status || "UNKNOWN";
+
+    const tx = await Transaction.findOne({ where: { payos_order_code: String(orderCode) } });
+    if (!tx) {
+      return res.status(404).json({ success: false, message: "Transaction not found", status });
+    }
+    if (tx.user_id !== userId) {
+      return res.status(403).json({ success: false, message: "Forbidden" });
+    }
+
+    if (status === "PAID" && tx.status !== "completed") {
+      const plan = await SubscriptionPlan.findByPk(tx.plan_id);
+      if (plan) {
+        const newExpiryDate = new Date();
+        newExpiryDate.setDate(newExpiryDate.getDate() + Number(plan.duration_days || 30));
+        await User.update(
+          { user_type: "premium", user_exp_date: newExpiryDate },
+          { where: { user_id: tx.user_id } }
+        );
+      }
+      await tx.update({ status: "completed" });
+    } else if (["CANCELLED", "FAILED", "EXPIRED"].includes(status) && tx.status === "pending") {
+      await tx.update({ status: "failed" });
+    }
+
+    return res.json({ success: true, status, transaction: { id: tx.transaction_id, dbStatus: tx.status } });
+  } catch (err) {
+    console.error("verifyPaymentStatus error:", err);
+    return res.status(500).json({ success: false, message: "VERIFY_FAILED", detail: String(err?.message || err) });
   }
 }
