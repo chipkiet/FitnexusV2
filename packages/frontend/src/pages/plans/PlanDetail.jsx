@@ -7,6 +7,7 @@ import {
   updatePlanExerciseApi,
   api 
 } from "../../lib/api.js";
+import { listWorkoutSessionsApi } from "../../lib/api.js";
 
 function Badge({ children, tone = "gray" }) {
   const tones = {
@@ -20,6 +21,82 @@ function Badge({ children, tone = "gray" }) {
     <span className={`inline-flex items-center px-2 py-1 rounded text-xs ${tones[tone] || tones.gray}`}>
       {children}
     </span>
+  );
+}
+
+// Modal chỉnh sửa thông số bài tập trong plan
+function EditExerciseModal({ exercise, onClose, onSave }) {
+  const [sets, setSets] = useState(exercise?.sets_recommended ?? "");
+  const [reps, setReps] = useState(exercise?.reps_recommended ?? "");
+  const [rest, setRest] = useState(exercise?.rest_period_seconds ?? "");
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await onSave({
+        sets_recommended: sets !== "" ? parseInt(sets, 10) : null,
+        reps_recommended: reps !== "" ? String(reps) : null,
+        rest_period_seconds: rest !== "" ? parseInt(rest, 10) : null,
+      });
+      onClose();
+    } catch (e) {
+      // giữ modal mở để người dùng thử lại
+      console.error("Save exercise settings error:", e);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onClose}>
+      <div className="w-full max-w-md p-6 mx-4 bg-white rounded-xl" onClick={(e) => e.stopPropagation()}>
+        <h3 className="mb-2 text-lg font-semibold">Chỉnh sửa bài tập</h3>
+        <p className="mb-4 text-sm text-gray-600">{exercise?.exercise?.name || `#${exercise?.exercise_id}`}</p>
+        <div className="space-y-4">
+          <div>
+            <label className="block mb-1 text-sm font-medium text-gray-700">Số sets</label>
+            <input
+              type="number"
+              min="0"
+              value={sets}
+              onChange={(e) => setSets(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+              placeholder="VD: 3"
+            />
+          </div>
+          <div>
+            <label className="block mb-1 text-sm font-medium text-gray-700">Số reps</label>
+            <input
+              type="text"
+              value={reps}
+              onChange={(e) => setReps(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+              placeholder="VD: 8-12 hoặc 15"
+            />
+          </div>
+          <div>
+            <label className="block mb-1 text-sm font-medium text-gray-700">Nghỉ (giây)</label>
+            <input
+              type="number"
+              min="0"
+              value={rest}
+              onChange={(e) => setRest(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+              placeholder="VD: 60"
+            />
+          </div>
+        </div>
+        <div className="flex gap-3 mt-6">
+          <button onClick={onClose} disabled={saving} className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50">
+            Hủy
+          </button>
+          <button onClick={handleSave} disabled={saving} className="flex-1 px-4 py-2 text-sm font-semibold text-white bg-green-600 rounded-lg hover:bg-green-800 disabled:opacity-50">
+            {saving ? 'Đang lưu...' : 'Lưu'}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -111,6 +188,41 @@ function ResumeRestartModal({ activeSession, onClose, onResume, onRestart }) {
   );
 }
 
+// Modal: Có session đang dở thuộc plan KHÁC
+function ActiveOtherPlanModal({ activeSession, currentPlanName, onClose, onContinueOther, onFinishOtherThenStart }) {
+  const getTimeAgo = (timestamp) => {
+    const now = new Date();
+    const updated = new Date(timestamp);
+    const diffMs = now - updated;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+    if (diffDays > 0) return `${diffDays} ngày trước`;
+    if (diffHours > 0) return `${diffHours} giờ trước`;
+    if (diffMins > 0) return `${diffMins} phút trước`;
+    return 'vừa xong';
+  };
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50" onClick={onClose}>
+      <div className="w-full max-w-md p-6 mx-4 bg-white shadow-2xl rounded-xl" onClick={(e) => e.stopPropagation()}>
+        <h3 className="mb-2 text-xl font-semibold text-gray-900">Bạn đang có buổi tập ở kế hoạch khác</h3>
+        <div className="mb-4 text-sm text-gray-600">
+          <div>
+            Kế hoạch đang dở: <span className="font-medium text-gray-900">{activeSession.plan_name || `#${activeSession.plan_id}`}</span>
+          </div>
+          <div className="mt-1">Tiến độ: {activeSession.current_exercise_index + 1} / {activeSession.exercises_count} bài • Lần cuối: {getTimeAgo(activeSession.updated_at)}</div>
+          <div className="mt-2">Kế hoạch bạn đang mở: <span className="font-medium">{currentPlanName}</span></div>
+        </div>
+        <div className="space-y-3">
+          <button onClick={onContinueOther} className="w-full px-4 py-3 text-sm font-semibold text-white transition-colors bg-green-600 rounded-lg hover:bg-green-700">Tiếp tục buổi đang dở</button>
+          <button onClick={onFinishOtherThenStart} className="w-full px-4 py-3 text-sm font-medium text-gray-700 transition-colors border-2 border-gray-300 rounded-lg hover:bg-gray-50">Kết thúc buổi đó và bắt đầu kế hoạch này</button>
+          <button onClick={onClose} className="w-full px-4 py-3 text-sm text-gray-500 transition-colors hover:text-gray-700">Để sau</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function PlanDetail() {
   const navigate = useNavigate();
   const { planId } = useParams();
@@ -122,8 +234,11 @@ export default function PlanDetail() {
   const [saving, setSaving] = useState(false);
   const [editingExercise, setEditingExercise] = useState(null);
   const [showResumeModal, setShowResumeModal] = useState(false);
+  const [showOtherPlanModal, setShowOtherPlanModal] = useState(false);
   const [activeSession, setActiveSession] = useState(null);
   const [startingWorkout, setStartingWorkout] = useState(false);
+  const [activeSessions, setActiveSessions] = useState([]);
+  const [completedSessions, setCompletedSessions] = useState([]);
 
   useEffect(() => {
     let alive = true;
@@ -146,6 +261,15 @@ export default function PlanDetail() {
       }
     }
     load();
+    // load sessions
+    (async () => {
+      try {
+        const r1 = await listWorkoutSessionsApi({ planId: Number(planId), status: 'active' });
+        const r2 = await listWorkoutSessionsApi({ planId: Number(planId), status: 'completed' });
+        setActiveSessions(r1?.data?.items || []);
+        setCompletedSessions(r2?.data?.items || []);
+      } catch {}
+    })();
     return () => { alive = false; };
   }, [planId]);
 
@@ -235,19 +359,16 @@ export default function PlanDetail() {
       const activeRes = await api.get('/api/workout/active');
       const activeSess = activeRes?.data?.data?.session || null;
 
-      if (activeSess) {
-        // Nếu session active thuộc plan khác -> tự động kết thúc và tạo session mới từ plan hiện tại
-        if (Number(activeSess.plan_id) !== Number(planId)) {
-          try { await api.post(`/api/workout/${activeSess.session_id}/complete`); } catch {}
-          await createNewSession();
-        } else {
-          // Cùng plan -> hỏi tiếp tục hay bắt đầu lại
-          setActiveSession(activeSess);
-          setShowResumeModal(true);
-        }
-      } else {
-        // Không có session → Tạo mới
+      if (!activeSess) {
         await createNewSession();
+      } else if (Number(activeSess.plan_id) === Number(planId)) {
+        // Cùng plan -> hỏi tiếp tục hay bắt đầu lại
+        setActiveSession(activeSess);
+        setShowResumeModal(true);
+      } else {
+        // KHÁC plan: hiển thị modal lựa chọn (không tự động kết thúc)
+        setActiveSession(activeSess);
+        setShowOtherPlanModal(true);
       }
     } catch (err) {
       console.error("Check active session error:", err);
@@ -301,6 +422,26 @@ export default function PlanDetail() {
     } catch (err) {
       console.error('Restart (complete+create) error:', err);
       setError({ message: 'Không thể bắt đầu lại buổi tập' });
+    } finally {
+      setStartingWorkout(false);
+    }
+  };
+
+  // Modal khác plan
+  const handleContinueOther = () => {
+    setShowOtherPlanModal(false);
+    if (activeSession?.session_id) navigate(`/workout-run/${activeSession.session_id}`);
+  };
+  const handleFinishOtherThenStart = async () => {
+    setShowOtherPlanModal(false);
+    setStartingWorkout(true);
+    try {
+      if (activeSession?.session_id) {
+        try { await api.post(`/api/workout/${activeSession.session_id}/complete`); } catch {}
+      }
+      await createNewSession();
+    } catch (e) {
+      setError({ message: 'Không thể bắt đầu buổi mới' });
     } finally {
       setStartingWorkout(false);
     }
@@ -450,6 +591,44 @@ export default function PlanDetail() {
                 </div>
               )}
             </div>
+
+            {/* Sessions overview */}
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <div className="p-5 bg-white border rounded-xl">
+                <h3 className="mb-2 text-base font-semibold text-gray-900">Chưa hoàn thành</h3>
+                {!activeSessions.length ? (
+                  <div className="text-sm text-gray-600">Chưa có buổi tập nào hoặc không có buổi đang dở.</div>
+                ) : (
+                  <div className="space-y-2">
+                    {activeSessions.map((s) => (
+                      <div key={s.session_id} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">Bắt đầu: {new Date(s.started_at).toLocaleString()}</div>
+                          <div className="text-xs text-gray-600">Tiến độ: {s.completed_exercises}/{s.total_exercises}</div>
+                        </div>
+                        <button className="px-3 py-1.5 text-xs text-blue-600 border border-blue-200 rounded hover:bg-blue-50" onClick={() => navigate(`/workout-run/${s.session_id}`)}>Tiếp tục</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="p-5 bg-white border rounded-xl">
+                <h3 className="mb-2 text-base font-semibold text-gray-900">Đã hoàn thành</h3>
+                {!completedSessions.length ? (
+                  <div className="text-sm text-gray-600">Chưa có buổi hoàn thành.</div>
+                ) : (
+                  <div className="space-y-2">
+                    {completedSessions.map((s) => (
+                      <div key={s.session_id} className="p-3 border rounded-lg">
+                        <div className="text-sm font-medium text-gray-900">Ngày tập: {new Date(s.ended_at || s.started_at).toLocaleString()}</div>
+                        <div className="text-xs text-gray-600">Tổng thời gian: {formatDuration(s.total_duration_seconds)}</div>
+                        <div className="text-xs text-gray-600">Hoàn thành: {s.completed_exercises}/{s.total_exercises}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
 
@@ -461,7 +640,33 @@ export default function PlanDetail() {
             onRestart={handleRestart}
           />
         )}
+        {editingExercise && (
+          <EditExerciseModal
+            exercise={editingExercise}
+            onClose={() => setEditingExercise(null)}
+            onSave={(data) => handleEditExercise(editingExercise, data)}
+          />
+        )}
+        {showOtherPlanModal && activeSession && (
+          <ActiveOtherPlanModal
+            activeSession={activeSession}
+            currentPlanName={plan?.name || `(Kế hoạch ${planId})`}
+            onClose={() => setShowOtherPlanModal(false)}
+            onContinueOther={handleContinueOther}
+            onFinishOtherThenStart={handleFinishOtherThenStart}
+          />
+        )}
       </main>
     </div>
   );
+}
+
+function formatDuration(sec = 0) {
+  const s = Number(sec) || 0;
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const r = s % 60;
+  if (h > 0) return `${h}h ${m}m ${r}s`;
+  if (m > 0) return `${m}m ${r}s`;
+  return `${r}s`;
 }

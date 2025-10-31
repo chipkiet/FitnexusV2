@@ -442,3 +442,11 @@ export const completeWorkoutSessionApi = async (sessionId, payload = {}) => {
   const res = await api.post(`/api/workout/${sessionId}/complete`, payload);
   return res.data;
 };
+
+export const listWorkoutSessionsApi = async ({ planId, status, limit = 20, offset = 0 } = {}) => {
+  const params = { limit, offset };
+  if (planId) params.planId = planId;
+  if (status) params.status = status;
+  const res = await api.get('/api/workout', { params });
+  return res.data;
+};

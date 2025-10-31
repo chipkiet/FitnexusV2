@@ -16,6 +16,7 @@ import ExerciseFavorite from "./exercise.favorite.model.js"; // ✅ giữ lại 
 import WorkoutSession from "./workout.session.model.js"; // ✅ giữ lại phần remote
 import WorkoutSessionExercise from "./workout.session.exercise.model.js";
 import WorkoutSessionSet from "./workout.session.set.model.js";
+import AIUsage from "./ai.usage.model.js";
 
 export function initModels() {
   // Khai báo quan hệ 1-n: User hasMany PasswordReset
@@ -120,5 +121,6 @@ export function initModels() {
     WorkoutSession,
     WorkoutSessionExercise,
     WorkoutSessionSet,
+    AIUsage,
   };
 }

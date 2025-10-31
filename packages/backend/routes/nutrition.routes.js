@@ -5,6 +5,7 @@ import OnboardingSession from '../models/onboarding.session.model.js';
 import OnboardingAnswer from '../models/onboarding.answer.model.js';
 import OnboardingStep from '../models/onboarding.step.model.js';
 import User from '../models/user.model.js';
+import aiQuota from '../middleware/ai.quota.js';
 
 const router = express.Router();
 
@@ -166,7 +167,7 @@ async function callGemini(prompt, apiKey) {
   throw lastErr || new Error('Gemini API call failed');
 }
 
-router.post('/plan', async (req, res) => {
+router.post('/plan', aiQuota('nutrition_plan'), async (req, res) => {
   try {
     const goalRaw = String(req.body?.goal || '').toUpperCase();
     const extra = String(req.body?.extra || '').trim();
@@ -342,7 +343,7 @@ async function buildPromptFromOnboarding(userId, extraText = '') {
 }
 
 // New: generate plan using latest onboarding answers of the authenticated user
-router.post('/plan/from-onboarding', authOrSession, async (req, res) => {
+router.post('/plan/from-onboarding', authOrSession, aiQuota('nutrition_plan'), async (req, res) => {
   try {
     const extra = String(req.body?.extra || '').trim();
     const { prompt, profile } = await buildPromptFromOnboarding(req.userId, extra);

@@ -9,6 +9,7 @@ import { fileURLToPath } from "url";
 import authGuard from "../middleware/auth.guard.js";
 import authOrSession from "../middleware/authOrSession.guard.js";
 import { requireTrainer } from "../middleware/role.guard.js";
+import aiQuota from "../middleware/ai.quota.js";
 const router = Router();
 // Resolve a stable uploads directory next to backend root
 const __filename = fileURLToPath(import.meta.url);
@@ -55,6 +56,7 @@ router.post(
   "/upload",
   authOrSession,
   uploadLimiter,
+  aiQuota('trainer_image_analyze'),
   upload.single("image"),
   async (req, res, next) => {
     if (!req.file) {
@@ -70,6 +72,12 @@ router.post(
         fs.createReadStream(localPath),
         req.file.originalname
       );
+      // Optional: forward known_height_cm if client provided (as text field in multipart)
+      const height = (req.body && (req.body.known_height_cm || req.body.height_cm)) || null;
+      if (height) {
+        try { formData.append("known_height_cm", String(height)); } catch (_) {}
+      }
+
       const response = await axios.post(AI_API_URL, formData, {
         headers: { ...formData.getHeaders() },
         timeout: 180000,
