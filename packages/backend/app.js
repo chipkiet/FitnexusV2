@@ -23,27 +23,26 @@ import onboardingRouter from "./routes/onboarding.routes.js";
 import nutritionRouter from "./routes/nutrition.routes.js";
 import billingRouter from "./routes/billing.routes.js";
 import paymentRouter from "./routes/payment.routes.js";
-
-// ✅ thêm cho PayOS (đặt trước express.json)
-const { raw } = express; // ✅ cách đúng cho ESM
-
-// IPv4 preference
-try {
-  dns.setDefaultResultOrder?.("ipv4first");
-} catch {}
+import adminRevenueRoutes from "./routes/admin.revenue.routes.js"; // ✅ Import route
 
 dotenv.config();
 import activityTracker from "./middleware/activity.tracker.js";
 
+/* -------------------- Khởi tạo app -------------------- */
 const app = express();
 const isDev = process.env.NODE_ENV !== "production";
 const FRONTEND = process.env.FRONTEND_URL || "http://localhost:5173";
 
+/* -------------------- IPv4 preference -------------------- */
+try {
+  dns.setDefaultResultOrder?.("ipv4first");
+} catch {}
+
 /* -------------------- PayOS Webhook Raw Body -------------------- */
-// ✅ Thêm middleware này TRƯỚC express.json()
-// ⚡ Phải để TRƯỚC express.json()
+// ✅ Middleware này phải ĐẶT TRƯỚC express.json()
 app.use("/api/payment/payos-webhook", bodyParser.raw({ type: "*/*" }));
 
+/* -------------------- Body & Cookies -------------------- */
 app.use(cookieParser());
 app.use(express.json({ limit: "200kb" }));
 app.use(express.urlencoded({ extended: true, limit: "200kb" }));
@@ -96,11 +95,6 @@ if (process.env.NODE_ENV !== "test") {
   );
 }
 
-/* -------------------- Body & Cookies -------------------- */
-app.use(cookieParser());
-app.use(express.json({ limit: "200kb" }));
-app.use(express.urlencoded({ extended: true, limit: "200kb" }));
-
 /* -------------------- Session -------------------- */
 if (!process.env.SESSION_SECRET) {
   console.warn("[WARN] SESSION_SECRET is missing in .env");
@@ -143,11 +137,13 @@ app.use("/api/nutrition", nutritionRouter);
 app.use("/api/billing", billingRouter);
 app.use("/api/payment", paymentRouter);
 
+// ✅ Di chuyển dòng này xuống đây sau khi app được khởi tạo
+app.use("/api/admin/revenue", adminRevenueRoutes);
+
 // Theo dõi hoạt động người dùng
 app.use("/api", activityTracker);
 app.use("/api/admin", adminRouter);
 app.use("/api/trainer", trainerRouter);
-app.use("/api/onboarding", onboardingRouter);
 app.use("/api/exercises", exerciseRouter);
 app.use("/api/plans", planRouter);
 app.use("/api/workout", workoutRouter);
@@ -161,11 +157,12 @@ app.get("/api/health", (_req, res) => {
   });
 });
 
+/* -------------------- Root -------------------- */
 app.get("/", (_req, res) => {
   res.json({ message: "Chào mừng các tình yêu đã đến với web của anh 💕" });
 });
 
-/* -------------------- 404 -------------------- */
+/* -------------------- 404 & Redirect Dev -------------------- */
 if (isDev && FRONTEND) {
   app.get(/^\/(?!api|auth|static|assets|uploads).*/, (req, res) => {
     const target = `${FRONTEND}${req.originalUrl || ""}`;

@@ -48,14 +48,14 @@ import AdminLayout from "./layouts/AdminLayout.jsx";
 import AdminOverview from "./pages/admin/Overview.jsx";
 import AdminUserDetail from "./pages/admin/UserDetail.jsx";
 import AdminContentManage from "./pages/admin/ContentManage.jsx";
-import AdminFinancialManage from "./pages/admin/FinancialManage.jsx";
+import AdminFinancialManage from "./pages/admin/AdminRevenue.jsx";
 import Role from "./pages/admin/Role.jsx";
 import Plan from "./pages/admin/Plan.jsx";
 import AdminLockUnlock from "./pages/admin/LockUnlock.jsx";
 import AdminResetPassword from "./pages/admin/ResetPassword.jsx";
 import AdminUserPlans from "./pages/admin/UserPlans.jsx";
 import UserPlanDetails from "./pages/admin/UserPlanDetails.jsx";
-
+import AdminRevenue from "./pages/admin/AdminRevenue.jsx";
 
 import AdminUsers from "./pages/admin/AdminUsers.jsx";
 import AdminPopularExercises from "./pages/admin/PopularExercises.jsx";
@@ -289,6 +289,7 @@ function App() {
             <Route path="reset-password" element={<AdminResetPassword />} />
             <Route path="content" element={<AdminContentManage />} />
             <Route path="finance" element={<AdminFinancialManage />} />
+            <Route path="revenue" element={<AdminRevenue />} />
             <Route path="popular-exercises" element={<AdminPopularExercises />} />
             <Route path="user-plans" element={<AdminUserPlans />} />
             <Route path="user-plans/:userId" element={<UserPlanDetails />} />

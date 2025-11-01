@@ -106,5 +106,5 @@ const permissionGuard = (requiredPermission) => async (req, res, next) => {
     return res.status(500).json({ message: 'Internal server error' });
   }
 };
-
+export const verifyAdmin = permissionGuard("admin:access");
 export default permissionGuard;
