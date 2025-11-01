@@ -2,20 +2,24 @@ import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/auth.context.jsx";
 import logo from "../../assets/logo.png";
+import logoDark from "../../assets/logodark.png";
+import { useTheme } from "../../context/theme.context.jsx";
 import { Crown } from "lucide-react";
 
 export default function HeaderLogin() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
+  const { isDark } = useTheme();
   const isAuthenticated = !!user;
 
   // Derive account type for display: guest | premium | admin
   const accountType = React.useMemo(() => {
-    if (!user) return "guest";
-    if (String(user.role).toUpperCase() === "ADMIN") return "admin";
-    if (String(user.plan || "").toUpperCase() === "PREMIUM") return "premium";
-    return "guest"; // fallback for FREE or unknown
+    if (!user) return 'guest';
+    if (String(user.role || '').toUpperCase() === 'ADMIN') return 'admin';
+    const premiumByType = user?.user_type && String(user.user_type).toLowerCase() === 'premium';
+    const premiumByPlan = String(user?.plan || '').toUpperCase() === 'PREMIUM';
+    return (premiumByType || premiumByPlan) ? 'premium' : 'free';
   }, [user]);
 
   const accountBadgeClass = React.useMemo(() => {
@@ -124,7 +128,7 @@ export default function HeaderLogin() {
           className="-m-2.5 p-2.5 shrink-0"
           aria-label="Trang chủ"
         >
-          <img src={logo} alt="Fitnexus" className="w-auto h-16 " />
+          <img src={isDark ? logoDark : logo} alt="Fitnexus" className="w-auto h-16 " />
         </button>
 
         {/* Mobile toggle */}
@@ -296,8 +300,10 @@ export default function HeaderLogin() {
                               {getInitial(user)}
                             </div>
                           )}
-                            <Crown className="w-4 h-4 text-yellow-500 drop-shadow" />
-                          </div>
+                          {isPremium && (
+                            <Crown className="w-4 h-4 text-yellow-500 drop-shadow absolute -bottom-1 -right-1" />
+                          )}
+                        </div>
                       </div>
                     );
                   })()}
@@ -396,61 +402,12 @@ export default function HeaderLogin() {
                         </div>
                       )}
                     </div>
-                    <div className="relative">
-                      <button
-                        onClick={() => setActiveSubmenu(activeSubmenu === 'support' ? null : 'support')}
-                        className="flex items-center justify-between w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
-                      >
-                        <span>Hỗ trợ</span>
-                        <svg className={`w-4 h-4 transition-transform ${activeSubmenu === 'support' ? 'rotate-180' : ''}`} fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                        </svg>
-                      </button>
-                      {activeSubmenu === 'support' && (
-                        <div className="absolute top-0 w-48 ml-1 bg-white border border-gray-200 rounded-md shadow-lg left-full">
-                          <button
-                            onClick={() => {
-                              setShowAvatarMenu(false);
-                              setActiveSubmenu(null);
-                              navigate("/support/faq");
-                            }}
-                            className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
-                          >
-                            FAQ
-                          </button>
-                          <button
-                            onClick={() => {
-                              setShowAvatarMenu(false);
-                              setActiveSubmenu(null);
-                              navigate("/support/contact");
-                            }}
-                            className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
-                          >
-                            Liên hệ
-                          </button>
-                          <button
-                            onClick={() => {
-                              setShowAvatarMenu(false);
-                              setActiveSubmenu(null);
-                              navigate("/support/bug-report");
-                            }}
-                            className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
-                          >
-                            Báo lỗi
-                          </button>
-                          <button
-                            onClick={() => {
-                              setShowAvatarMenu(false);
-                              setActiveSubmenu(null);
-                              navigate("/support/guide");
-                            }}
-                            className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
-                          >
-                            Hướng dẫn sử dụng
-                          </button>
-                        </div>
-                      )}
-                    </div>
+                    <button
+                      onClick={() => { setShowAvatarMenu(false); setActiveSubmenu(null); navigate("/support"); }}
+                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      Hỗ trợ
+                    </button>
 
                     {/* Cài đặt */}
                     <div className="relative">
@@ -548,6 +505,14 @@ export default function HeaderLogin() {
               </>
             )}
           </div>
+          {user && !isPremium && !isAdmin && (
+            <button
+              onClick={() => navigate('/pricing')}
+              className="px-4 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-full hover:bg-indigo-700"
+            >
+              Nâng cấp Premium
+            </button>
+          )}
           <a
             href="https://example.com/download-app"
             target="_blank"
@@ -615,6 +580,15 @@ export default function HeaderLogin() {
             <button className="block w-full py-2 text-left" onClick={() => navigate("/community")}>
               Cộng đồng
             </button>
+
+            {user && !isPremium && !isAdmin && (
+              <button
+                className="block w-full px-4 py-2 mt-2 font-semibold text-left text-white bg-indigo-600 rounded"
+                onClick={() => navigate('/pricing')}
+              >
+                Nâng cấp Premium
+              </button>
+            )}
 
             <a
               href="https://example.com/download-app"

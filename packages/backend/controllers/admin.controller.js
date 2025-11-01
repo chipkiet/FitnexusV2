@@ -147,6 +147,8 @@ export async function listUsers(req, res) {
         "email",
         "role",
         "plan",
+        "user_type",
+        "user_exp_date",
         "status",        // trạng thái DB (không dùng để hiển thị)
         "lastLoginAt",
         "lastActiveAt",  // dùng tính trạng thái hiển thị
@@ -190,6 +192,8 @@ export async function listUsers(req, res) {
         email: json.email,
         role: json.role,
         plan: json.plan,
+        user_type: json.user_type,
+        user_exp_date: json.user_exp_date,
         total_plans: Number(json.total_plans) || 0,
         has_public_plans: Boolean(Number(json.has_public_plans)),
         status: activityStatus,      // dùng cho cột STATUS bên FE
@@ -337,6 +341,7 @@ export async function updateUserPlan(req, res) {
   try {
     const userId = req.params.id;
     const nextPlan = String(req.body.plan ?? "").trim().toUpperCase();
+    const durationDays = req.body.duration_days ? parseInt(req.body.duration_days, 10) : null;
 
     if (!["FREE", "PREMIUM"].includes(nextPlan)) {
       return res.status(422).json({ success: false, message: "Invalid plan" });
@@ -347,12 +352,25 @@ export async function updateUserPlan(req, res) {
       return res.status(404).json({ success: false, message: "User not found" });
     }
 
+    const fieldsToUpdate = ["plan", "user_type", "user_exp_date"];
     user.plan = nextPlan;
-    await user.save({ fields: ["plan"] });
+
+    if (nextPlan === "PREMIUM") {
+      user.user_type = 'premium';
+      const days = durationDays !== null && durationDays > 0 ? durationDays : 30; // Default 30 days
+      const newExpDate = new Date();
+      newExpDate.setDate(newExpDate.getDate() + days);
+      user.user_exp_date = newExpDate;
+    } else { // FREE
+      user.user_type = 'free';
+      user.user_exp_date = null;
+    }
+
+    await user.save({ fields: fieldsToUpdate });
 
     return res.json({
       success: true,
-      message: "Plan updated",
+      message: "Plan updated successfully",
       data: { user: safeUser(user) },
     });
   } catch (err) {

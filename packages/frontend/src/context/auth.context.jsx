@@ -13,6 +13,8 @@ import {
   isRemembered,
   getTokenInfo,
 } from "../lib/tokenManager.js";
+// RBAC policy helpers (frontend copy)
+import { can as rbacCan } from "../config/rbac.policy.js";
 
 const AuthContext = createContext(null);
 
@@ -347,6 +349,32 @@ export function AuthProvider({ children }) {
       isAuthenticated,
       getAuthStatus,
       clearError: () => setError(null),
+      // Check a permission for current user
+      userCan: (requiredPermission) => {
+        try {
+          if (!user) return false;
+          const roleRaw = user.role || 'GUEST';
+          // Prefer new subscription field user_type, fallback to legacy plan
+          const planRaw = (user.user_type ? (user.user_type.toUpperCase() === 'PREMIUM' ? 'PREMIUM' : 'FREE') : (user.plan || 'FREE'));
+          const isSuperAdmin = !!user.isSuperAdmin;
+          const role = String(roleRaw).toUpperCase();
+          const plan = String(planRaw).toUpperCase();
+          // normalize to policy roles
+          let normalizedRole = role.toLowerCase();
+          if (role === 'USER') normalizedRole = 'user';
+          else if (role === 'TRAINER') normalizedRole = 'trainer';
+          else if (role === 'ADMIN') normalizedRole = isSuperAdmin ? 'super_admin' : 'admin';
+          // virtual role handling
+          const normalizedPlan = plan === 'PREMIUM' ? 'premium' : 'free';
+          let effectiveRole = normalizedRole;
+          if (normalizedRole === 'user' && normalizedPlan === 'premium') {
+            effectiveRole = 'premium_user';
+          }
+          return rbacCan(effectiveRole, requiredPermission);
+        } catch {
+          return false;
+        }
+      },
     }),
     [user, loading, error]
   );

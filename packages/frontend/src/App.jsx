@@ -2,6 +2,7 @@
 import React, { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/auth.context.jsx";
+import { ThemeProvider } from "./context/theme.context.jsx";
 
 
 import Register from "./pages/authentication/Register.jsx";
@@ -27,6 +28,9 @@ import Logout from "./pages/authentication/Logout.jsx";
 import NotFoundRedirect from "./pages/system/NotFoundRedirect.jsx";
 import WorkoutRun from "./pages/workout/WorkoutRun.jsx";
 import AdminPlanDetail from "./pages/admin/AdminPlanDetail.jsx";
+import Pricing from "./pages/pricing/Pricing.jsx";
+import PaymentSuccess from "./pages/payment/PaymentSuccess.jsx";
+import PaymentCancel from "./pages/payment/PaymentCancel.jsx";
 // Onboarding
 import OnboardingAge from "./pages/boardings/OnboardingAge.jsx";
 import OnboardingBody from "./pages/boardings/OnboardingBody.jsx";
@@ -67,10 +71,7 @@ import Avatar from "./pages/profile/Avatar.jsx";
 // Support pages
 import FAQ from "./pages/support/FAQ.jsx";
 // Settings pages
-import Notifications from "./pages/settings/Notifications.jsx";
-import Language from "./pages/settings/Language.jsx";
 import Theme from "./pages/settings/Theme.jsx";
-import Privacy from "./pages/settings/Privacy.jsx";
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
@@ -91,7 +92,8 @@ function AdminRoute({ children }) {
   if (!user) {
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
-  return user.role === "ADMIN" ? children : <Navigate to="/" replace />;
+  const isAdmin = user && (user.role === "ADMIN" || user.isSuperAdmin === true);
+  return isAdmin ? children : <Navigate to="/" replace />;
 }
 
 
@@ -107,7 +109,8 @@ function App() {
 
 
   return (
-    <AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
       <Router>
         <Routes>
           <Route path="/login" element={<Login />} />
@@ -130,6 +133,9 @@ function App() {
           <Route path="/" element={<Landing />} />
           <Route path="/nutrition-ai" element={<NutritionAI />} />
           <Route path="/nutrition-ai/personalize" element={<NutritionPersonalize />} />
+          <Route path="/pricing" element={<Pricing />} />
+          <Route path="/payment/success" element={<PaymentSuccess />} />
+          <Route path="/payment/cancel" element={<PaymentCancel />} />
 
           <Route path="/modeling-demo" element={<ModelingDemo />} />
           {/* Backward compat: redirect old preview path to new demo path */}
@@ -252,38 +258,15 @@ function App() {
           />
 
           {/* Support Routes */}
+          <Route path="/support" element={<FAQ />} />
           <Route path="/support/faq" element={<FAQ />} />
 
           {/* Settings Routes */}
-          <Route
-            path="/settings/notifications"
-            element={
-              <PrivateRoute>
-                <Notifications />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/settings/language"
-            element={
-              <PrivateRoute>
-                <Language />
-              </PrivateRoute>
-            }
-          />
           <Route
             path="/settings/theme"
             element={
               <PrivateRoute>
                 <Theme />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/settings/privacy"
-            element={
-              <PrivateRoute>
-                <Privacy />
               </PrivateRoute>
             }
           />
@@ -321,6 +304,7 @@ function App() {
         </Routes>
       </Router>
     </AuthProvider>
+    </ThemeProvider>
   );
 }
 

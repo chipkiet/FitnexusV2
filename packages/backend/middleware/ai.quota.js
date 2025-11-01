@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import { sequelize } from '../config/database.js';
 import AIUsage from '../models/ai.usage.model.js';
 import User from '../models/user.model.js';
+import { can } from '../config/rbac.policy.js';
 
 function getIsoWeekKey(date = new Date()) {
   // ISO week number, e.g., 2025-W44
@@ -36,6 +37,8 @@ async function resolveCaller(req) {
   let userId = req.userId || null;
   let role = req.userRole || null;
   let plan = null;
+  let user_type = null;
+  let isSuperAdmin = false;
 
   // Try parse JWT if not already available
   if (!userId) {
@@ -56,11 +59,31 @@ async function resolveCaller(req) {
       if (user) {
         role = user.role;
         plan = user.plan;
+        user_type = user.user_type;
+        isSuperAdmin = !!user.isSuperAdmin;
       }
     } catch (_) {}
   }
 
-  return { userId, role, plan };
+  return { userId, role, plan, user_type, isSuperAdmin };
+}
+
+function normalizeRole(role, isSuperAdmin = false) {
+  if (!role) return 'guest';
+  const r = String(role).toLowerCase();
+  if (r === 'admin' && isSuperAdmin) return 'super_admin';
+  if (role === 'USER') return 'user';
+  if (role === 'TRAINER') return 'trainer';
+  if (role === 'ADMIN') return isSuperAdmin ? 'super_admin' : 'admin';
+  return r;
+}
+
+function normalizePlan(plan) {
+  if (!plan) return null;
+  const p = String(plan).toLowerCase();
+  if (plan === 'PREMIUM') return 'premium';
+  if (plan === 'FREE') return 'free';
+  return p;
 }
 
 export default function aiQuota(feature, options = {}) {
@@ -72,10 +95,20 @@ export default function aiQuota(feature, options = {}) {
     try {
       if (!enabled) return next();
 
-      const { userId, role, plan } = await resolveCaller(req);
+      const { userId, role, plan, user_type, isSuperAdmin } = await resolveCaller(req);
 
-      // Unlimited for ADMIN or PREMIUM plan
-      if (role === 'ADMIN' || plan === 'PREMIUM') return next();
+      const normalizedRole = normalizeRole(role, isSuperAdmin);
+      // Support new user_type mapping by checking resolved user_type first
+      const normalizedPlan = normalizePlan(user_type || req.user?.user_type || plan);
+      let effectiveRole = normalizedRole;
+      if (normalizedRole === 'user' && normalizedPlan === 'premium') {
+        effectiveRole = 'premium_user';
+      }
+
+      // Bypass for roles that have unlimited permission or wildcard
+      if (can(effectiveRole, 'use:ai_trainer:unlimited') || can(effectiveRole, '*')) {
+        return next();
+      }
 
       const periodKey = getIsoWeekKey();
       const where = { feature: featureKey, period_key: periodKey };
@@ -119,4 +152,3 @@ export default function aiQuota(feature, options = {}) {
 
 // For unit tests or external reuse
 export const __internals = { getIsoWeekKey, canonicalFeatureKey, anonKeyFromReq };
-

@@ -17,6 +17,8 @@ import WorkoutSession from "./workout.session.model.js"; // ✅ giữ lại ph�
 import WorkoutSessionExercise from "./workout.session.exercise.model.js";
 import WorkoutSessionSet from "./workout.session.set.model.js";
 import AIUsage from "./ai.usage.model.js";
+import SubscriptionPlan from "./subscription.plan.model.js";
+import Transaction from "./transaction.model.js";
 
 export function initModels() {
   // Khai báo quan hệ 1-n: User hasMany PasswordReset
@@ -100,6 +102,13 @@ export function initModels() {
   // Users + LoginHistory
   User.hasMany(LoginHistory, { foreignKey: 'user_id', sourceKey: 'user_id', as: 'loginHistory' });
   LoginHistory.belongsTo(User, { foreignKey: 'user_id', targetKey: 'user_id', as: 'user' });
+
+  // ===== Billing / Subscriptions =====
+  User.hasMany(Transaction, { foreignKey: 'user_id', sourceKey: 'user_id', as: 'transactions' });
+  Transaction.belongsTo(User, { foreignKey: 'user_id', targetKey: 'user_id', as: 'user' });
+
+  SubscriptionPlan.hasMany(Transaction, { foreignKey: 'plan_id', sourceKey: 'plan_id', as: 'transactions' });
+  Transaction.belongsTo(SubscriptionPlan, { foreignKey: 'plan_id', targetKey: 'plan_id', as: 'plan' });
   
   // Trả ra để dùng nếu bạn muốn
 
@@ -122,5 +131,7 @@ export function initModels() {
     WorkoutSessionExercise,
     WorkoutSessionSet,
     AIUsage,
+    SubscriptionPlan,
+    Transaction,
   };
 }

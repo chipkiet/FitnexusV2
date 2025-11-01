@@ -3,7 +3,7 @@ import express from 'express';
 import { body, param, query, validationResult } from 'express-validator';
 import activityTracker from "../middleware/activity.tracker.js";
 import authGuard from '../middleware/auth.guard.js';
-import { requireAdmin } from '../middleware/role.guard.js';
+import permissionGuard from '../middleware/permission.guard.js';
 
 import {
   listUsers,
@@ -27,17 +27,17 @@ import {
 
 const router = express.Router();
 
-router.patch('/users/:id/lock',   authGuard, requireAdmin, lockUser);
-router.patch('/users/:id/unlock', authGuard, requireAdmin, unlockUser);
+router.patch('/users/:id/lock',   authGuard, permissionGuard('manage:users'), lockUser);
+router.patch('/users/:id/unlock', authGuard, permissionGuard('manage:users'), unlockUser);
 
 // Get all plans of a specific user
-router.get('/users/:userId/plans', authGuard, requireAdmin, getUserPlans);
+router.get('/users/:userId/plans', authGuard, permissionGuard('manage:users'), getUserPlans);
 
 // ⬇️ NEW: Get a specific plan of a user (admin)
 router.get(
   '/users/:userId/plans/:planId',
   authGuard,
-  requireAdmin,
+  permissionGuard('read:admin_dashboard'),
   [
     param('userId').isInt({ min: 1 }).toInt(),
     param('planId').isInt({ min: 1 }).toInt(),
@@ -51,14 +51,14 @@ router.get(
   }
 );
 
-router.get('/health', authGuard, requireAdmin, (_req, res) => {
+router.get('/health', authGuard, permissionGuard('read:admin_dashboard'), (_req, res) => {
   res.json({ success: true, message: 'Admin route OK', timestamp: new Date().toISOString() });
 });
 
 router.get(
   '/users',
   authGuard,
-  requireAdmin,
+  permissionGuard('manage:users'),
   [
     query('limit').optional().isInt({ min: 1, max: 200 }).toInt(),
     query('offset').optional().isInt({ min: 0 }).toInt(),
@@ -86,7 +86,7 @@ router.get(
 router.patch(
   '/users/:id/role',
   authGuard,
-  requireAdmin,
+  permissionGuard('manage:users'),
   [
     param('id').isInt({ min: 1 }).toInt(),
     body('role').isIn(['USER', 'TRAINER', 'ADMIN']).withMessage('Invalid role'),
@@ -103,13 +103,14 @@ router.patch(
 router.patch(
   '/users/:id/plan',
   authGuard,
-  requireAdmin,
+  permissionGuard('manage:users'),
   [
     param('id').isInt({ min: 1 }).toInt(),
     body('plan')
       .customSanitizer((v) => String(v).trim().toUpperCase())
       .isIn(['FREE', 'PREMIUM'])
       .withMessage('Invalid plan'),
+    body('duration_days').optional().isInt({ min: 1 }).toInt(),
   ],
   (req, res, next) => {
     const errors = validationResult(req);
@@ -123,7 +124,7 @@ router.patch(
 router.post(
   '/users/:userId/reset-password',
   authGuard,
-  requireAdmin,
+  permissionGuard('manage:users'),
   [
     param('userId').isInt({ min: 1 }).toInt(),
     body('newPassword')
@@ -150,7 +151,7 @@ router.post(
 router.get(
   '/subadmins',
   authGuard,
-  requireAdmin,
+  permissionGuard('read:admin_dashboard'),
   [
     query('limit').optional().isInt({ min: 1, max: 200 }).toInt(),
     query('offset').optional().isInt({ min: 0 }).toInt(),
@@ -167,7 +168,7 @@ router.get(
 router.get(
   '/popular-exercises',
   authGuard,
-  requireAdmin,
+  permissionGuard('manage:users'),
   [
     query('limit').optional().isInt({ min: 1, max: 200 }).toInt(),
     query('offset').optional().isInt({ min: 0 }).toInt(),
@@ -185,7 +186,7 @@ router.get(
 router.post(
   '/subadmins',
   authGuard,
-  requireAdmin,
+  permissionGuard('manage:users'),
   [
     body('email').isEmail().withMessage('Invalid email').normalizeEmail(),
     body('username').isString().trim().isLength({ min: 3, max: 50 }).withMessage('Invalid username'),

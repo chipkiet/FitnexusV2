@@ -14,7 +14,29 @@ export default function FAQ() {
     { value: "billing", label: "Thanh toán" }
   ];
 
-  const faqData = [
+  const faqData = getLegacyFaq()
+    .map(faq => (faq.id === 8 ? {
+      ...faq,
+      category: "technical",
+      question: "Làm thế nào để dùng Nutrition AI phân tích bữa ăn?",
+      answer: "Vào Dinh dưỡng > Nutrition AI, tải ảnh món ăn hoặc nhập mô tả. Hệ thống sẽ ước tính calories và các chỉ số macro, bạn có thể lưu vào nhật ký bữa ăn của mình."
+    } : faq))
+    .concat([
+      {
+        id: 9,
+        category: "workout",
+        question: "Làm sao xem mô hình 3D hướng dẫn động tác?",
+        answer: "Mở một bài tập bất kỳ rồi chọn nút 'Mô hình 3D'. Bạn có thể xoay, phóng to/thu nhỏ để quan sát kỹ nhóm cơ và chuyển động."
+      },
+      {
+        id: 10,
+        category: "workout",
+        question: "Làm sao bắt đầu Onboarding để nhận kế hoạch tập?",
+        answer: "Tại trang chủ chọn 'Nhận kế hoạch luyện tập', đăng nhập và trả lời các câu hỏi Onboarding (tuổi, cân nặng, mục tiêu...). Ứng dụng sẽ tự động tạo kế hoạch phù hợp cho bạn."
+      }
+    ]);
+
+  function getLegacyFaq() { return [
     {
       id: 1,
       category: "account",
@@ -63,7 +85,7 @@ export default function FAQ() {
       question: "Làm thế nào để theo dõi tiến độ tập luyện?",
       answer: "Vào Hồ sơ > Thống kê để xem tổng quan tiến độ. Bạn có thể theo dõi số buổi tập, thời gian, calo đốt cháy và các thành tích đạt được."
     }
-  ];
+  ]; }
 
   const toggleItem = (id) => {
     const newOpenItems = new Set(openItems);

@@ -63,6 +63,17 @@ export const endpoints = {
     planFromOnboarding: "/api/nutrition/plan/from-onboarding",
   },
 
+  // Billing / Subscription endpoints
+  billing: {
+    plans: "/api/billing/plans",
+  },
+
+  payment: {
+    createLink: "/api/payment/create-link",
+    return: "/api/payment/return",
+    cancel: "/api/payment/cancel",
+  },
+
   admin: {
     users: "/api/admin/users",
     userRole: (id) => `/api/admin/users/${id}/role`,
@@ -415,6 +426,17 @@ export const updatePlanExerciseApi = async (planId, planExerciseId, data) => {
 // ===== Workout convenience APIs =====
 export const getActiveWorkoutSessionApi = async () => {
   const res = await api.get('/api/workout/active');
+  return res.data;
+};
+
+// ===== Subscription convenience APIs =====
+export const getActiveSubscriptionPlans = async () => {
+  const res = await api.get(endpoints.billing.plans);
+  return res.data;
+};
+
+export const createPaymentLinkApi = async (planId) => {
+  const res = await api.post(endpoints.payment.createLink, { planId });
   return res.data;
 };
 
