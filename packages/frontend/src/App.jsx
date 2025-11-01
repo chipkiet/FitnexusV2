@@ -17,6 +17,7 @@ import Dashboard from "./pages/user/Dashboard.jsx";
 import Modeling from "./pages/model3D/Modeling.jsx";
 import ModelingDemo from "./pages/model3D/ModelingDemo.jsx";
 import AiTrainer from "./components/AiTrainer.jsx";
+import AiTrainerGuide from "./pages/AITrainer/AiTrainerGuide.jsx";
 import ExerciseDetail from "./pages/exercises/ExerciseDetail.jsx";
 import ExercisesDemo from "./pages/exercises/ExercisesDemo.jsx";
 import Exercise from "./pages/exercises/Exercise.jsx";
@@ -140,6 +141,7 @@ function App() {
           {/* Backward compat: redirect old preview path to new demo path */}
           <Route path="/modeling-preview" element={<Navigate to="/modeling-demo" replace />} />
           <Route path="/exercises-demo" element={<ExercisesDemo/>}/>
+          <Route path="/ai-guide" element={<AiTrainerGuide />} />
           <Route
             path="/ai"
             element={

@@ -72,6 +72,12 @@ router.post(
         fs.createReadStream(localPath),
         req.file.originalname
       );
+      // Optional: forward known_height_cm if client provided (as text field in multipart)
+      const height = (req.body && (req.body.known_height_cm || req.body.height_cm)) || null;
+      if (height) {
+        try { formData.append("known_height_cm", String(height)); } catch (_) {}
+      }
+
       const response = await axios.post(AI_API_URL, formData, {
         headers: { ...formData.getHeaders() },
         timeout: 180000,
