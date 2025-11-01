@@ -4,6 +4,8 @@ import Transaction from "../models/transaction.model.js";
 import User from "../models/user.model.js";
 import dns from "dns";
 import payos, { payosEnabled } from "../services/payos.client.js";
+import { sendMail } from "../utils/mailer.js";
+import { buildPremiumUpgradedEmailVn2 as buildPremiumUpgradedEmail } from "../utils/emailTemplates.js";
 
 dns.setDefaultResultOrder?.("ipv4first");
 
@@ -163,9 +165,21 @@ export async function handlePayosWebhook(req, res) {
           newExpiryDate.getDate() + Number(plan.duration_days || 30)
         );
         await User.update(
-          { user_type: "premium", user_exp_date: newExpiryDate },
+          { plan: "PREMIUM", user_type: "premium", user_exp_date: newExpiryDate },
           { where: { user_id: tx.user_id } }
         );
+        try {
+          const upgradedUser = await User.findByPk(tx.user_id);
+          if (upgradedUser?.email) {
+            const frontend = process.env.FRONTEND_URL || "http://localhost:5173";
+            const tpl = buildPremiumUpgradedEmail({
+              name: upgradedUser.fullName || upgradedUser.username || "bạn",
+              expiresAt: newExpiryDate,
+              dashboardUrl: `${frontend}/dashboard`,
+            });
+            await sendMail({ to: upgradedUser.email, ...tpl });
+          }
+        } catch {}
         await tx.update({
           status: "completed",
           payos_payment_id: paymentId || null,
@@ -201,7 +215,7 @@ export async function returnUrl(req, res) {
 export async function cancelUrl(req, res) {
   try {
     const frontend = process.env.FRONTEND_URL || "http://localhost:5173";
-    return res.redirect(`${frontend}/payment/cancel`);
+    return res.redirect(`${frontend}/dashboard`);
   } catch {
     return res.redirect("/");
   }
@@ -241,9 +255,21 @@ export async function verifyPaymentStatus(req, res) {
         const newExpiryDate = new Date();
         newExpiryDate.setDate(newExpiryDate.getDate() + Number(plan.duration_days || 30));
         await User.update(
-          { user_type: "premium", user_exp_date: newExpiryDate },
+          { plan: "PREMIUM", user_type: "premium", user_exp_date: newExpiryDate },
           { where: { user_id: tx.user_id } }
         );
+        try {
+          const upgradedUser = await User.findByPk(tx.user_id);
+          if (upgradedUser?.email) {
+            const frontend = process.env.FRONTEND_URL || "http://localhost:5173";
+            const tpl = buildPremiumUpgradedEmail({
+              name: upgradedUser.fullName || upgradedUser.username || "bạn",
+              expiresAt: newExpiryDate,
+              dashboardUrl: `${frontend}/dashboard`,
+            });
+            await sendMail({ to: upgradedUser.email, ...tpl });
+          }
+        } catch {}
       }
       await tx.update({ status: "completed" });
     } else if (["CANCELLED", "FAILED", "EXPIRED"].includes(status) && tx.status === "pending") {
@@ -254,5 +280,44 @@ export async function verifyPaymentStatus(req, res) {
   } catch (err) {
     console.error("verifyPaymentStatus error:", err);
     return res.status(500).json({ success: false, message: "VERIFY_FAILED", detail: String(err?.message || err) });
+  }
+}
+
+// === Dev-only: Mock upgrade to PREMIUM (no real payment) ===
+export async function mockUpgradePremium(req, res) {
+  try {
+    const allowMock = (process.env.NODE_ENV !== 'production') || String(process.env.ALLOW_PAYMENT_MOCK ?? '0') === '1';
+    if (!allowMock) {
+      return res.status(403).json({ success: false, message: 'Mock upgrade disabled in production' });
+    }
+
+    const userId = req.userId || req.user?.user_id;
+    if (!userId) return res.status(401).json({ success: false, message: 'Unauthorized' });
+
+    const durationDays = Number(process.env.MOCK_PREMIUM_DAYS || 30);
+    const newExpiryDate = new Date();
+    newExpiryDate.setDate(newExpiryDate.getDate() + (Number.isFinite(durationDays) ? durationDays : 30));
+
+    await User.update(
+      { plan: 'PREMIUM', user_type: 'premium', user_exp_date: newExpiryDate },
+      { where: { user_id: userId } }
+    );
+
+    const user = await User.findByPk(userId);
+    try {
+      if (user?.email) {
+        const frontend = process.env.FRONTEND_URL || "http://localhost:5173";
+        const tpl = buildPremiumUpgradedEmail({
+          name: user.fullName || user.username || 'bạn',
+          expiresAt: newExpiryDate,
+          dashboardUrl: `${frontend}/dashboard`,
+        });
+        await sendMail({ to: user.email, ...tpl });
+      }
+    } catch {}
+    return res.json({ success: true, message: 'Mock upgraded to PREMIUM', data: { user } });
+  } catch (err) {
+    console.error('mockUpgradePremium error:', err);
+    return res.status(500).json({ success: false, message: 'MOCK_UPGRADE_FAILED', detail: String(err?.message || err) });
   }
 }

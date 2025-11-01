@@ -1,0 +1,13 @@
+
+          <p class="p">Xin chào, <b>${escapeHtml(name)}</b></p>
+          <p class="p">Bạn vừa nâng cấp tài khoản <span class="brand">${escapeHtml(brand)}</span> lên <b>Premium</b>${expStr ? `, thời hạn tới ngày <b>${escapeHtml(expStr)}</b>` : ''}.</p>
+
+          ${dashboardUrl ? `<table role=\"presentation\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" style=\"margin:16px 0;\">\n            <tr>\n              <td align=\"left\" bgcolor=\"#16a34a\" style=\"border-radius:10px;\">\n                <a href=\"${escapeHtml(dashboardUrl)}\" target=\"_blank\" rel=\"noopener\" class=\"cta\">Vào Dashboard</a>\n              </td>\n            </tr>\n          </table>` : ''}
+
+          <div class="section">
+            <p class="muted">Cảm ơn bạn đã ủng hộ ${escapeHtml(brand)}. Chúc bạn có trải nghiệm luyện tập thật tuyệt!</p>
+            ${dashboardUrl ? `<p class=\"muted\">Nếu nút không hoạt động, mở liên kết sau:</p>\n            <p class=\"link\">${escapeHtml(dashboardUrl)}</p>` : ''}
+          </div>
+        </div>
+      </div>
+    </div>

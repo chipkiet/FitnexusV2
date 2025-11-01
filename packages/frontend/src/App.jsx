@@ -1,4 +1,4 @@
-// App.jsx
+﻿// App.jsx
 import React, { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/auth.context.jsx";
@@ -294,7 +294,7 @@ function App() {
             <Route path="user-plans/:userId" element={<UserPlanDetails />} />
 <Route path="user-plans/:userId/plan/:planId" element={<AdminPlanDetail />} />
 
-            {/* Thêm route này nếu bạn dùng trang AdminUsers */}
+            {/* ThÃªm route nÃ y náº¿u báº¡n dÃ¹ng trang AdminUsers */}
             <Route path="users" element={<AdminUsers />} />
           </Route>
 

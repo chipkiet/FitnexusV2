@@ -368,6 +368,23 @@ export async function updateUserPlan(req, res) {
 
     await user.save({ fields: fieldsToUpdate });
 
+    // Send email when upgraded to PREMIUM
+    if (user.plan === 'PREMIUM' && user.email) {
+      try {
+        const expStr = user.user_exp_date ? new Date(user.user_exp_date).toLocaleDateString() : '';
+        await sendMail({
+          to: user.email,
+          subject: 'Tài khoản đã được nâng cấp Premium',
+          html: `<p>Xin chào ${user.fullName || user.username || 'bạn'},</p>
+                 <p>Tài khoản của bạn đã được nâng cấp lên <b>Premium</b>${expStr ? ` tới ngày <b>${expStr}</b>` : ''}.</p>
+                 <p>Cảm ơn bạn đã ủng hộ FitNexus!</p>`,
+          text: `Tai khoan cua ban da duoc nang cap Premium${expStr ? ` toi ngay ${expStr}` : ''}. Cam on ban da ung ho FitNexus!`,
+        });
+      } catch (e) {
+        console.warn('send premium mail (admin.updateUserPlan) error:', e?.message);
+      }
+    }
+
     return res.json({
       success: true,
       message: "Plan updated successfully",

@@ -70,8 +70,10 @@ export const endpoints = {
 
   payment: {
     createLink: "/api/payment/create-link",
+    verify: "/api/payment/verify",
     return: "/api/payment/return",
     cancel: "/api/payment/cancel",
+    mockUpgrade: "/api/payment/mock-upgrade",
   },
 
   admin: {
@@ -440,6 +442,11 @@ export const createPaymentLinkApi = async (planId) => {
   return res.data;
 };
 
+export const verifyPaymentStatusApi = async (orderCode) => {
+  const res = await api.post(endpoints.payment.verify, { orderCode });
+  return res.data;
+};
+
 export const createWorkoutSessionApi = async ({ plan_id, notes }) => {
   const res = await api.post('/api/workout', { plan_id, notes });
   return res.data;
@@ -470,5 +477,10 @@ export const listWorkoutSessionsApi = async ({ planId, status, limit = 20, offse
   if (planId) params.planId = planId;
   if (status) params.status = status;
   const res = await api.get('/api/workout', { params });
+  return res.data;
+};
+
+export const mockUpgradePremiumApi = async () => {
+  const res = await api.post(endpoints.payment.mockUpgrade);
   return res.data;
 };
