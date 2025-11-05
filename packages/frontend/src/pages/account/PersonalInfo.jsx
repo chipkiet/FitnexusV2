@@ -221,6 +221,33 @@ export default function PersonalInfo() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
+
+              {/* Account Type and Expiry Date */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Loại tài khoản
+                </label>
+                <input
+                  type="text"
+                  value={user?.user_type === 'premium' ? 'Premium' : 'Free'}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 focus:outline-none"
+                  disabled
+                />
+              </div>
+
+              {user?.user_type === 'premium' && user?.user_exp_date && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Ngày hết hạn Premium
+                  </label>
+                  <input
+                    type="text"
+                    value={new Date(user.user_exp_date).toLocaleDateString('vi-VN')}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 focus:outline-none"
+                    disabled
+                  />
+                </div>
+              )}
             </div>
 
             <div className="flex justify-end space-x-4 pt-6">
