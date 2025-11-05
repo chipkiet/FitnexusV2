@@ -58,11 +58,23 @@ const AiTrainer = () => {
         throw new Error("Phản hồi từ server không hợp lệ.");
       }
     } catch (err) {
-      const serverError =
-        err.response?.data?.errors?.[0]?.details ||
-        err.response?.data?.message ||
-        err.message;
-      setError(`Đã có lỗi xảy ra: ${serverError}`);
+      // Specific handling for quota exceeded error
+      if (err.response?.status === 429 && err.response?.data?.code === 'AI_QUOTA_EXCEEDED') {
+        const userWantsToUpgrade = window.confirm(
+          "Bạn đã hết lượt sử dụng miễn phí hôm nay. Bạn có muốn nâng cấp lên Premium không?"
+        );
+        if (userWantsToUpgrade) {
+          navigate("/pricing");
+        }
+        setError("Bạn đã hết lượt dùng miễn phí trong ngày.");
+      } else {
+        // Generic error handling for other issues
+        const serverError =
+          err.response?.data?.errors?.[0]?.details ||
+          err.response?.data?.message ||
+          err.message;
+        setError(`Đã có lỗi xảy ra: ${serverError}`);
+      }
     } finally {
       setIsLoading(false);
     }

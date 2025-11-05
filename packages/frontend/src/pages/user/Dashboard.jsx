@@ -1,4 +1,5 @@
 import React from "react";
+import { useAuth } from "../../context/auth.context.jsx";
 import { useNavigate } from "react-router-dom";
 import HeaderLogin from "../../components/header/HeaderLogin.jsx";
 import { Dumbbell, Users, Brain, Apple } from "lucide-react";
@@ -28,6 +29,7 @@ function vxpGo(key, navigate) {
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   return (
     <div className="flex flex-col min-h-screen font-sans text-gray-800 bg-white">
@@ -181,90 +183,92 @@ export default function Dashboard() {
       </section>
 
       {/* PROGRAMS / PRICING */}
-      <section className="relative px-8 py-24 overflow-hidden text-center bg-gradient-to-b from-gray-50 via-white to-gray-100 md:px-20">
-        <h2 className="mb-4 text-4xl font-extrabold text-gray-900">
-          Gói dịch vụ <span className="text-blue-600">Fitnexus</span>
-        </h2>
-        <p className="max-w-2xl mx-auto text-gray-600 mb-14">
-          Lựa chọn gói tập luyện phù hợp với bạn — từ cơ bản miễn phí đến
-          Premium chuyên nghiệp với AI thông minh và báo cáo nâng cao.
-        </p>
+      {user?.user_type !== "premium" && (
+        <section className="relative px-8 py-24 overflow-hidden text-center bg-gradient-to-b from-gray-50 via-white to-gray-100 md:px-20">
+          <h2 className="mb-4 text-4xl font-extrabold text-gray-900">
+            Gói dịch vụ <span className="text-blue-600">Fitnexus</span>
+          </h2>
+          <p className="max-w-2xl mx-auto text-gray-600 mb-14">
+            Lựa chọn gói tập luyện phù hợp với bạn — từ cơ bản miễn phí đến
+            Premium chuyên nghiệp với AI thông minh và báo cáo nâng cao.
+          </p>
 
-        <div className="relative z-10 grid max-w-6xl gap-12 mx-auto md:grid-cols-2">
-          {/* Gói Free */}
-          <div className="relative bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-200 hover:scale-[1.02]">
-            <div className="absolute px-4 py-1 text-xs font-semibold tracking-wide text-gray-700 uppercase bg-gray-200 rounded-full -top-3 left-6">
-              Gói cơ bản
+          <div className="relative z-10 grid max-w-6xl gap-12 mx-auto md:grid-cols-2">
+            {/* Gói Free */}
+            <div className="relative bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-200 hover:scale-[1.02]">
+              <div className="absolute px-4 py-1 text-xs font-semibold tracking-wide text-gray-700 uppercase bg-gray-200 rounded-full -top-3 left-6">
+                Gói cơ bản
+              </div>
+              <div className="flex flex-col items-center p-10">
+                <h3 className="mb-3 text-2xl font-bold text-gray-900">
+                  Gói Free
+                </h3>
+                <p className="mb-6 text-sm text-gray-500">
+                  Trải nghiệm Fitnexus cơ bản — phù hợp cho người mới bắt đầu làm
+                  quen với AI Workout.
+                </p>
+                <h4 className="mb-4 text-4xl font-extrabold text-blue-600">0₫</h4>
+
+                <ul className="mb-8 space-y-2 text-sm text-left text-gray-600">
+                  <li> Truy cập AI cơ bản</li>
+                  <li> Theo dõi bài tập & lịch luyện</li>
+                  <li> Không có phân tích chuyên sâu</li>
+                  <li> Không có gợi ý dinh dưỡng cá nhân hoá</li>
+                </ul>
+
+                <button
+                  className="px-8 py-3 font-semibold text-gray-800 transition bg-gray-200 rounded-lg hover:bg-gray-300"
+                  onClick={() => vxpGo("workout", navigate)}
+                >
+                  Dùng miễn phí
+                </button>
+              </div>
             </div>
-            <div className="flex flex-col items-center p-10">
-              <h3 className="mb-3 text-2xl font-bold text-gray-900">
-                Gói Free
-              </h3>
-              <p className="mb-6 text-sm text-gray-500">
-                Trải nghiệm Fitnexus cơ bản — phù hợp cho người mới bắt đầu làm
-                quen với AI Workout.
-              </p>
-              <h4 className="mb-4 text-4xl font-extrabold text-blue-600">0₫</h4>
 
-              <ul className="mb-8 space-y-2 text-sm text-left text-gray-600">
-                <li> Truy cập AI cơ bản</li>
-                <li> Theo dõi bài tập & lịch luyện</li>
-                <li> Không có phân tích chuyên sâu</li>
-                <li> Không có gợi ý dinh dưỡng cá nhân hoá</li>
-              </ul>
+            {/* Gói Premium */}
+            <div className="relative text-white transition-all duration-300 border border-blue-400 shadow-2xl bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-700 rounded-2xl hover:scale-105">
+              {/* Ribbon */}
+              <div className="absolute px-4 py-1 text-xs font-bold tracking-wide text-gray-900 uppercase bg-yellow-400 rounded-full -top-3 right-6">
+                Best Choice
+              </div>
 
-              <button
-                className="px-8 py-3 font-semibold text-gray-800 transition bg-gray-200 rounded-lg hover:bg-gray-300"
-                onClick={() => vxpGo("workout", navigate)}
-              >
-                Dùng miễn phí
-              </button>
+              <div className="flex flex-col items-center p-12">
+                <h3 className="mb-3 text-2xl font-bold text-white">
+                  Gói Premium
+                </h3>
+                <p className="max-w-sm mb-6 text-sm text-gray-200">
+                  Dành cho người muốn bứt phá – phân tích tư thế 3D, gợi ý chế độ
+                  ăn, và huấn luyện viên AI chuyên nghiệp.
+                </p>
+                <h4 className="mb-4 text-5xl font-extrabold text-yellow-300">
+                  99.000₫
+                  <span className="text-lg font-medium text-gray-200">
+                    /tháng
+                  </span>
+                </h4>
+
+                <ul className="mb-8 space-y-2 text-sm text-left text-gray-100">
+                  <li>✨ Toàn bộ tính năng Free</li>
+                  <li>✨ Phân tích tư thế 3D bằng AI</li>
+                  <li>✨ Báo cáo chi tiết tiến trình luyện tập</li>
+                  <li>✨ Gợi ý dinh dưỡng cá nhân hoá</li>
+                  <li>✨ Trợ lý AI Trainer chuyên nghiệp</li>
+                </ul>
+
+                <button
+                  className="px-10 py-4 text-lg font-extrabold text-blue-900 transition bg-yellow-400 rounded-lg shadow-lg hover:shadow-xl hover:scale-105"
+                  onClick={() => vxpGo("pricing", navigate)}
+                >
+                  Nâng cấp ngay
+                </button>
+              </div>
             </div>
           </div>
 
-          {/* Gói Premium */}
-          <div className="relative text-white transition-all duration-300 border border-blue-400 shadow-2xl bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-700 rounded-2xl hover:scale-105">
-            {/* Ribbon */}
-            <div className="absolute px-4 py-1 text-xs font-bold tracking-wide text-gray-900 uppercase bg-yellow-400 rounded-full -top-3 right-6">
-              Best Choice
-            </div>
-
-            <div className="flex flex-col items-center p-12">
-              <h3 className="mb-3 text-2xl font-bold text-white">
-                Gói Premium
-              </h3>
-              <p className="max-w-sm mb-6 text-sm text-gray-200">
-                Dành cho người muốn bứt phá – phân tích tư thế 3D, gợi ý chế độ
-                ăn, và huấn luyện viên AI chuyên nghiệp.
-              </p>
-              <h4 className="mb-4 text-5xl font-extrabold text-yellow-300">
-                99.000₫
-                <span className="text-lg font-medium text-gray-200">
-                  /tháng
-                </span>
-              </h4>
-
-              <ul className="mb-8 space-y-2 text-sm text-left text-gray-100">
-                <li>✨ Toàn bộ tính năng Free</li>
-                <li>✨ Phân tích tư thế 3D bằng AI</li>
-                <li>✨ Báo cáo chi tiết tiến trình luyện tập</li>
-                <li>✨ Gợi ý dinh dưỡng cá nhân hoá</li>
-                <li>✨ Trợ lý AI Trainer chuyên nghiệp</li>
-              </ul>
-
-              <button
-                className="px-10 py-4 text-lg font-extrabold text-blue-900 transition bg-yellow-400 rounded-lg shadow-lg hover:shadow-xl hover:scale-105"
-                onClick={() => vxpGo("pricing", navigate)}
-              >
-                Nâng cấp ngay
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Background glow */}
-        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_30%_40%,rgba(59,130,246,0.08),transparent_70%)]"></div>
-      </section>
+          {/* Background glow */}
+          <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_30%_40%,rgba(59,130,246,0.08),transparent_70%)]"></div>
+        </section>
+      )}
 
       {/* TESTIMONIALS */}
       <section className="px-8 md:px-20 py-20 text-center bg-[#0d1117] text-white">
