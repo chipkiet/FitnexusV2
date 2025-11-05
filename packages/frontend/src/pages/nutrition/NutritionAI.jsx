@@ -6,7 +6,6 @@ import * as mobilenet from "@tensorflow-models/mobilenet";
 import "./NutritionAI.css";
 import { useAuth } from "../../context/auth.context.jsx";
 import HeaderLogin from "../../components/header/HeaderLogin.jsx";
-import HeaderDemo from "../../components/header/HeaderDemo.jsx";
 
 function centerCropToSquare(imgEl, size = 224) {
   const s = Math.min(imgEl.naturalWidth, imgEl.naturalHeight);
@@ -116,7 +115,7 @@ export default function FoodCalorie() {
             cache: "no-store",
           });
           if (r.ok) macros = await r.json();
-        } catch { }
+        } catch {}
         models.net = net;
         models.clf = clf;
         setLabels(lbs);
@@ -142,7 +141,7 @@ export default function FoodCalorie() {
     return () => {
       try {
         models.clf?.dispose();
-      } catch { }
+      } catch {}
     };
   }, [models]);
 
@@ -246,23 +245,23 @@ export default function FoodCalorie() {
     const kcal100FromMacros =
       per100By.protein || per100By.carbs || per100By.fat || per100By.alcohol
         ? (per100By.protein || 0) * 4 +
-        (per100By.carbs || 0) * 4 +
-        (per100By.fat || 0) * 9 +
-        (per100By.alcohol || 0) * 7
+          (per100By.carbs || 0) * 4 +
+          (per100By.fat || 0) * 9 +
+          (per100By.alcohol || 0) * 7
         : null;
     const kcal100Effective = Number.isFinite(kcal100Field)
       ? kcal100Field
       : Number.isFinite(kcal100FromMacros)
-        ? Math.round(kcal100FromMacros)
-        : null;
+      ? Math.round(kcal100FromMacros)
+      : null;
     const pct =
       kcalFromMacros > 0
         ? {
-          p: +((pKcal / kcalFromMacros) * 100).toFixed(0),
-          c: +((cKcal / kcalFromMacros) * 100).toFixed(0),
-          f: +((fKcal / kcalFromMacros) * 100).toFixed(0),
-          a: +((aKcal / kcalFromMacros) * 100).toFixed(0),
-        }
+            p: +((pKcal / kcalFromMacros) * 100).toFixed(0),
+            c: +((cKcal / kcalFromMacros) * 100).toFixed(0),
+            f: +((fKcal / kcalFromMacros) * 100).toFixed(0),
+            a: +((aKcal / kcalFromMacros) * 100).toFixed(0),
+          }
         : { p: 0, c: 0, f: 0, a: 0 };
 
     const order = ["protein", "carbs", "fat", "alcohol"];
