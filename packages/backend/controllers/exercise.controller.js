@@ -885,22 +885,24 @@ export const getFavoriteStatus = async (req, res) => {
 
     const favCount = await ExerciseFavorite.count({ where: { exercise_id: exerciseId } });
     let favorited = false;
-    // if auth header provided, try to detect whether current user favorited
+    // Try detect user via Passport session or Authorization header (JWT)
     try {
-      const authHeader = req.get('authorization') || req.get('Authorization') || '';
-      if (authHeader.startsWith('Bearer ')) {
-        // authGuard not applied for this route; try to decode token
-        const token = authHeader.split(' ')[1];
-        const jwt = await import('jsonwebtoken');
-        const payload = jwt.verify(token, process.env.JWT_SECRET);
-        const userId = payload.sub || payload.userId || payload.id;
-        if (userId) {
-          const row = await ExerciseFavorite.findOne({ where: { user_id: userId, exercise_id: exerciseId } });
-          favorited = !!row;
+      let userId = req.userId || req.user?.user_id || null;
+      if (!userId) {
+        const authHeader = req.get('authorization') || req.get('Authorization') || '';
+        if (authHeader.startsWith('Bearer ')) {
+          const token = authHeader.split(' ')[1];
+          const jwt = await import('jsonwebtoken');
+          const payload = jwt.verify(token, process.env.JWT_SECRET);
+          userId = payload.sub || payload.userId || payload.id || null;
         }
       }
+      if (userId) {
+        const row = await ExerciseFavorite.findOne({ where: { user_id: userId, exercise_id: exerciseId } });
+        favorited = !!row;
+      }
     } catch (e) {
-      // ignore token errors
+      // ignore token/session errors; treat as anonymous
     }
 
     return res.json({ success: true, data: { exercise_id: exerciseId, favorite_count: favCount, favorited } });
