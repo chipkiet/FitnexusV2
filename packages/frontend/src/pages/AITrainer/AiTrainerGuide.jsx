@@ -5,7 +5,10 @@ import HeaderLogin from "../../components/header/HeaderLogin.jsx";
 import HeaderDemo from "../../components/header/HeaderDemo.jsx";
 import aiGuider from "../../assets/aitrainer/B1.png";
 import b2 from "../../assets/aitrainer/B2.png";
-import b3 from "../../assets/aitrainer/B3.png"
+import b3 from "../../assets/aitrainer/B3.png";
+import b31 from "../../assets/aitrainer/B3-1.png";
+import b4 from "../../assets/aitrainer/B4.png";
+
 export default function AiTrainerGuide() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -167,6 +170,11 @@ export default function AiTrainerGuide() {
                   alt="image-ai"
                   className="object-contain w-auto max-h-full"
                 />
+                <img
+                  src={b31}
+                  alt="image-ai"
+                  className="object-contain w-auto max-h-full"
+                />
               </div>
             </div>
 
@@ -206,11 +214,13 @@ export default function AiTrainerGuide() {
                 </li>
               </ul>
               {/* Khung ảnh card plan */}
-              <div className="mt-4 overflow-hidden border-2 border-dashed rounded-xl border-rose-200">
-                <div className="flex items-center justify-center w-full h-56 bg-rose-50/40 text-rose-600">
-                  <span className="text-sm">
-                    Khung ảnh 5: Card lộ trình (tuần, buổi, nhóm cơ)
-                  </span>
+              <div className="mt-4 overflow-hidden bg-white border-2 border-dashed rounded-xl border-rose-200">
+                <div className="flex items-center justify-center w-full h-64 p-2 md:h-80 bg-rose-50/40 sm:p-4">
+                  <img
+                    src={b4}
+                    alt="image-ai"
+                    className="object-contain w-auto max-h-full"
+                  />
                 </div>
               </div>
             </div>

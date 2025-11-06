@@ -46,7 +46,7 @@ export async function createPaymentLink(req, res) {
 
     const backendUrl = process.env.BACKEND_URL || "http://localhost:3001";
     const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
-    const useBackendReturn = String(process.env.PAYOS_USE_BACKEND_RETURN ?? '0') !== '0';
+    const useBackendReturn = String(process.env.PAYOS_USE_BACKEND_RETURN ?? '1') !== '0';
     const returnUrl = useBackendReturn
       ? `${backendUrl}/api/payment/return`
       : `${frontendUrl}/payment/success?orderCode=${orderCode}`;
@@ -204,11 +204,36 @@ export async function handlePayosWebhook(req, res) {
 
 // === Redirect sau khi thanh toán ===
 export async function returnUrl(req, res) {
+  const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
   try {
-    const frontend = process.env.FRONTEND_URL || "http://localhost:5173";
-    return res.redirect(`${frontend}/payment/success`);
-  } catch {
-    return res.redirect("/");
+    const orderCodeRaw = req.query?.orderCode;
+    const orderCode = Number(orderCodeRaw);
+
+    if (orderCode && !Number.isNaN(orderCode) && payos && payosEnabled && payos.paymentRequests?.get) {
+      const link = await payos.paymentRequests.get(orderCode);
+      const status = link?.status || "UNKNOWN";
+
+      const tx = await Transaction.findOne({ where: { payos_order_code: String(orderCode) } });
+
+      if (tx && status === "PAID" && tx.status !== "completed") {
+        const plan = await SubscriptionPlan.findByPk(tx.plan_id);
+        if (plan) {
+          const newExpiryDate = new Date();
+          newExpiryDate.setDate(newExpiryDate.getDate() + Number(plan.duration_days || 30));
+          await User.update(
+            { user_type: "premium", user_exp_date: newExpiryDate },
+            { where: { user_id: tx.user_id } }
+          );
+          await tx.update({ status: "completed" });
+        }
+      }
+    }
+    // Luôn redirect về trang chủ frontend
+    return res.redirect(`${frontendUrl}/`);
+  } catch (err) {
+    console.error("returnUrl error:", err);
+    // Chuyển hướng về trang chủ ngay cả khi có lỗi
+    return res.redirect(`${frontendUrl}/`);
   }
 }
 
@@ -216,6 +241,7 @@ export async function cancelUrl(req, res) {
   try {
     const frontend = process.env.FRONTEND_URL || "http://localhost:5173";
     return res.redirect(`${frontend}/dashboard`);
+
   } catch {
     return res.redirect("/");
   }

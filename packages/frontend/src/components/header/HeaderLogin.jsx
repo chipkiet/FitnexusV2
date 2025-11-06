@@ -128,7 +128,11 @@ export default function HeaderLogin() {
           className="-m-2.5 p-2.5 shrink-0"
           aria-label="Trang chủ"
         >
-          <img src={isDark ? logoDark : logo} alt="Fitnexus" className="w-auto h-16 " />
+          <img
+            src={isDark ? logoDark : logo}
+            alt="Fitnexus"
+            className="w-auto h-16 "
+          />
         </button>
 
         {/* Mobile toggle */}
@@ -145,7 +149,7 @@ export default function HeaderLogin() {
 
         <nav className="items-center hidden gap-5 md:flex">
           <button
-            onClick={() => navigate('/ai')}
+            onClick={() => navigate("/ai")}
             className="text-sm text-gray-800 hover:text-blue-600"
           >
             AI
@@ -159,7 +163,11 @@ export default function HeaderLogin() {
               className="inline-flex items-center text-sm text-gray-800 hover:text-blue-600"
             >
               Luyện tập
-              <svg className="w-4 h-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+              <svg
+                className="w-4 h-4 ml-1"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
                 <path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" />
               </svg>
             </button>
@@ -175,8 +183,12 @@ export default function HeaderLogin() {
                   onClick={() => navigate("/exercises")}
                   className="w-full px-3 py-2 text-left rounded-lg hover:bg-gray-50"
                 >
-                  <div className="text-sm font-semibold text-gray-900">Xem tất cả bài tập</div>
-                  <div className="text-xs text-gray-500">1000+ bài tập theo nhóm cơ</div>
+                  <div className="text-sm font-semibold text-gray-900">
+                    Xem tất cả bài tập
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    1000+ bài tập theo nhóm cơ
+                  </div>
                 </button>
 
                 <div className="h-px my-2 bg-gray-200" />
@@ -228,7 +240,11 @@ export default function HeaderLogin() {
               className="inline-flex items-center text-sm text-gray-800 hover:text-blue-600"
             >
               Cộng đồng
-              <svg className="w-4 h-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+              <svg
+                className="w-4 h-4 ml-1"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
                 <path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" />
               </svg>
             </button>
@@ -244,8 +260,12 @@ export default function HeaderLogin() {
                   onClick={() => navigate("/community-demo")}
                   className="w-full px-3 py-2 text-left rounded-lg hover:bg-gray-50"
                 >
-                  <div className="text-sm font-semibold text-gray-900">Gym Group</div>
-                  <div className="text-xs text-gray-500">Cộng đồng GYM với hàng nghìn thành viên tay to</div>
+                  <div className="text-sm font-semibold text-gray-900">
+                    Gym Group
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    Cộng đồng GYM với hàng nghìn thành viên tay to
+                  </div>
                 </button>
 
                 <div className="h-px my-2 bg-gray-200" />
@@ -283,7 +303,9 @@ export default function HeaderLogin() {
                   className="flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 >
                   {(() => {
-                    const be = import.meta.env.VITE_BACKEND_URL || "http://localhost:3001";
+                    const be =
+                      import.meta.env.VITE_BACKEND_URL ||
+                      "http://localhost:3001";
                     const raw = user?.avatarUrl || "";
                     let src = null;
                     if (raw) {
@@ -291,17 +313,27 @@ export default function HeaderLogin() {
                       if (!isMailProviderAvatar(abs)) src = abs;
                     }
                     return (
-                      <div className={`relative ${isPremium ? "p-[2px] rounded-full bg-gradient-to-r from-pink-500 via-yellow-400 to-blue-500" : ""}`}>
+                      <div
+                        className={`relative ${
+                          isPremium
+                            ? "p-[2px] rounded-full bg-gradient-to-r from-pink-500 via-yellow-400 to-blue-500"
+                            : ""
+                        }`}
+                      >
                         <div className="relative w-10 h-10 overflow-hidden bg-white rounded-full">
                           {src ? (
-                            <img src={src} alt="Avatar" className="object-cover w-full h-full" />
+                            <img
+                              src={src}
+                              alt="Avatar"
+                              className="object-cover w-full h-full"
+                            />
                           ) : (
                             <div className="flex items-center justify-center w-full h-full font-semibold text-white rounded-full bg-gradient-to-r from-blue-400 to-blue-600">
                               {getInitial(user)}
                             </div>
                           )}
                           {isPremium && (
-                            <Crown className="w-4 h-4 text-yellow-500 drop-shadow absolute -bottom-1 -right-1" />
+                            <Crown className="absolute w-4 h-4 text-yellow-500 drop-shadow -bottom-1 -right-1" />
                           )}
                         </div>
                       </div>
@@ -312,26 +344,32 @@ export default function HeaderLogin() {
                   <div className="absolute right-0 z-50 w-64 mt-2 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5">
                     {/* Tài khoản */}
                     {false && (
-                    <button
-                      onClick={() => {
-                        setShowAvatarMenu(false);
-                        setActiveSubmenu(null);
-                        navigate("/profile");
-                      }}
-                      className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
-                    >
-                      Hồ sơ
-                    </button>
+                      <button
+                        onClick={() => {
+                          setShowAvatarMenu(false);
+                          setActiveSubmenu(null);
+                          navigate("/profile");
+                        }}
+                        className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
+                      >
+                        Hồ sơ
+                      </button>
                     )}
                     {/* Account, Profile, Support submenus */}
                     <div className="relative">
                       <button
-                        onClick={() => setActiveSubmenu(activeSubmenu === 'account' ? null : 'account')}
+                        onClick={() =>
+                          setActiveSubmenu(
+                            activeSubmenu === "account" ? null : "account"
+                          )
+                        }
                         className="flex items-center justify-between w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
                       >
                         <span>Tài khoản</span>
                         <svg
-                          className={`w-4 h-4 transition-transform ${activeSubmenu === 'account' ? 'rotate-180' : ''}`}
+                          className={`w-4 h-4 transition-transform ${
+                            activeSubmenu === "account" ? "rotate-180" : ""
+                          }`}
                           fill="currentColor"
                           viewBox="0 0 20 20"
                         >
@@ -342,7 +380,7 @@ export default function HeaderLogin() {
                           />
                         </svg>
                       </button>
-                      {activeSubmenu === 'account' && (
+                      {activeSubmenu === "account" && (
                         <div className="absolute top-0 w-48 ml-1 bg-white border border-gray-200 rounded-md shadow-lg left-full">
                           <button
                             onClick={() => {
@@ -371,12 +409,18 @@ export default function HeaderLogin() {
                     {/* Hồ sơ */}
                     <div className="relative">
                       <button
-                        onClick={() => setActiveSubmenu(activeSubmenu === 'profile' ? null : 'profile')}
+                        onClick={() =>
+                          setActiveSubmenu(
+                            activeSubmenu === "profile" ? null : "profile"
+                          )
+                        }
                         className="flex items-center justify-between w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
                       >
                         <span>Hồ sơ</span>
                         <svg
-                          className={`w-4 h-4 transition-transform ${activeSubmenu === 'profile' ? 'rotate-180' : ''}`}
+                          className={`w-4 h-4 transition-transform ${
+                            activeSubmenu === "profile" ? "rotate-180" : ""
+                          }`}
                           fill="currentColor"
                           viewBox="0 0 20 20"
                         >
@@ -387,7 +431,7 @@ export default function HeaderLogin() {
                           />
                         </svg>
                       </button>
-                      {activeSubmenu === 'profile' && (
+                      {activeSubmenu === "profile" && (
                         <div className="absolute top-0 w-48 ml-1 bg-white border border-gray-200 rounded-md shadow-lg left-full">
                           <button
                             onClick={() => {
@@ -403,8 +447,12 @@ export default function HeaderLogin() {
                       )}
                     </div>
                     <button
-                      onClick={() => { setShowAvatarMenu(false); setActiveSubmenu(null); navigate("/support"); }}
-                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+                      onClick={() => {
+                        setShowAvatarMenu(false);
+                        setActiveSubmenu(null);
+                        navigate("/support");
+                      }}
+                      className="w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
                     >
                       Hỗ trợ
                     </button>
@@ -412,12 +460,18 @@ export default function HeaderLogin() {
                     {/* Cài đặt */}
                     <div className="relative">
                       <button
-                        onClick={() => setActiveSubmenu(activeSubmenu === 'settings' ? null : 'settings')}
+                        onClick={() =>
+                          setActiveSubmenu(
+                            activeSubmenu === "settings" ? null : "settings"
+                          )
+                        }
                         className="flex items-center justify-between w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
                       >
                         <span>Cài đặt</span>
                         <svg
-                          className={`w-4 h-4 transition-transform ${activeSubmenu === 'settings' ? 'rotate-180' : ''}`}
+                          className={`w-4 h-4 transition-transform ${
+                            activeSubmenu === "settings" ? "rotate-180" : ""
+                          }`}
                           fill="currentColor"
                           viewBox="0 0 20 20"
                         >
@@ -428,7 +482,7 @@ export default function HeaderLogin() {
                           />
                         </svg>
                       </button>
-                      {activeSubmenu === 'settings' && (
+                      {activeSubmenu === "settings" && (
                         <div className="absolute top-0 w-48 ml-1 bg-white border border-gray-200 rounded-md shadow-lg left-full">
                           <button
                             onClick={() => {
@@ -507,20 +561,12 @@ export default function HeaderLogin() {
           </div>
           {user && !isPremium && !isAdmin && (
             <button
-              onClick={() => navigate('/pricing')}
-              className="px-4 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-full hover:bg-indigo-700"
+              onClick={() => navigate("/pricing")}
+              className="px-4 py-2 text-sm font-semibold text-white bg-yellow-500 rounded-full hover:bg-yellow-700"
             >
               Nâng cấp Premium
             </button>
           )}
-          <a
-            href="https://example.com/download-app"
-            target="_blank"
-            rel="noreferrer"
-            className="px-4 py-2 text-sm font-semibold text-white bg-gray-400 rounded-full hover:shadow-lg"
-          >
-            Tải ứng dụng
-          </a>
         </div>
       </div>
 
@@ -531,9 +577,16 @@ export default function HeaderLogin() {
             {/* Mobile: account type indicator */}
             <div className="flex items-center justify-between p-2 text-xs border rounded-md bg-gray-50">
               <span className="text-gray-600">Loại tài khoản</span>
-              <span className={`px-2 py-0.5 rounded-full border ${accountBadgeClass}`}>{accountType}</span>
+              <span
+                className={`px-2 py-0.5 rounded-full border ${accountBadgeClass}`}
+              >
+                {accountType}
+              </span>
             </div>
-            <button className="block w-full py-2 text-left" onClick={() => navigate("/")}>
+            <button
+              className="block w-full py-2 text-left"
+              onClick={() => navigate("/")}
+            >
               Trang chủ
             </button>
 
@@ -545,14 +598,18 @@ export default function HeaderLogin() {
               <div className="px-2 pb-2">
                 <button
                   className="block w-full px-3 py-2 text-left rounded-md hover:bg-gray-50"
-                  onClick={() => navigate(isAuthenticated ? "/exercises" : "/exercises-demo")}
+                  onClick={() =>
+                    navigate(isAuthenticated ? "/exercises" : "/exercises-demo")
+                  }
                 >
                   Xem tất cả bài tập
                 </button>
                 <button
                   className="block w-full px-3 py-2 text-left rounded-md hover:bg-gray-50"
                   onClick={() =>
-                    !isAuthenticated ? navigate("/login", { state: { from: "/plans/select" } }) : navigate("/plans/select")
+                    !isAuthenticated
+                      ? navigate("/login", { state: { from: "/plans/select" } })
+                      : navigate("/plans/select")
                   }
                 >
                   Kế hoạch của tôi
@@ -560,7 +617,9 @@ export default function HeaderLogin() {
                 <button
                   className="block w-full px-3 py-2 text-left rounded-md hover:bg-gray-50"
                   onClick={() =>
-                    !isAuthenticated ? navigate("/login", { state: { from: "/plans/new" } }) : navigate("/plans/new")
+                    !isAuthenticated
+                      ? navigate("/login", { state: { from: "/plans/new" } })
+                      : navigate("/plans/new")
                   }
                 >
                   Tạo plan mới
@@ -568,23 +627,35 @@ export default function HeaderLogin() {
               </div>
             </details>
 
-            <button className="block w-full py-2 text-left" onClick={() => navigate("/modeling-demo")}>
+            <button
+              className="block w-full py-2 text-left"
+              onClick={() => navigate("/modeling-demo")}
+            >
               Mô hình hoá
             </button>
-            <button className="block w-full py-2 text-left" onClick={() => navigate('/ai')}>
+            <button
+              className="block w-full py-2 text-left"
+              onClick={() => navigate("/ai")}
+            >
               AI
             </button>
-            <button className="block w-full py-2 text-left" onClick={() => navigate("/nutrition-ai")}>
+            <button
+              className="block w-full py-2 text-left"
+              onClick={() => navigate("/nutrition-ai")}
+            >
               Dinh dưỡng
             </button>
-            <button className="block w-full py-2 text-left" onClick={() => navigate("/community")}>
+            <button
+              className="block w-full py-2 text-left"
+              onClick={() => navigate("/community")}
+            >
               Cộng đồng
             </button>
 
             {user && !isPremium && !isAdmin && (
               <button
                 className="block w-full px-4 py-2 mt-2 font-semibold text-left text-white bg-indigo-600 rounded"
-                onClick={() => navigate('/pricing')}
+                onClick={() => navigate("/pricing")}
               >
                 Nâng cấp Premium
               </button>
@@ -600,8 +671,11 @@ export default function HeaderLogin() {
             </a>
 
             <div className="pt-2 border-t">
-              <button className="w-full px-4 py-2 border rounded-full" onClick={() => navigate("/login")}>
-                {isAuthenticated ? (user?.name ?? "Tài khoản") : "Đăng nhập"}
+              <button
+                className="w-full px-4 py-2 border rounded-full"
+                onClick={() => navigate("/login")}
+              >
+                {isAuthenticated ? user?.name ?? "Tài khoản" : "Đăng nhập"}
               </button>
             </div>
           </div>

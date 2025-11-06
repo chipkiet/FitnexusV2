@@ -72,6 +72,7 @@ const calcDailyPrice = (price, durationDays) => {
   return Math.round(amount / days);
 };
 
+
 export default function Pricing() {
   const { user, loading } = useAuth();
   const [plans, setPlans] = useState([]);
@@ -114,6 +115,7 @@ export default function Pricing() {
       const res = await createPaymentLinkApi(planId);
       const url = res?.data?.checkoutUrl;
       if (!url) throw new Error('Thiếu checkoutUrl từ PayOS');
+
       window.location.href = url;
     } catch (e) {
       setError(e?.response?.data || { message: e.message });
@@ -124,26 +126,26 @@ export default function Pricing() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-white text-slate-600">
+      <div className="flex items-center justify-center min-h-screen bg-white text-slate-600">
         Đang tải...
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-white text-slate-900">
+    <div className="flex flex-col min-h-screen bg-white text-slate-900">
       {isAuthenticated ? <HeaderLogin /> : <HeaderDemo />}
 
       <main className="flex-1 bg-slate-50">
         <section className="px-4 pt-24 pb-16">
-          <div className="mx-auto flex max-w-5xl flex-col gap-4 text-center">
-            <span className="inline-flex items-center gap-2 self-center rounded-full bg-indigo-100 px-4 py-1 text-sm font-medium text-indigo-700">
-              <Sparkles className="h-4 w-4" /> Trải nghiệm Fitnexus Premium
+          <div className="flex flex-col max-w-5xl gap-4 mx-auto text-center">
+            <span className="inline-flex items-center self-center gap-2 px-4 py-1 text-sm font-medium text-indigo-700 bg-indigo-100 rounded-full">
+              <Sparkles className="w-4 h-4" /> Trải nghiệm Fitnexus Premium
             </span>
             <h1 className="text-3xl font-bold text-slate-900 sm:text-4xl">
               Khám phá Fitnexus Premium – nơi kế hoạch tập luyện, các bài tập yêu thích và dữ liệu tiến độ của bạn được đồng bộ hóa để mang đến một trải nghiệm tập luyện mượt mà và hiệu quả hơn bao giờ hết.
             </h1>
-            <p className="mx-auto max-w-3xl text-base text-slate-600">
+            <p className="max-w-3xl mx-auto text-base text-slate-600">
               Fitnexus Premium hỗ trợ AI Coach, mô hình 3D, kế hoạch cá nhân và báo cáo tiến độ chi tiết giúp bạn giữ động lực và đạt mục tiêu nhanh hơn.
             </p>
             {!isAuthenticated && (
@@ -153,9 +155,9 @@ export default function Pricing() {
             )}
           </div>
 
-          <div className="mx-auto mt-10 max-w-6xl">
+          <div className="max-w-6xl mx-auto mt-10">
             {error ? (
-              <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              <div className="px-4 py-3 mb-6 text-sm text-red-700 border border-red-200 rounded-2xl bg-red-50">
                 {error.message || 'Đã xảy ra lỗi, vui lòng thử lại sau.'}
               </div>
             ) : null}
@@ -172,7 +174,7 @@ export default function Pricing() {
                     }`}
                   >
                     {isRecommended && (
-                      <span className="mb-4 inline-flex w-fit items-center rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold uppercase text-indigo-700">
+                      <span className="inline-flex items-center px-3 py-1 mb-4 text-xs font-semibold text-indigo-700 uppercase bg-indigo-100 rounded-full w-fit">
                         Phổ biến nhất
                       </span>
                     )}
@@ -186,7 +188,7 @@ export default function Pricing() {
                       ) : null}
                     </header>
 
-                    <ul className="mt-6 flex flex-1 flex-col gap-3 text-sm text-slate-600">
+                    <ul className="flex flex-col flex-1 gap-3 mt-6 text-sm text-slate-600">
                       {PLAN_BENEFITS.slice(0, 4).map((benefit) => (
                         <li key={`${plan.plan_id}-${benefit}`} className="flex items-start gap-3">
                           <CheckCircle2 className="mt-0.5 h-4 w-4 text-indigo-500" />
@@ -196,7 +198,7 @@ export default function Pricing() {
                     </ul>
 
                     <button
-                      className="mt-8 w-full rounded-full bg-indigo-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-60"
+                      className="w-full px-5 py-3 mt-8 text-sm font-semibold text-white transition bg-indigo-600 rounded-full hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-60"
                       disabled={busy || !isAuthenticated}
                       onClick={() => handlePurchase(plan.plan_id)}
                     >
@@ -210,7 +212,7 @@ export default function Pricing() {
               })}
 
               {!plans.length && !error && (
-                <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white p-10 text-center text-slate-500 shadow-sm">
+                <div className="flex flex-col items-center justify-center p-10 text-center bg-white border border-dashed shadow-sm rounded-2xl border-slate-200 text-slate-500">
                   Hiện chưa có gói Premium nào khả dụng. Vui lòng quay lại sau.
                 </div>
               )}
@@ -218,9 +220,9 @@ export default function Pricing() {
           </div>
         </section>
 
-        <section className="bg-white py-16">
-          <div className="mx-auto max-w-6xl px-4">
-            <div className="mb-10 max-w-3xl">
+        <section className="py-16 bg-white">
+          <div className="max-w-6xl px-4 mx-auto">
+            <div className="max-w-3xl mb-10">
               <h2 className="text-2xl font-semibold text-slate-900">Spotify Premium tích hợp giúp bạn tập tốt hơn</h2>
               <p className="mt-3 text-base text-slate-600">
                 Tổng hợp những tính năng chỉ có ở gói Premium của Fitnexus. Mỗi mục được đồng bộ với các module sẵn có trong dự án: AI Trainer, Nutrition AI, Onboarding và thống kê tiến độ.
@@ -229,9 +231,9 @@ export default function Pricing() {
 
             <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
               {FITNEXUS_FEATURES.map(({ icon: Icon, title, description }) => (
-                <div key={title} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                  <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-full bg-indigo-50 text-indigo-600">
-                    <Icon className="h-6 w-6" />
+                <div key={title} className="p-6 bg-white border shadow-sm rounded-2xl border-slate-200">
+                  <div className="inline-flex items-center justify-center w-12 h-12 mb-4 text-indigo-600 rounded-full bg-indigo-50">
+                    <Icon className="w-6 h-6" />
                   </div>
                   <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
                   <p className="mt-2 text-sm text-slate-600">{description}</p>
@@ -242,8 +244,8 @@ export default function Pricing() {
         </section>
       </main>
 
-      <footer className="border-t border-slate-200 bg-white">
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 py-8 text-sm text-slate-500 md:flex-row md:items-center md:justify-between">
+      <footer className="bg-white border-t border-slate-200">
+        <div className="flex flex-col w-full max-w-6xl gap-4 px-4 py-8 mx-auto text-sm text-slate-500 md:flex-row md:items-center md:justify-between">
           <span>&copy; {currentYear} Fitnexus. All rights reserved.</span>
           <div className="flex items-center gap-4">
             <a href="/support/faq" className="transition hover:text-slate-700">Hỗ trợ</a>
@@ -252,6 +254,7 @@ export default function Pricing() {
           </div>
         </div>
       </footer>
+
     </div>
   );
 }

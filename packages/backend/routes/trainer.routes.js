@@ -54,7 +54,7 @@ const uploadLimiter = rateLimit({
 router.post(
   "/upload",
   authOrSession,
-  permissionGuard('manage:clients'),
+  // permissionGuard('manage:clients'), // Tạm thời bỏ để user thường cũng dùng được
   uploadLimiter,
   aiQuota('trainer_image_analyze'),
   upload.single("image"),

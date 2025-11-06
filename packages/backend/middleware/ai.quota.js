@@ -5,6 +5,28 @@ import AIUsage from '../models/ai.usage.model.js';
 import User from '../models/user.model.js';
 import { can } from '../config/rbac.policy.js';
 
+// === START: Quota Configuration ===
+const QUOTA_CONFIG = {
+  trainer_image_analyze: {
+    user: { limit: 3, period: 'day' },
+    // premium_user, trainer, admin, etc. are unlimited via RBAC
+  },
+  default: {
+    guest: { limit: 5, period: 'day' },
+    user: { limit: 10, period: 'day' },
+  }
+};
+// === END: Quota Configuration ===
+
+
+function getIsoDateKey(date = new Date()) {
+  // Daily period key, e.g., 2025-11-05
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(date.getUTCDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 function getIsoWeekKey(date = new Date()) {
   // ISO week number, e.g., 2025-W44
   const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
@@ -13,6 +35,14 @@ function getIsoWeekKey(date = new Date()) {
   const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
   const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
   return `${d.getUTCFullYear()}-W${String(weekNo).padStart(2, '0')}`;
+}
+
+function getPeriodKey(period, date = new Date()) {
+  if (period === 'week') {
+    return getIsoWeekKey(date);
+  }
+  // Default to daily
+  return getIsoDateKey(date);
 }
 
 function canonicalFeatureKey(raw) {
@@ -88,7 +118,6 @@ function normalizePlan(plan) {
 
 export default function aiQuota(feature, options = {}) {
   const featureKey = canonicalFeatureKey(feature);
-  const freeLimit = Number(options.limit ?? process.env.AI_QUOTA_FREE_LIMIT ?? 5) || 5;
   const enabled = String(process.env.AI_QUOTA_ENABLED ?? '1') !== '0';
 
   return async function aiQuotaMiddleware(req, res, next) {
@@ -98,7 +127,6 @@ export default function aiQuota(feature, options = {}) {
       const { userId, role, plan, user_type, isSuperAdmin } = await resolveCaller(req);
 
       const normalizedRole = normalizeRole(role, isSuperAdmin);
-      // Support new user_type mapping by checking resolved user_type first
       const normalizedPlan = normalizePlan(user_type || req.user?.user_type || plan);
       let effectiveRole = normalizedRole;
       if (normalizedRole === 'user' && normalizedPlan === 'premium') {
@@ -110,7 +138,13 @@ export default function aiQuota(feature, options = {}) {
         return next();
       }
 
-      const periodKey = getIsoWeekKey();
+      // Determine limit and period from config
+      const featureConfig = QUOTA_CONFIG[featureKey] || QUOTA_CONFIG.default;
+      const roleConfig = featureConfig[effectiveRole] || featureConfig.default;
+      const limit = roleConfig?.limit ?? 5;
+      const period = roleConfig?.period ?? 'day';
+
+      const periodKey = getPeriodKey(period);
       const where = { feature: featureKey, period_key: periodKey };
       if (userId) {
         where.user_id = userId;
@@ -127,12 +161,12 @@ export default function aiQuota(feature, options = {}) {
           row = await AIUsage.create({ ...where, count: 0 }, { transaction: t });
         }
 
-        if (row.count >= freeLimit) {
+        if (row.count >= limit) {
           await t.rollback();
           return res.status(429).json({
             success: false,
             code: 'AI_QUOTA_EXCEEDED',
-            message: `Weekly quota reached for ${featureKey}. Upgrade to PREMIUM for unlimited access.`,
+            message: `Daily quota of ${limit} reached for ${featureKey}. Upgrade for unlimited access.`,
           });
         }
 
