@@ -58,9 +58,7 @@ export default function AdminLayout() {
         children: [
           { icon: UserRound, label: "All Users", to: "/admin/users" },
           { icon: IdCard, label: "Admin", to: "/admin/user-detail" },
-          { icon: IdCard, label: "Role", to: "/admin/role" }, // trang tách riêng
-          { icon: IdCard, label: "Plan", to: "/admin/plan" }, // trang tách riêng
-          { icon: FolderKanban, label: "Quản lý Plans", to: "/admin/user-plans" },
+                              { icon: FolderKanban, label: "Quản lý Plans", to: "/admin/user-plans" },
           { icon: Unlock, label: "Lock & Unlock", to: "/admin/lock-unlock" },
           { icon: KeyRound, label: "Reset password", to: "/admin/reset-password" },
         ],
@@ -368,3 +366,4 @@ export default function AdminLayout() {
     </div>
   );
 }
+

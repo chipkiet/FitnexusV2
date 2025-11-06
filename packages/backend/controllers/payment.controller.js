@@ -221,7 +221,7 @@ export async function returnUrl(req, res) {
           const newExpiryDate = new Date();
           newExpiryDate.setDate(newExpiryDate.getDate() + Number(plan.duration_days || 30));
           await User.update(
-            { user_type: "premium", user_exp_date: newExpiryDate },
+            { plan: "PREMIUM", user_type: "premium", user_exp_date: newExpiryDate },
             { where: { user_id: tx.user_id } }
           );
           await tx.update({ status: "completed" });

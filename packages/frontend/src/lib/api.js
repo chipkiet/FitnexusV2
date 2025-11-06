@@ -78,6 +78,7 @@ export const endpoints = {
 
   admin: {
     users: "/api/admin/users",
+    usersStats: "/api/admin/users/stats",
     userRole: (id) => `/api/admin/users/${id}/role`,
     userPlan: (id) => `/api/admin/users/${id}/plan`,
     userLock: (id) => `/api/admin/users/${id}/lock`,
@@ -316,6 +317,11 @@ export const getAdminUsers = async ({
   if (plan && plan !== "ALL") params.plan = String(plan).toUpperCase();
   if (role && role !== "ALL") params.role = String(role).toUpperCase();
   const res = await api.get(endpoints.admin.users, { params });
+  return res.data;
+};
+
+export const getAdminUsersStats = async () => {
+  const res = await api.get(endpoints.admin.usersStats);
   return res.data;
 };
 
