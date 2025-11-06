@@ -160,7 +160,7 @@ export default function HeaderDemo() {
             Mô hình hoá
           </button>
           <button
-            onClick={() => navigate("/nutrition-ai")}
+            onClick={() => navigate("/nutrition-demo")}
             className="text-sm text-gray-800 hover:text-blue-600"
           >
             Dinh dưỡng
@@ -283,7 +283,7 @@ export default function HeaderDemo() {
             <button className="block w-full py-2 text-left" onClick={() => navigate("/modeling-demo")}>
               Mô hình hoá
             </button>
-            <button className="block w-full py-2 text-left" onClick={() => navigate("/nutrition-ai")}>
+            <button className="block w-full py-2 text-left" onClick={() => navigate("/nutrition-demo")}>
               Dinh dưỡng
             </button>
             <button className="block w-full py-2 text-left" onClick={() => navigate("/community")}>

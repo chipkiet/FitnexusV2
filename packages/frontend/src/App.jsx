@@ -12,6 +12,7 @@ import VerifyCode from "./pages/authentication/VerifyCode.jsx";
 import ResetPassword from "./pages/authentication/ResetPassword.jsx";
 import Landing from "./pages/landing/Landing.jsx";
 import NutritionAI from "./pages/nutrition/NutritionAI.jsx";
+import NutritionDemo from "./pages/nutrition/NutritionDemo.jsx";
 import NutritionPersonalize from "./pages/nutrition/NutritionPersonalize.jsx";
 import Dashboard from "./pages/user/Dashboard.jsx";
 import Modeling from "./pages/model3D/Modeling.jsx";
@@ -75,10 +76,11 @@ import Theme from "./pages/settings/Theme.jsx";
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
+  const location = useLocation();
   if (loading) {
     return <div className="flex items-center justify-center h-screen">Loading...</div>;
   }
-  return user ? children : <Navigate to="/login" replace />;
+  return user ? children : <Navigate to="/login" replace state={{ from: location.pathname }} />;
 }
 
 function AdminRoute({ children }) {
@@ -131,7 +133,15 @@ function App() {
 
 
           <Route path="/" element={<Landing />} />
-          <Route path="/nutrition-ai" element={<NutritionAI />} />
+          <Route
+            path="/nutrition-ai"
+            element={
+              <PrivateRoute>
+                <NutritionAI />
+              </PrivateRoute>
+            }
+          />
+          <Route path="/nutrition-demo" element={<NutritionDemo />} />
           <Route path="/nutrition-ai/personalize" element={<NutritionPersonalize />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/payment/success" element={<PaymentSuccess />} />
