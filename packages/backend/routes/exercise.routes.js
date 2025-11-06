@@ -11,6 +11,7 @@ import {
   getFavoriteStatus,
   getRelatedExercisesById,
   getExerciseMusclesById,
+  listMyFavorites,
 } from "../controllers/exercise.controller.js";
 
 const router = Router();
@@ -29,6 +30,7 @@ router.get("/slug/:slug/steps", getExerciseStepsBySlug);
 router.post("/:exerciseId/favorite", authGuard, postFavorite);
 router.delete("/:exerciseId/favorite", authGuard, deleteFavorite);
 router.get("/:exerciseId/favorite", authGuard, getFavoriteStatus);
+router.get("/favorites", authGuard, listMyFavorites);
 
 /* -------------------- Related & Muscles -------------------- */
 // Lấy danh sách bài tập liên quan

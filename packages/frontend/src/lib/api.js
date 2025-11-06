@@ -412,6 +412,12 @@ export const getExerciseFavoriteStatus = async (exerciseId) => {
   return res.data;
 };
 
+// List current user's favorite exercises
+export const getMyFavoriteExercisesApi = async () => {
+  const res = await api.get('/api/exercises/favorites');
+  return res.data;
+};
+
 export default api;
 
 

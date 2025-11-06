@@ -5,6 +5,7 @@ import logo from "../../assets/logo.png";
 import logoDark from "../../assets/logodark.png";
 import { useTheme } from "../../context/theme.context.jsx";
 import { Crown } from "lucide-react";
+import { getMyFavoriteExercisesApi } from "../../lib/api.js";
 
 export default function HeaderLogin() {
   const navigate = useNavigate();
@@ -15,11 +16,12 @@ export default function HeaderLogin() {
 
   // Derive account type for display: guest | premium | admin
   const accountType = React.useMemo(() => {
-    if (!user) return 'guest';
-    if (String(user.role || '').toUpperCase() === 'ADMIN') return 'admin';
-    const premiumByType = user?.user_type && String(user.user_type).toLowerCase() === 'premium';
-    const premiumByPlan = String(user?.plan || '').toUpperCase() === 'PREMIUM';
-    return (premiumByType || premiumByPlan) ? 'premium' : 'free';
+    if (!user) return "guest";
+    if (String(user.role || "").toUpperCase() === "ADMIN") return "admin";
+    const premiumByType =
+      user?.user_type && String(user.user_type).toLowerCase() === "premium";
+    const premiumByPlan = String(user?.plan || "").toUpperCase() === "PREMIUM";
+    return premiumByType || premiumByPlan ? "premium" : "free";
   }, [user]);
 
   const accountBadgeClass = React.useMemo(() => {
@@ -41,6 +43,13 @@ export default function HeaderLogin() {
 
   const [openCommunity, setOpenCommunity] = useState(false);
   const communityRef = useRef(null);
+
+  // Favorites dropdown state
+  const [openFavorites, setOpenFavorites] = useState(false);
+  const favoritesRef = useRef(null);
+  const [favorites, setFavorites] = useState([]);
+  const [loadingFavorites, setLoadingFavorites] = useState(false);
+  const [favoritesLoaded, setFavoritesLoaded] = useState(false);
 
   const [showAvatarMenu, setShowAvatarMenu] = useState(false);
   const [activeSubmenu, setActiveSubmenu] = useState(null);
@@ -64,12 +73,14 @@ export default function HeaderLogin() {
     return String(letter).toUpperCase();
   };
 
-  const isMailProviderAvatar = (url = "") => /googleusercontent|gravatar|ggpht|gmail|gstatic/i.test(url);
+  const isMailProviderAvatar = (url = "") =>
+    /googleusercontent|gravatar|ggpht|gmail|gstatic/i.test(url);
 
   useEffect(() => {
     setOpenMobile(false);
     setOpenWorkout(false);
     setOpenCommunity(false);
+    setOpenFavorites(false);
     setShowAvatarMenu(false);
     setActiveSubmenu(null);
   }, [location.pathname]);
@@ -78,6 +89,9 @@ export default function HeaderLogin() {
     const onDown = (e) => {
       if (communityRef.current && !communityRef.current.contains(e.target)) {
         setOpenCommunity(false);
+      }
+      if (favoritesRef.current && !favoritesRef.current.contains(e.target)) {
+        setOpenFavorites(false);
       }
       if (avatarMenuRef.current && !avatarMenuRef.current.contains(e.target)) {
         setShowAvatarMenu(false);
@@ -88,6 +102,7 @@ export default function HeaderLogin() {
       if (e.key === "Escape") {
         setOpenMobile(false);
         setOpenWorkout(false);
+        setOpenFavorites(false);
         setShowAvatarMenu(false);
         setActiveSubmenu(null);
       }
@@ -99,6 +114,28 @@ export default function HeaderLogin() {
       document.removeEventListener("keydown", onKey);
     };
   }, []);
+
+  const handleToggleFavorites = async () => {
+    setOpenFavorites((v) => !v);
+    if (!favoritesLoaded && isAuthenticated) {
+      setLoadingFavorites(true);
+      try {
+        const res = await getMyFavoriteExercisesApi();
+        const items = res?.data?.items || [];
+        // Deduplicate defensively by id
+        const uniq = Array.from(
+          new Map(items.map((it) => [it.id, it])).values()
+        );
+        setFavorites(uniq);
+        setFavoritesLoaded(true);
+      } catch (e) {
+        // silent fail in header
+        setFavorites([]);
+      } finally {
+        setLoadingFavorites(false);
+      }
+    }
+  };
 
   useEffect(() => {
     const onDown = (e) => {
@@ -215,6 +252,67 @@ export default function HeaderLogin() {
                 >
                   Tạo plan mới
                 </button>
+              </div>
+            )}
+          </div>
+
+          {/* Favorites */}
+          <div className="relative" ref={favoritesRef}>
+            <button
+              onClick={handleToggleFavorites}
+              aria-haspopup="true"
+              aria-expanded={openFavorites}
+              className="inline-flex items-center text-sm text-gray-800 hover:text-blue-600"
+            >
+              Yêu thích
+            </button>
+            {openFavorites && (
+              <div
+                role="menu"
+                aria-label="Bài tập yêu thích"
+                className="absolute right-0 p-2 mt-2 bg-white border border-gray-200 shadow-xl top-full w-80 rounded-xl"
+              >
+                {loadingFavorites ? (
+                  <div className="px-3 py-2 text-sm text-gray-500">
+                    Đang tải...
+                  </div>
+                ) : favorites.length === 0 ? (
+                  <div className="px-3 py-2 text-sm text-gray-500">
+                    Chưa có bài tập yêu thích
+                  </div>
+                ) : (
+                  <ul className="overflow-auto max-h-80">
+                    {favorites.map((ex) => (
+                      <li
+                        key={ex.id}
+                        className="flex items-center px-3 py-2 rounded-lg cursor-pointer hover:bg-gray-50"
+                        onClick={() => {
+                          setOpenFavorites(false);
+                          navigate(`/exercises/${ex.id}`);
+                        }}
+                      >
+                        {ex.imageUrl ? (
+                          <img
+                            src={ex.imageUrl}
+                            alt={ex.name}
+                            className="object-cover w-10 h-10 mr-3 rounded"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 mr-3 bg-gray-200 rounded" />
+                        )}
+                        <div className="min-w-0">
+                          <div className="text-sm font-medium text-gray-900 truncate">
+                            {ex.name}
+                          </div>
+                          <div className="text-xs text-gray-500 truncate">
+                            {ex.equipment || "Bodyweight"} •{" "}
+                            {ex.difficulty || "N/A"}
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             )}
           </div>

@@ -4,9 +4,14 @@ import { useAuth } from "../../context/auth.context.jsx";
 import HeaderLogin from "../../components/header/HeaderLogin.jsx";
 import HeaderDemo from "../../components/header/HeaderDemo.jsx";
 
+import B1 from "../../assets/nutrition/B1.png";
+import B2 from "../../assets/nutrition/B2.png";
+import B3 from "../../assets/nutrition/B3.png";
+import B4 from "../../assets/nutrition/B4.png";
 import B5 from "../../assets/nutrition/B5.png";
 import B6 from "../../assets/nutrition/B6.png";
 import B7 from "../../assets/nutrition/B7.png";
+import { BarChart3Icon } from "lucide-react";
 
 export default function NutritionDemo() {
   const navigate = useNavigate();
@@ -93,10 +98,12 @@ export default function NutritionDemo() {
                 Chọn ảnh rõ nét, đủ ánh sáng. Hệ thống tự cắt căn giữa món ăn để
                 nhận diện tốt hơn.
               </p>
-              <div className="mt-4 overflow-hidden border-2 border-dashed rounded-xl border-emerald-200">
-                <div className="flex items-center justify-center w-full h-48 bg-emerald-50/40 text-emerald-600">
-                  <span className="text-sm">Khung ảnh 1: Upload món ăn</span>
-                </div>
+              <div className="flex items-center justify-center w-full h-64 p-2 md:h-120 bg-rose-50/40 sm:p-4">
+                <img
+                  src={B1}
+                  alt="image-ai"
+                  className="object-contain w-auto max-h-full"
+                />
               </div>
             </div>
 
@@ -114,10 +121,12 @@ export default function NutritionDemo() {
                 Hiển thị top 3 kết quả có xác suất cao nhất. Chọn đúng món để
                 xem chi tiết dinh dưỡng.
               </p>
-              <div className="mt-4 overflow-hidden border-2 border-dashed rounded-xl border-emerald-200">
-                <div className="flex items-center justify-center w-full h-48 bg-emerald-50/40 text-emerald-600">
-                  <span className="text-sm">Khung ảnh 2: Top dự đoán</span>
-                </div>
+              <div className="flex items-center justify-center w-full h-64 p-2 md:h-120 bg-rose-50/40 sm:p-4">
+                <img
+                  src={B2}
+                  alt="image-ai"
+                  className="object-contain w-auto max-h-full"
+                />
               </div>
             </div>
 
@@ -135,10 +144,12 @@ export default function NutritionDemo() {
                 Chọn size nhỏ/vừa/lớn hoặc nhập gram để tính calo & tỉ lệ macro
                 chính xác.
               </p>
-              <div className="mt-4 overflow-hidden border-2 border-dashed rounded-xl border-emerald-200">
-                <div className="flex items-center justify-center w-full h-48 bg-emerald-50/40 text-emerald-600">
-                  <span className="text-sm">Khung ảnh 3: Chọn khẩu phần</span>
-                </div>
+              <div className="flex items-center justify-center w-full h-64 p-2 md:h-120 bg-rose-50/40 sm:p-4">
+                <img
+                  src={B3}
+                  alt="image-ai"
+                  className="object-contain w-auto max-h-full"
+                />
               </div>
             </div>
 
@@ -155,10 +166,12 @@ export default function NutritionDemo() {
               <p className="mt-2 text-sm leading-6 text-gray-700">
                 Bảng macro chi tiết theo 100g quy đổi, tỉ lệ P/C/F và tổng kcal.
               </p>
-              <div className="mt-4 overflow-hidden border-2 border-dashed rounded-xl border-emerald-200">
-                <div className="flex items-center justify-center w-full h-48 bg-emerald-50/40 text-emerald-600">
-                  <span className="text-sm">Khung ảnh 4: Bảng macro</span>
-                </div>
+              <div className="flex items-center justify-center w-full h-64 p-2 md:h-120 bg-rose-50/40 sm:p-4">
+                <img
+                  src={B4}
+                  alt="image-ai"
+                  className="object-contain w-auto max-h-full"
+                />
               </div>
             </div>
 
