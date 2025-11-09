@@ -7,7 +7,8 @@ import { Dumbbell, Users, Brain, Apple } from "lucide-react";
 /* ===== VXP helpers: ưu tiên trigger nút trên Navbar qua data-nav, fallback navigate ===== */
 const VXP_ROUTE_MAP = {
   home: "/",
-  modeling: "/modeling-preview",
+  ai: "/ai",
+  modeling: "/modeling",
   workout: "/exercises", // ⬅ đi thẳng vào trang bài tập
   plans: "/plans",
   "plan-create": "/plans/new",
@@ -82,7 +83,7 @@ export default function Dashboard() {
       {/* ABOUT / FEATURES */}
       <section className="px-8 py-16 text-center bg-white md:px-20">
         <h2 className="mb-6 text-4xl font-bold text-gray-900">
-          Giới thiệu về <span className="text-blue-600">Fitnexus</span>
+          Giới thiệu về <span className="text-black-200">Fitnexus</span>
         </h2>
         <p className="max-w-3xl mx-auto mb-12 leading-relaxed text-gray-600">
           Fitnexus là nền tảng tập luyện thế hệ mới giúp bạn đạt được hiệu quả
@@ -102,7 +103,7 @@ export default function Dashboard() {
             {/* AI */}
             <button
               type="button"
-              onClick={() => vxpGo("modeling", navigate)}
+              onClick={() => vxpGo("ai", navigate)}
               className="p-5 text-left transition border border-gray-200 cursor-pointer bg-gray-50 hover:bg-blue-50 rounded-xl hover:border-blue-400"
             >
               <Brain size={28} className="mx-auto mb-2 text-blue-600" />
@@ -204,10 +205,12 @@ export default function Dashboard() {
                   Gói Free
                 </h3>
                 <p className="mb-6 text-sm text-gray-500">
-                  Trải nghiệm Fitnexus cơ bản — phù hợp cho người mới bắt đầu làm
-                  quen với AI Workout.
+                  Trải nghiệm Fitnexus cơ bản — phù hợp cho người mới bắt đầu
+                  làm quen với AI Workout.
                 </p>
-                <h4 className="mb-4 text-4xl font-extrabold text-blue-600">0₫</h4>
+                <h4 className="mb-4 text-4xl font-extrabold text-blue-600">
+                  0₫
+                </h4>
 
                 <ul className="mb-8 space-y-2 text-sm text-left text-gray-600">
                   <li> Truy cập AI cơ bản</li>
@@ -237,8 +240,8 @@ export default function Dashboard() {
                   Gói Premium
                 </h3>
                 <p className="max-w-sm mb-6 text-sm text-gray-200">
-                  Dành cho người muốn bứt phá – phân tích tư thế 3D, gợi ý chế độ
-                  ăn, và huấn luyện viên AI chuyên nghiệp.
+                  Dành cho người muốn bứt phá – phân tích tư thế 3D, gợi ý chế
+                  độ ăn, và huấn luyện viên AI chuyên nghiệp.
                 </p>
                 <h4 className="mb-4 text-5xl font-extrabold text-yellow-300">
                   99.000₫
@@ -271,9 +274,9 @@ export default function Dashboard() {
       )}
 
       {/* TESTIMONIALS */}
-      <section className="px-8 md:px-20 py-20 text-center bg-[#0d1117] text-white">
+      <section className="px-8 md:px-20 py-20 text-center bg-[#9ab5de] text-white">
         <h2 className="mb-12 text-4xl font-bold text-white">
-          Người dùng nói gì về <span className="text-teal-400">Fitnexus</span>
+          Người dùng nói gì về <span className="text-black-400">Fitnexus</span>
         </h2>
 
         <div className="grid gap-8 mx-auto md:grid-cols-4 max-w-7xl">
@@ -336,7 +339,7 @@ export default function Dashboard() {
       </section>
 
       {/* CTA SECTION */}
-      <section className="relative py-28 px-6 md:px-20 bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-800 text-white overflow-hidden rounded-t-[3rem] mt-16 mb-24">
+      <section className="relative py-28 px-6 md:px-20 bg-gradient-to-br from-blue-200 via-blue-400 to-indigo-400 text-white overflow-hidden rounded-t-[3rem] mt-16 mb-24">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.1),transparent_70%)] pointer-events-none"></div>
 
         <div className="relative z-10 max-w-5xl mx-auto text-center">
@@ -368,7 +371,7 @@ export default function Dashboard() {
           </div>
 
           <p className="mt-6 text-sm tracking-wide text-gray-300 uppercase">
-            Fitnexus – Nơi công nghệ và đam mê hội tụ 💪
+            Fitnexus – Nơi công nghệ và đam mê hội tụ
           </p>
         </div>
 
@@ -395,7 +398,7 @@ export default function Dashboard() {
               <li>
                 <button
                   className="text-left transition hover:text-blue-400"
-                  onClick={() => vxpGo("modeling", navigate)}
+                  onClick={() => vxpGo("ai", navigate)}
                 >
                   AI Trainer
                 </button>
