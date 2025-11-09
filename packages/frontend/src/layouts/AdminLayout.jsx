@@ -134,9 +134,6 @@ export default function AdminLayout() {
             <NavLink to="/admin" end className={linkClass}>
               <Home className="w-4 h-4" /> Overview
             </NavLink>
-            <NavLink to="/admin/projects" className={linkClass}>
-              <LayoutDashboard className="w-4 h-4" /> Projects
-            </NavLink>
           </nav>
 
           {/* Pages */}
@@ -158,7 +155,9 @@ export default function AdminLayout() {
                       {sec.label}
                     </span>
                     <ChevronRight
-                      className={`h-4 w-4 transition-transform ${open[sec.key] ? "rotate-90" : ""}`}
+                      className={`h-4 w-4 transition-transform ${
+                        open[sec.key] ? "rotate-90" : ""
+                      }`}
                     />
                   </button>
 
@@ -171,8 +170,14 @@ export default function AdminLayout() {
                         // Các item thường (không có submenu)
                         if (!isRole && !isPlan) {
                           return (
-                            <NavLink key={item.to} to={item.to} className={linkClass} end>
-                              {item.icon && <item.icon className="w-4 h-4" />} {item.label}
+                            <NavLink
+                              key={item.to}
+                              to={item.to}
+                              className={linkClass}
+                              end
+                            >
+                              {item.icon && <item.icon className="w-4 h-4" />}{" "}
+                              {item.label}
                             </NavLink>
                           );
                         }
@@ -187,16 +192,21 @@ export default function AdminLayout() {
                                   end
                                   className={({ isActive }) =>
                                     `flex items-center gap-2 px-3 py-2 rounded-md hover:bg-gray-100 transition ${
-                                      isActive && currentRole === "ALL" ? "bg-gray-100 font-medium" : ""
+                                      isActive && currentRole === "ALL"
+                                        ? "bg-gray-100 font-medium"
+                                        : ""
                                     }`
                                   }
                                 >
-                                  {item.icon && <item.icon className="w-4 h-4" />} {item.label}
+                                  {item.icon && (
+                                    <item.icon className="w-4 h-4" />
+                                  )}{" "}
+                                  {item.label}
                                 </NavLink>
                                 <button
                                   type="button"
                                   onClick={() => setOpenRoleSub((v) => !v)}
-                                  className="mr-2 inline-flex items-center justify-center rounded hover:bg-gray-100"
+                                  className="inline-flex items-center justify-center mr-2 rounded hover:bg-gray-100"
                                   style={{ width: 28, height: 28 }}
                                   aria-label="Toggle Role submenu"
                                 >
@@ -210,12 +220,14 @@ export default function AdminLayout() {
                               </div>
 
                               {openRoleSub && (
-                                <div className="ml-6 mt-1 space-y-1">
+                                <div className="mt-1 ml-6 space-y-1">
                                   <NavLink
                                     to="/admin/role?role=USER"
                                     className={({ isActive }) =>
                                       `flex items-center gap-2 px-3 py-2 rounded-md hover:bg-gray-100 transition ${
-                                        isActive && currentRole === "USER" ? "bg-gray-100 font-medium" : ""
+                                        isActive && currentRole === "USER"
+                                          ? "bg-gray-100 font-medium"
+                                          : ""
                                       }`
                                     }
                                   >
@@ -225,7 +237,9 @@ export default function AdminLayout() {
                                     to="/admin/role?role=TRAINER"
                                     className={({ isActive }) =>
                                       `flex items-center gap-2 px-3 py-2 rounded-md hover:bg-gray-100 transition ${
-                                        isActive && currentRole === "TRAINER" ? "bg-gray-100 font-medium" : ""
+                                        isActive && currentRole === "TRAINER"
+                                          ? "bg-gray-100 font-medium"
+                                          : ""
                                       }`
                                     }
                                   >
@@ -235,7 +249,9 @@ export default function AdminLayout() {
                                     to="/admin/role?role=ADMIN"
                                     className={({ isActive }) =>
                                       `flex items-center gap-2 px-3 py-2 rounded-md hover:bg-gray-100 transition ${
-                                        isActive && currentRole === "ADMIN" ? "bg-gray-100 font-medium" : ""
+                                        isActive && currentRole === "ADMIN"
+                                          ? "bg-gray-100 font-medium"
+                                          : ""
                                       }`
                                     }
                                   >
@@ -257,16 +273,21 @@ export default function AdminLayout() {
                                   end
                                   className={({ isActive }) =>
                                     `flex items-center gap-2 px-3 py-2 rounded-md hover:bg-gray-100 transition ${
-                                      isActive && currentPlan === "ALL" ? "bg-gray-100 font-medium" : ""
+                                      isActive && currentPlan === "ALL"
+                                        ? "bg-gray-100 font-medium"
+                                        : ""
                                     }`
                                   }
                                 >
-                                  {item.icon && <item.icon className="w-4 h-4" />} {item.label}
+                                  {item.icon && (
+                                    <item.icon className="w-4 h-4" />
+                                  )}{" "}
+                                  {item.label}
                                 </NavLink>
                                 <button
                                   type="button"
                                   onClick={() => setOpenPlanSub((v) => !v)}
-                                  className="mr-2 inline-flex items-center justify-center rounded hover:bg-gray-100"
+                                  className="inline-flex items-center justify-center mr-2 rounded hover:bg-gray-100"
                                   style={{ width: 28, height: 28 }}
                                   aria-label="Toggle Plan submenu"
                                 >
@@ -280,12 +301,14 @@ export default function AdminLayout() {
                               </div>
 
                               {openPlanSub && (
-                                <div className="ml-6 mt-1 space-y-1">
+                                <div className="mt-1 ml-6 space-y-1">
                                   <NavLink
                                     to="/admin/plan?plan=FREE"
                                     className={({ isActive }) =>
                                       `flex items-center gap-2 px-3 py-2 rounded-md hover:bg-gray-100 transition ${
-                                        isActive && currentPlan === "FREE" ? "bg-gray-100 font-medium" : ""
+                                        isActive && currentPlan === "FREE"
+                                          ? "bg-gray-100 font-medium"
+                                          : ""
                                       }`
                                     }
                                   >
@@ -295,7 +318,9 @@ export default function AdminLayout() {
                                     to="/admin/plan?plan=PREMIUM"
                                     className={({ isActive }) =>
                                       `flex items-center gap-2 px-3 py-2 rounded-md hover:bg-gray-100 transition ${
-                                        isActive && currentPlan === "PREMIUM" ? "bg-gray-100 font-medium" : ""
+                                        isActive && currentPlan === "PREMIUM"
+                                          ? "bg-gray-100 font-medium"
+                                          : ""
                                       }`
                                     }
                                   >
@@ -329,7 +354,10 @@ export default function AdminLayout() {
             </div>
             <div className="flex items-center gap-3 text-sm text-gray-700">
               <span>{user?.role}</span>
-              <button onClick={logout} className="px-3 py-1 border rounded hover:bg-gray-50">
+              <button
+                onClick={logout}
+                className="px-3 py-1 border rounded hover:bg-gray-50"
+              >
                 Logout
               </button>
             </div>
@@ -357,7 +385,8 @@ export default function AdminLayout() {
                 <Users className="h-3.5 w-3.5" />
               </span>
               <div>
-                New user registered. <span className="text-gray-400">59 minutes ago</span>
+                New user registered.{" "}
+                <span className="text-gray-400">59 minutes ago</span>
               </div>
             </li>
           </ul>

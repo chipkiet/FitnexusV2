@@ -41,7 +41,8 @@ export const endpoints = {
     byId: (id) => `/api/plans/${id}`,
     items: (id) => `/api/plans/${id}/exercises`,
     reorder: (id) => `/api/plans/${id}/exercises/reorder`,
-    updateExercise: (planId, planExerciseId) => `/api/plans/${planId}/exercises/${planExerciseId}`,
+    updateExercise: (planId, planExerciseId) =>
+      `/api/plans/${planId}/exercises/${planExerciseId}`,
   },
 
   // OAuth session-based (Passport)
@@ -88,21 +89,22 @@ export const endpoints = {
     plans: {
       list: "/api/admin/user-plans",
       byId: (id) => `/api/admin/user-plans/${id}`,
-      updateStatus: (id) => `/api/admin/user-plans/${id}/status`
+      updateStatus: (id) => `/api/admin/user-plans/${id}/status`,
     },
     userPlans: (userId) => `/api/admin/users/${userId}/plans`,
-    userPlanDetail: (userId, planId) => `/api/admin/users/${userId}/plans/${planId}`,
-    // ⬇️ NEW: sub-admin endpoints
+    userPlanDetail: (userId, planId) =>
+      `/api/admin/users/${userId}/plans/${planId}`,
+
     listSubAdmins: "/api/admin/subadmins",
     createSubAdmin: "/api/admin/subadmins",
     metrics: {
       overview: "/api/admin/metrics/overview",
+      contentOverview: "/api/admin/metrics/content-overview",
     },
   },
 };
 
 // Những endpoint đi “thẳng” (không ép refresh/redirect)
-// ✅ Bổ sung đầy đủ /api/auth/* để tránh redirect khi đang ở màn login / refresh fail
 const PASS_THROUGH = [
   // API auth
   endpoints.auth.me,
@@ -160,9 +162,13 @@ api.interceptors.request.use(
             const response = await axios.post(
               `${BASE_URL}${endpoints.auth.refresh}`,
               { refreshToken },
-              { headers: { "Content-Type": "application/json" }, withCredentials: true }
+              {
+                headers: { "Content-Type": "application/json" },
+                withCredentials: true,
+              }
             );
-            const { token: newAccessToken, refreshToken: newRefreshToken } = response.data.data;
+            const { token: newAccessToken, refreshToken: newRefreshToken } =
+              response.data.data;
 
             setTokens(newAccessToken, newRefreshToken, true);
             config.headers.Authorization = `Bearer ${newAccessToken}`;
@@ -216,7 +222,10 @@ api.interceptors.response.use(
     const status = error?.response?.status;
 
     // Nếu là pass-through (đặc biệt /api/auth/login, /api/auth/refresh), đừng redirect — để UI tự xử lý
-    if ((status === 401 || status === 423 || status === 403) && isPassThroughUrl(url)) {
+    if (
+      (status === 401 || status === 423 || status === 403) &&
+      isPassThroughUrl(url)
+    ) {
       return Promise.reject(error);
     }
 
@@ -250,9 +259,13 @@ api.interceptors.response.use(
           const response = await axios.post(
             `${BASE_URL}${endpoints.auth.refresh}`,
             { refreshToken },
-            { headers: { "Content-Type": "application/json" }, withCredentials: true }
+            {
+              headers: { "Content-Type": "application/json" },
+              withCredentials: true,
+            }
           );
-          const { token: newAccessToken, refreshToken: newRefreshToken } = response.data.data;
+          const { token: newAccessToken, refreshToken: newRefreshToken } =
+            response.data.data;
 
           setTokens(newAccessToken, newRefreshToken, true);
           processQueue(null, newAccessToken);
@@ -283,17 +296,23 @@ api.interceptors.response.use(
 
 // ===== Convenience APIs =====
 export const checkUsernameAvailability = async (username) => {
-  const response = await api.get(endpoints.auth.checkUsername, { params: { username } });
+  const response = await api.get(endpoints.auth.checkUsername, {
+    params: { username },
+  });
   return response.data;
 };
 
 export const checkEmailAvailability = async (email) => {
-  const response = await api.get(endpoints.auth.checkEmail, { params: { email } });
+  const response = await api.get(endpoints.auth.checkEmail, {
+    params: { email },
+  });
   return response.data;
 };
 
 export const checkPhoneAvailability = async (phone) => {
-  const response = await api.get(endpoints.auth.checkPhone, { params: { phone } });
+  const response = await api.get(endpoints.auth.checkPhone, {
+    params: { phone },
+  });
   return response.data;
 };
 
@@ -331,6 +350,11 @@ export const getAdminUsersStats = async () => {
 // ===== Admin Dashboard Metrics =====
 export const getAdminOverviewMetrics = async () => {
   const res = await api.get(endpoints.admin.metrics.overview);
+  return res.data;
+};
+
+export const getContentOverviewMetrics = async () => {
+  const res = await api.get(endpoints.admin.metrics.contentOverview);
   return res.data;
 };
 
