@@ -23,6 +23,7 @@ import onboardingRouter from "./routes/onboarding.routes.js";
 import nutritionRouter from "./routes/nutrition.routes.js";
 import billingRouter from "./routes/billing.routes.js";
 import paymentRouter from "./routes/payment.routes.js";
+import adminMetricsRoutes from "./routes/admin.metrics.routes.js";
 import adminRevenueRoutes from "./routes/admin.revenue.routes.js"; // ✅ Import route
 
 dotenv.config();
@@ -139,6 +140,7 @@ app.use("/api/payment", paymentRouter);
 
 // ✅ Di chuyển dòng này xuống đây sau khi app được khởi tạo
 app.use("/api/admin/revenue", adminRevenueRoutes);
+app.use("/api/admin/metrics", adminMetricsRoutes);
 
 // Theo dõi hoạt động người dùng
 app.use("/api", activityTracker);

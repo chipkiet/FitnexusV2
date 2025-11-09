@@ -95,6 +95,9 @@ export const endpoints = {
     // ⬇️ NEW: sub-admin endpoints
     listSubAdmins: "/api/admin/subadmins",
     createSubAdmin: "/api/admin/subadmins",
+    metrics: {
+      overview: "/api/admin/metrics/overview",
+    },
   },
 };
 
@@ -322,6 +325,12 @@ export const getAdminUsers = async ({
 
 export const getAdminUsersStats = async () => {
   const res = await api.get(endpoints.admin.usersStats);
+  return res.data;
+};
+
+// ===== Admin Dashboard Metrics =====
+export const getAdminOverviewMetrics = async () => {
+  const res = await api.get(endpoints.admin.metrics.overview);
   return res.data;
 };
 
