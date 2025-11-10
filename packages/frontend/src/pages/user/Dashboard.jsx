@@ -3,6 +3,7 @@ import { useAuth } from "../../context/auth.context.jsx";
 import { useNavigate } from "react-router-dom";
 import HeaderLogin from "../../components/header/HeaderLogin.jsx";
 import { Dumbbell, Users, Brain, Apple } from "lucide-react";
+import ChatWidget from "../../components/common/ChatWidget.jsx";
 
 /* ===== VXP helpers: ưu tiên trigger nút trên Navbar qua data-nav, fallback navigate ===== */
 const VXP_ROUTE_MAP = {
@@ -495,6 +496,9 @@ export default function Dashboard() {
           Designed with ❤️ by Fitnexus Team | Powered by AI & Passion
         </div>
       </footer>
+
+      {/* Floating Chat Widget */}
+      <ChatWidget />
     </div>
   );
 }
