@@ -1,17 +1,20 @@
-tính score :node scripts/compute_popularity_score.js
+Exercise data import quick guide
 
-mã hoá dữ liệu thành file xwalk_exercise.normalized rồi đó, giờ có thêm dữ liệu thì thêm vào đây.
-sau khi thêm dữ liệu xong thì chạy npm run xwalk:prepare
-sau đó chạy npm run xwalk:import -> dữ liệu các bài tập 
+compute popularity score
+node scripts/compute_popularity_score.js
 
-cách bắn các instruction json ở xwalk_exercise_steps.import.json san g database
+prepare normalized data
+npm run xwalk:prepare
 
+import exercises
+npm run xwalk:import
+
+import instruction steps from json
 node scripts/import_exercise_steps_json.js
 
+generate image_exercises preview
+node scripts/import-image-exercise-from-data.js
 
-đẩy image_exercises thành các hình ảnh:
-node ./scripts/import-image-exercise-from-data.js
+commit images to database
+node scripts/import-image-exercise-from-data.js --commit
 
-
-bắn nó lên database:
-node ./scripts/import-image-exercise-from-data.js --commit
