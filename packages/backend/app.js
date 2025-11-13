@@ -26,6 +26,7 @@ import paymentRouter from "./routes/payment.routes.js";
 import adminMetricsRoutes from "./routes/admin.metrics.routes.js";
 import adminRevenueRoutes from "./routes/admin.revenue.routes.js"; // ✅ Import route
 import supportRouter from "./routes/support.routes.js";
+import notificationRouter from "./routes/notification.routes.js";
 
 dotenv.config();
 import activityTracker from "./middleware/activity.tracker.js";
@@ -139,6 +140,7 @@ app.use("/api/nutrition", nutritionRouter);
 app.use("/api/billing", billingRouter);
 app.use("/api/payment", paymentRouter);
 app.use("/api/support", supportRouter);
+app.use("/api/notifications", notificationRouter);
 
 // ✅ Di chuyển dòng này xuống đây sau khi app được khởi tạo
 app.use("/api/admin/revenue", adminRevenueRoutes);

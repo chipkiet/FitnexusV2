@@ -88,6 +88,12 @@ export const endpoints = {
     adminRespond: (id) => `/api/support/reports/${id}/respond`,
   },
 
+  notifications: {
+    list: "/api/notifications",
+    markRead: (id) => `/api/notifications/${id}/read`,
+    markAll: "/api/notifications/read-all",
+  },
+
   admin: {
     users: "/api/admin/users",
     usersStats: "/api/admin/users/stats",
@@ -523,6 +529,21 @@ export const adminGetBugReportApi = async (reportId) => {
 
 export const adminRespondBugReportApi = async (reportId, payload) => {
   const res = await api.patch(endpoints.support.adminRespond(reportId), payload);
+  return res.data;
+};
+
+export const listNotificationsApi = async (params = {}) => {
+  const res = await api.get(endpoints.notifications.list, { params });
+  return res.data;
+};
+
+export const markNotificationReadApi = async (notificationId) => {
+  const res = await api.patch(endpoints.notifications.markRead(notificationId));
+  return res.data;
+};
+
+export const markAllNotificationsReadApi = async () => {
+  const res = await api.patch(endpoints.notifications.markAll);
   return res.data;
 };
 

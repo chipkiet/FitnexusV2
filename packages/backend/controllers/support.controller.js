@@ -5,6 +5,7 @@ import { uploadBuffer } from "../utils/cloudinary.js";
 import { sendMail } from "../utils/mailer.js";
 import { buildBugReportEmail, buildBugReportResponseEmail } from "../utils/emailTemplates.js";
 import { Op } from "sequelize";
+import { notifyAdmins, notifyUser } from "../services/notification.service.js";
 
 const BUG_S3_FOLDER = "fitnexus/bug-reports";
 const BUG_SEVERITIES = ["low", "medium", "high", "critical"];
@@ -101,6 +102,15 @@ export async function submitBugReport(req, res) {
         subject,
         html,
         text,
+      });
+    }
+
+    if (savedReport) {
+      await notifyAdmins({
+        type: "support_report",
+        title: `Báo lỗi mới: ${normalizedTitle}`,
+        body: normalizedDescription?.slice(0, 200) || "Người dùng vừa gửi báo lỗi mới",
+        metadata: { reportId: savedReport.report_id, url: "/admin/support" },
       });
     }
 
@@ -248,6 +258,15 @@ export async function respondBugReport(req, res) {
       } catch (mailErr) {
         console.error("respondBugReport sendMail error:", mailErr);
       }
+    }
+
+    if (report.user_id) {
+      await notifyUser(report.user_id, {
+        type: "support_reply",
+        title: "Admin đã phản hồi báo lỗi của bạn",
+        body: responseMessage.trim() || "Báo lỗi của bạn đã được cập nhật",
+        metadata: { reportId: report.report_id, url: `/support?reportId=${report.report_id}` },
+      });
     }
 
     return res.json({ success: true, data: report });

@@ -20,10 +20,14 @@ import {
   Search,
   Sun,
 } from "lucide-react";
+import NotificationsDropdown from "../components/common/NotificationsDropdown.jsx";
+import { useNotificationsFeed } from "../hooks/useNotificationsFeed.js";
 
 export default function AdminLayout() {
   const location = useLocation();
   const { user, logout } = useAuth();
+  const notificationFeed = useNotificationsFeed({ limit: 8, autoLoad: true });
+  const adminNotifications = notificationFeed.items;
 
   // Query params để highlight submenu
   const currentRole = (new URLSearchParams(location.search).get("role") || "ALL").toUpperCase();
@@ -121,7 +125,7 @@ export default function AdminLayout() {
           </div>
           <div className="flex items-center gap-3 text-gray-600">
             <Sun className="w-4 h-4" />
-            <Bell className="w-4 h-4" />
+            <NotificationsDropdown buttonClassName="border-gray-200" />
             <div className="w-8 h-8 bg-gray-200 rounded-full" />
           </div>
         </div>
@@ -378,26 +382,38 @@ export default function AdminLayout() {
 
         {/* Notifications */}
         <aside className="sticky top-14 hidden h-[calc(100vh-56px)] w-80 shrink-0 border-l bg-white p-4 xl:block">
-          <div className="mb-3 font-medium">Notifications</div>
-          <ul className="space-y-3 text-sm text-gray-700">
-            <li className="flex items-start gap-2">
-              <span className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full border">
-                <Bell className="h-3.5 w-3.5" />
-              </span>
-              <div>
-                You fixed a bug. <span className="text-gray-400">Just now</span>
-              </div>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full border">
-                <Users className="h-3.5 w-3.5" />
-              </span>
-              <div>
-                New user registered.{" "}
-                <span className="text-gray-400">59 minutes ago</span>
-              </div>
-            </li>
-          </ul>
+          <div className="flex items-center justify-between mb-3 font-medium">
+            <span>Notifications</span>
+            <button
+              type="button"
+              className="text-xs text-blue-600 hover:underline"
+              onClick={notificationFeed.markAll}
+            >
+              Đánh dấu đã đọc
+            </button>
+          </div>
+          {notificationFeed.loading ? (
+            <p className="text-sm text-gray-500">Đang tải...</p>
+          ) : adminNotifications.length === 0 ? (
+            <p className="text-sm text-gray-500">Chưa có thông báo.</p>
+          ) : (
+            <ul className="space-y-3 text-sm text-gray-700">
+              {adminNotifications.map((item) => (
+                <li key={item.notification_id} className="flex items-start gap-2">
+                  <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full border text-gray-500">
+                    <Bell className="h-3.5 w-3.5" />
+                  </span>
+                  <div>
+                    <p className="font-semibold text-gray-800">{item.title}</p>
+                    {item.body && <p className="text-xs text-gray-500">{item.body}</p>}
+                    <p className="text-[11px] text-gray-400">
+                      {new Date(item.created_at).toLocaleString("vi-VN")}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
         </aside>
       </div>
     </div>

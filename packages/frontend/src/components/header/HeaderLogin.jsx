@@ -6,6 +6,7 @@ import logoDark from "../../assets/logodark.png";
 import { useTheme } from "../../context/theme.context.jsx";
 import { Crown } from "lucide-react";
 import { getMyFavoriteExercisesApi } from "../../lib/api.js";
+import NotificationsDropdown from "../common/NotificationsDropdown.jsx";
 
 export default function HeaderLogin() {
   const navigate = useNavigate();
@@ -394,6 +395,9 @@ export default function HeaderLogin() {
             {accountType}
           </span>
           <div className="flex items-center gap-4">
+            {isAuthenticated && (
+              <NotificationsDropdown buttonClassName="border-gray-200" />
+            )}
             {user ? (
               <div className="relative" ref={avatarMenuRef}>
                 <button

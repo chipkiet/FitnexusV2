@@ -19,6 +19,7 @@ import AIUsage from "./ai.usage.model.js";
 import SubscriptionPlan from "./subscription.plan.model.js";
 import Transaction from "./transaction.model.js";
 import BugReport from "./bugReport.model.js";
+import Notification from "./notification.model.js";
 
 // ✅ Giữ 1 biến toàn cục
 let initialized = false;
@@ -137,6 +138,9 @@ export function initModels() {
   BugReport.belongsTo(User, { foreignKey: "user_id", targetKey: "user_id", as: "reporter" });
   BugReport.belongsTo(User, { foreignKey: "responded_by", targetKey: "user_id", as: "responder" });
 
+  User.hasMany(Notification, { foreignKey: "user_id", sourceKey: "user_id", as: "notifications" });
+  Notification.belongsTo(User, { foreignKey: "user_id", targetKey: "user_id", as: "owner" });
+
   models = {
     User,
     PasswordReset,
@@ -159,6 +163,7 @@ export function initModels() {
     SubscriptionPlan,
     Transaction,
     BugReport,
+    Notification,
   };
 
   initialized = true;
