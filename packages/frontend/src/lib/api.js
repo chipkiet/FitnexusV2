@@ -95,6 +95,12 @@ export const endpoints = {
     markAll: "/api/notifications/read-all",
   },
 
+  // AI endpoints (proxied via backend, also available on separate AI port)
+  ai: {
+    health: "/api/ai/health",
+    chat: "/api/ai/chat",
+  },
+
   admin: {
     users: "/api/admin/users",
     usersStats: "/api/admin/users/stats",
