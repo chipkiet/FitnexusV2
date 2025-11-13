@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../../context/auth.context.jsx';
 import HeaderLogin from '../../components/header/HeaderLogin.jsx';
 import HeaderDemo from '../../components/header/HeaderDemo.jsx';
-import { getActiveSubscriptionPlans, createPaymentLinkApi } from '../../lib/api.js';
+import { getActiveSubscriptionPlans, createPaymentLinkApi, listMyPurchasesApi } from '../../lib/api.js';
 import {
   Activity,
   BarChart3,
@@ -72,12 +72,20 @@ const calcDailyPrice = (price, durationDays) => {
   return Math.round(amount / days);
 };
 
+const formatDate = (value) => {
+  if (!value) return 'Không xác định';
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return 'Không xác định';
+  return d.toLocaleDateString('vi-VN');
+};
 
 export default function Pricing() {
   const { user, loading } = useAuth();
   const [plans, setPlans] = useState([]);
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [purchases, setPurchases] = useState([]);
+  const [loadingPurchases, setLoadingPurchases] = useState(false);
   const isAuthenticated = !!user;
   const currentYear = new Date().getFullYear();
 
@@ -91,6 +99,25 @@ export default function Pricing() {
       }
     })();
   }, []);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setPurchases([]);
+      return;
+    }
+    (async () => {
+      setLoadingPurchases(true);
+      try {
+        const res = await listMyPurchasesApi();
+        setPurchases(res?.data?.purchases || []);
+      } catch (e) {
+        console.warn('Không tải được purchased upgrades:', e?.message || e);
+        setPurchases([]);
+      } finally {
+        setLoadingPurchases(false);
+      }
+    })();
+  }, [isAuthenticated]);
 
   const recommendedPlanId = useMemo(() => {
     if (!plans.length) return null;
@@ -109,13 +136,50 @@ export default function Pricing() {
     return best?.plan_id ?? null;
   }, [plans]);
 
+  const activePurchases = useMemo(() => purchases.filter((p) => p.isActive), [purchases]);
+
+  const fallbackActivePurchase = useMemo(() => {
+    if (activePurchases.length || user?.user_type !== 'premium') return [];
+    return user?.user_exp_date
+      ? [
+          {
+            planId: null,
+            planName: 'Premium hiện tại',
+            price: null,
+            durationDays: null,
+            status: 'completed',
+            purchasedAt: null,
+            activeUntil: user.user_exp_date,
+            expiresAt: user.user_exp_date,
+            isActive: true,
+            fallback: true,
+          },
+        ]
+      : [];
+  }, [activePurchases, user?.user_type, user?.user_exp_date]);
+
+  const displayPurchased = activePurchases.length ? activePurchases : fallbackActivePurchase;
+
+  const purchasedPlanIds = useMemo(() => {
+    const ids = new Set();
+    activePurchases.forEach((p) => {
+      if (p.planId) ids.add(p.planId);
+    });
+    return ids;
+  }, [activePurchases]);
+
+  const availablePlans = useMemo(() => {
+    if (!plans.length) return [];
+    if (!purchasedPlanIds.size) return plans;
+    return plans.filter((plan) => !purchasedPlanIds.has(plan.plan_id));
+  }, [plans, purchasedPlanIds]);
+
   const handlePurchase = async (planId) => {
     try {
       setBusy(true);
       const res = await createPaymentLinkApi(planId);
       const url = res?.data?.checkoutUrl;
       if (!url) throw new Error('Thiếu checkoutUrl từ PayOS');
-
       window.location.href = url;
     } catch (e) {
       setError(e?.response?.data || { message: e.message });
@@ -162,58 +226,105 @@ export default function Pricing() {
               </div>
             ) : null}
 
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {plans.map((plan) => {
-                const isRecommended = recommendedPlanId === plan.plan_id;
-                const perDay = calcDailyPrice(plan.price, plan.duration_days);
-                return (
-                  <article
-                    key={plan.plan_id}
-                    className={`flex h-full flex-col rounded-2xl border bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg ${
-                      isRecommended ? 'border-indigo-400 shadow-indigo-200' : 'border-slate-200'
-                    }`}
-                  >
-                    {isRecommended && (
-                      <span className="inline-flex items-center px-3 py-1 mb-4 text-xs font-semibold text-indigo-700 uppercase bg-indigo-100 rounded-full w-fit">
-                        Phổ biến nhất
-                      </span>
-                    )}
-
-                    <header className="flex flex-col gap-1">
-                      <h3 className="text-xl font-semibold text-slate-900">{plan.name}</h3>
-                      <div className="text-3xl font-bold text-indigo-600">{formatPrice(plan.price)}</div>
-                      <p className="text-sm text-slate-500">Chu kỳ {plan.duration_days} ngày</p>
-                      {perDay ? (
-                        <p className="text-xs text-slate-400">Khoảng {perDay.toLocaleString('vi-VN')} VND/ngày</p>
-                      ) : null}
-                    </header>
-
-                    <ul className="flex flex-col flex-1 gap-3 mt-6 text-sm text-slate-600">
-                      {PLAN_BENEFITS.slice(0, 4).map((benefit) => (
-                        <li key={`${plan.plan_id}-${benefit}`} className="flex items-start gap-3">
-                          <CheckCircle2 className="mt-0.5 h-4 w-4 text-indigo-500" />
-                          <span>{benefit}</span>
-                        </li>
-                      ))}
-                    </ul>
-
-                    <button
-                      className="w-full px-5 py-3 mt-8 text-sm font-semibold text-white transition bg-indigo-600 rounded-full hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-60"
-                      disabled={busy || !isAuthenticated}
-                      onClick={() => handlePurchase(plan.plan_id)}
+            {displayPurchased.length > 0 && (
+              <section className="mb-10">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-semibold text-slate-900">Purchased Upgrades</h2>
+                  {loadingPurchases && <span className="text-sm text-slate-500">Đang kiểm tra…</span>}
+                </div>
+                <div className="grid gap-6 md:grid-cols-2">
+                  {displayPurchased.map((purchase) => (
+                    <article
+                      key={purchase.planId || purchase.transactionId || 'current'}
+                      className="flex h-full flex-col rounded-2xl border border-emerald-200 bg-white p-6 shadow-sm"
                     >
-                      {isAuthenticated ? (busy ? 'Đang xử lý...' : 'Thanh toán và nâng cấp') : 'Đăng nhập để mua'}
-                    </button>
-                    <p className="mt-3 text-xs text-slate-400">
-                     Premium sẽ được kích hoạt với tài khoản Fitnexus của bạn ngay sau khi thanh toán thành công.
-                    </p>
-                  </article>
-                );
-              })}
+                      <header className="flex flex-col gap-1">
+                        <p className="text-xs font-semibold uppercase text-emerald-500">Đang kích hoạt</p>
+                        <h3 className="text-xl font-semibold text-slate-900">
+                          {purchase.planName || 'Premium Access'}
+                        </h3>
+                        {purchase.price ? (
+                          <div className="text-2xl font-bold text-emerald-600">{formatPrice(purchase.price)}</div>
+                        ) : null}
+                        <p className="text-sm text-slate-500">
+                          Expires: {formatDate(purchase.activeUntil || purchase.expiresAt)}
+                        </p>
+                      </header>
+                      <ul className="flex flex-col flex-1 gap-3 mt-6 text-sm text-slate-600">
+                        {PLAN_BENEFITS.map((benefit) => (
+                          <li key={`${benefit}-purchased`} className="flex items-start gap-3">
+                            <CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-500" />
+                            <span>{benefit}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      <button
+                        type="button"
+                        disabled
+                        className="mt-6 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-600"
+                      >
+                        Đang sử dụng
+                      </button>
+                    </article>
+                  ))}
+                </div>
+              </section>
+            )}
 
-              {!plans.length && !error && (
-                <div className="flex flex-col items-center justify-center p-10 text-center bg-white border border-dashed shadow-sm rounded-2xl border-slate-200 text-slate-500">
-                  Hiện chưa có gói Premium nào khả dụng. Vui lòng quay lại sau.
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {availablePlans.length ? (
+                availablePlans.map((plan) => {
+                  const isRecommended = recommendedPlanId === plan.plan_id;
+                  const perDay = calcDailyPrice(plan.price, plan.duration_days);
+                  return (
+                    <article
+                      key={plan.plan_id}
+                      className={`flex h-full flex-col rounded-2xl border bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg ${
+                        isRecommended ? 'border-indigo-400 shadow-indigo-200' : 'border-slate-200'
+                      }`}
+                    >
+                      {isRecommended && (
+                        <span className="inline-flex items-center px-3 py-1 mb-4 text-xs font-semibold text-indigo-700 uppercase bg-indigo-100 rounded-full w-fit">
+                          Phổ biến nhất
+                        </span>
+                      )}
+
+                      <header className="flex flex-col gap-1">
+                        <h3 className="text-xl font-semibold text-slate-900">{plan.name}</h3>
+                        <div className="text-3xl font-bold text-indigo-600">{formatPrice(plan.price)}</div>
+                        <p className="text-sm text-slate-500">Chu kỳ {plan.duration_days} ngày</p>
+                        {perDay ? (
+                          <p className="text-xs text-slate-400">Khoảng {perDay.toLocaleString('vi-VN')} VND/ngày</p>
+                        ) : null}
+                      </header>
+
+                      <ul className="flex flex-col flex-1 gap-3 mt-6 text-sm text-slate-600">
+                        {PLAN_BENEFITS.slice(0, 4).map((benefit) => (
+                          <li key={`${plan.plan_id}-${benefit}`} className="flex items-start gap-3">
+                            <CheckCircle2 className="mt-0.5 h-4 w-4 text-indigo-500" />
+                            <span>{benefit}</span>
+                          </li>
+                        ))}
+                      </ul>
+
+                      <button
+                        className="w-full px-5 py-3 mt-8 text-sm font-semibold text-white transition bg-indigo-600 rounded-full hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-60"
+                        disabled={busy || !isAuthenticated}
+                        onClick={() => handlePurchase(plan.plan_id)}
+                      >
+                        {isAuthenticated ? (busy ? 'Đang xử lý...' : 'Thanh toán và nâng cấp') : 'Đăng nhập để mua'}
+                      </button>
+                      <p className="mt-3 text-xs text-slate-400">
+                        Premium sẽ được kích hoạt với tài khoản Fitnexus của bạn ngay sau khi thanh toán thành công.
+                      </p>
+                    </article>
+                  );
+                })
+              ) : (
+                <div className="col-span-full flex flex-col items-center justify-center p-10 text-center bg-white border border-dashed shadow-sm rounded-2xl border-slate-200 text-slate-500">
+                  {user?.user_type === 'premium'
+                    ? 'Bạn đã sở hữu gói Premium hiện tại.'
+                    : 'Hiện chưa có gói Premium nào khả dụng. Vui lòng quay lại sau.'}
                 </div>
               )}
             </div>
@@ -254,7 +365,6 @@ export default function Pricing() {
           </div>
         </div>
       </footer>
-
     </div>
   );
 }

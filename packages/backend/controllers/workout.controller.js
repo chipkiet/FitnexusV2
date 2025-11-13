@@ -3,6 +3,7 @@ import WorkoutSessionExercise from "../models/workout.session.exercise.model.js"
 import WorkoutSessionSet from "../models/workout.session.set.model.js";
 import Exercise from "../models/exercise.model.js";
 import WorkoutPlan from "../models/workout.plan.model.js";
+import { notifyUser } from "../services/notification.service.js";
 import { Op } from "sequelize";
 import {sequelize} from "../config/database.js";
 import PlanExerciseDetail from "../models/plan.exercise.detail.model.js";
@@ -486,6 +487,13 @@ export async function completeSession(req, res) {
       { status: 'completed', ended_at: endedAt, total_duration_seconds: duration },
       { where: { session_id: sessionId, user_id: userId } }
     );
+
+    notifyUser(userId, {
+      type: 'workout_complete',
+      title: 'Bạn đã hoàn thành bài tập hôm nay!',
+      body: 'Giữ phong độ để duy trì tiến độ luyện tập.',
+      metadata: { sessionId, planId: session.plan_id },
+    }).catch(() => {});
 
     return res.status(200).json({ success: true, data: { session_id: sessionId, status: 'completed', total_duration_seconds: duration } });
   } catch (err) {

@@ -1,5 +1,6 @@
 // packages/backend/controllers/auth.controller.js
 import User from "../models/user.model.js";
+import { notifyUser } from "../services/notification.service.js";
 
 import jwt from "jsonwebtoken";
 import { validationResult } from "express-validator";
@@ -546,8 +547,8 @@ export const changePassword = async (req, res) => {
 };
 
 export const updatePersonalInfo = async (req, res) => {
+  const userId = req.userId;
   try {
-    const userId = req.userId;
     const { email, phone, fullName } = req.body;
     
     console.log('Update personal info request:', {
@@ -647,6 +648,13 @@ export const updatePersonalInfo = async (req, res) => {
       });
     }
     
+    if (userId) {
+      notifyUser(userId, {
+        type: "profile_error",
+        title: "Lỗi khi cập nhật hồ sơ",
+        body: "Chúng tôi đã ghi nhận lỗi và sẽ xử lý sớm nhất.",
+      }).catch(() => {});
+    }
     res.status(500).json({
       success: false,
       message: "Internal server error",

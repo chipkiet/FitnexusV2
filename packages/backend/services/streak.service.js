@@ -1,6 +1,7 @@
 // packages/backend/services/streak.service.js
 import { Op } from "sequelize";
 import LoginHistory from "../models/login.history.model.js";
+import { notifyUser } from "./notification.service.js";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -57,6 +58,33 @@ export async function ensureDailyStreakPing(user, req = {}) {
   return { triggered: true };
 }
 
+const STREAK_MILESTONES = [3, 7, 30];
+
+async function sendStreakNotifications(user, prev, current) {
+  if (!user?.user_id) return;
+  if (current <= 0 || current === prev) return;
+  try {
+    await notifyUser(user.user_id, {
+      type: "streak",
+      title: "Bạn đã giữ streak hôm nay!",
+      body: `🔥 Hôm nay là ngày thứ ${current} trong streak của bạn – đừng bỏ lỡ!`,
+      metadata: { streak: current },
+    });
+    if (STREAK_MILESTONES.includes(current)) {
+      await notifyUser(user.user_id, {
+        type: "streak_milestone",
+        title: `Bạn vừa đạt mốc ${current} ngày streak!`,
+        body: current === 7
+          ? "Nhận ngay huy hiệu mới và tiếp tục duy trì nhé."
+          : "Tiếp tục luyện tập để giữ lửa!",
+        metadata: { streak: current },
+      });
+    }
+  } catch (err) {
+    console.warn("sendStreakNotifications error:", err?.message || err);
+  }
+}
+
 export async function updateLoginStreak(user) {
   if (!user) return;
   const today = new Date();
@@ -65,7 +93,8 @@ export async function updateLoginStreak(user) {
     ? toDateKey(user.login_streak_updated_at)
     : null;
 
-  let current = user.login_streak || 0;
+  const previous = user.login_streak || 0;
+  let current = previous;
   if (!lastKey) {
     current = 1;
   } else {
@@ -87,6 +116,7 @@ export async function updateLoginStreak(user) {
   await user.save({
     fields: ["login_streak", "max_login_streak", "login_streak_updated_at"],
   });
+  await sendStreakNotifications(user, previous, current);
 }
 
 export async function fetchStreakTimeline(userId, days = 10) {

@@ -158,6 +158,12 @@ export default function HeaderLogin() {
     };
   }, []);
 
+  const menuButtonClass =
+    "flex w-full items-center justify-between px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition";
+  const menuLinkClass =
+    "w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition";
+  const submenuContainerClass = "px-4 py-2 space-y-1 bg-slate-50 border-t border-slate-100";
+
   return (
     <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/85 backdrop-blur-xl">
       <div className="flex items-center justify-between px-4 py-2 mx-auto max-w-7xl">
@@ -443,204 +449,184 @@ export default function HeaderLogin() {
                   })()}
                 </button>
                 {showAvatarMenu && (
-                  <div className="absolute right-0 z-50 w-64 mt-2 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5">
-                    {/* Tài khoản */}
-                    {false && (
-                      <button
-                        onClick={() => {
-                          setShowAvatarMenu(false);
-                          setActiveSubmenu(null);
-                          navigate("/profile");
-                        }}
-                        className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
-                      >
-                        Hồ sơ
-                      </button>
-                    )}
-                    {/* Account, Profile, Support submenus */}
-                    <div className="relative">
-                      <button
-                        onClick={() =>
-                          setActiveSubmenu(
-                            activeSubmenu === "account" ? null : "account"
-                          )
-                        }
-                        className="flex items-center justify-between w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
-                      >
-                        <span>Tài khoản</span>
-                        <svg
-                          className={`w-4 h-4 transition-transform ${
-                            activeSubmenu === "account" ? "rotate-180" : ""
-                          }`}
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
+                  <div className="absolute right-0 z-50 w-64 mt-2 overflow-hidden bg-white rounded-xl shadow-2xl ring-1 ring-black/5">
+                    <div className="flex flex-col divide-y divide-slate-100">
+                      <div className="py-1">
+                        <button
+                          onClick={() =>
+                            setActiveSubmenu(
+                              activeSubmenu === "account" ? null : "account"
+                            )
+                          }
+                          className={menuButtonClass}
                         >
-                          <path
-                            fillRule="evenodd"
-                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      </button>
-                      {activeSubmenu === "account" && (
-                        <div className="absolute top-0 w-48 ml-1 bg-white border border-gray-200 rounded-md shadow-lg left-full">
-                          <button
-                            onClick={() => {
-                              setShowAvatarMenu(false);
-                              setActiveSubmenu(null);
-                              navigate("/account/personal-info");
-                            }}
-                            className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
+                          <span>Tài khoản</span>
+                          <svg
+                            className={`w-4 h-4 transition-transform ${
+                              activeSubmenu === "account" ? "rotate-180" : ""
+                            }`}
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
                           >
-                            Thông tin cá nhân
-                          </button>
-                          <button
-                            onClick={() => {
-                              setShowAvatarMenu(false);
-                              setActiveSubmenu(null);
-                              navigate("/account/change-password");
-                            }}
-                            className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
-                          >
-                            Đổi mật khẩu
-                          </button>
-                        </div>
-                      )}
-                    </div>
+                            <path
+                              fillRule="evenodd"
+                              d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        </button>
+                        {activeSubmenu === "account" && (
+                          <div className={submenuContainerClass}>
+                            <button
+                              onClick={() => {
+                                setShowAvatarMenu(false);
+                                setActiveSubmenu(null);
+                                navigate("/account/personal-info");
+                              }}
+                              className={menuLinkClass}
+                            >
+                              Thông tin cá nhân
+                            </button>
+                            <button
+                              onClick={() => {
+                                setShowAvatarMenu(false);
+                                setActiveSubmenu(null);
+                                navigate("/account/change-password");
+                              }}
+                              className={menuLinkClass}
+                            >
+                              Đổi mật khẩu
+                            </button>
+                          </div>
+                        )}
+                      </div>
 
-                    {/* Hồ sơ */}
-                    <div className="relative">
-                      <button
-                        onClick={() =>
-                          setActiveSubmenu(
-                            activeSubmenu === "profile" ? null : "profile"
-                          )
-                        }
-                        className="flex items-center justify-between w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
-                      >
-                        <span>Hồ sơ</span>
-                        <svg
-                          className={`w-4 h-4 transition-transform ${
-                            activeSubmenu === "profile" ? "rotate-180" : ""
-                          }`}
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
+                      <div className="py-1">
+                        <button
+                          onClick={() =>
+                            setActiveSubmenu(
+                              activeSubmenu === "profile" ? null : "profile"
+                            )
+                          }
+                          className={menuButtonClass}
                         >
-                          <path
-                            fillRule="evenodd"
-                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      </button>
-                      {activeSubmenu === "profile" && (
-                        <div className="absolute top-0 w-48 ml-1 bg-white border border-gray-200 rounded-md shadow-lg left-full">
-                          <button
-                            onClick={() => {
-                              setShowAvatarMenu(false);
-                              setActiveSubmenu(null);
-                              navigate("/profile/avatar");
-                            }}
-                            className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
+                          <span>Hồ sơ</span>
+                          <svg
+                            className={`w-4 h-4 transition-transform ${
+                              activeSubmenu === "profile" ? "rotate-180" : ""
+                            }`}
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
                           >
-                            Ảnh đại diện
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                    <button
-                      onClick={() => {
-                        setShowAvatarMenu(false);
-                        setActiveSubmenu(null);
-                        navigate("/support");
-                      }}
-                      className="w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
-                    >
-                      Hỗ trợ
-                    </button>
+                            <path
+                              fillRule="evenodd"
+                              d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        </button>
+                        {activeSubmenu === "profile" && (
+                          <div className={submenuContainerClass}>
+                            <button
+                              onClick={() => {
+                                setShowAvatarMenu(false);
+                                setActiveSubmenu(null);
+                                navigate("/profile/avatar");
+                              }}
+                              className={menuLinkClass}
+                            >
+                              Ảnh đại diện
+                            </button>
+                          </div>
+                        )}
+                      </div>
 
-                    {/* Cài đặt */}
-                    <div className="relative">
-                      <button
-                        onClick={() =>
-                          setActiveSubmenu(
-                            activeSubmenu === "settings" ? null : "settings"
-                          )
-                        }
-                        className="flex items-center justify-between w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
-                      >
-                        <span>Cài đặt</span>
-                        <svg
-                          className={`w-4 h-4 transition-transform ${
-                            activeSubmenu === "settings" ? "rotate-180" : ""
-                          }`}
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
+                      <div className="py-1">
+                        <button
+                          onClick={() => {
+                            setShowAvatarMenu(false);
+                            setActiveSubmenu(null);
+                            navigate("/support");
+                          }}
+                          className={menuLinkClass}
                         >
-                          <path
-                            fillRule="evenodd"
-                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      </button>
-                      {activeSubmenu === "settings" && (
-                        <div className="absolute top-0 w-48 ml-1 bg-white border border-gray-200 rounded-md shadow-lg left-full">
-                          <button
-                            onClick={() => {
-                              setShowAvatarMenu(false);
-                              setActiveSubmenu(null);
-                              navigate("/settings/notifications");
-                            }}
-                            className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
-                          >
-                            Thông báo
-                          </button>
-                          <button
-                            onClick={() => {
-                              setShowAvatarMenu(false);
-                              setActiveSubmenu(null);
-                              navigate("/settings/language");
-                            }}
-                            className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
-                          >
-                            Ngôn ngữ
-                          </button>
-                          <button
-                            onClick={() => {
-                              setShowAvatarMenu(false);
-                              setActiveSubmenu(null);
-                              navigate("/settings/theme");
-                            }}
-                            className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
-                          >
-                            Chế độ tối
-                          </button>
-                          <button
-                            onClick={() => {
-                              setShowAvatarMenu(false);
-                              setActiveSubmenu(null);
-                              navigate("/settings/privacy");
-                            }}
-                            className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
-                          >
-                            Quyền riêng tư
-                          </button>
-                        </div>
-                      )}
-                    </div>
+                          Hỗ trợ
+                        </button>
+                        <button
+                          onClick={() => {
+                            setShowAvatarMenu(false);
+                            setActiveSubmenu(null);
+                            navigate("/pricing");
+                          }}
+                          className={menuLinkClass}
+                        >
+                          Nâng cấp Premium
+                        </button>
+                      </div>
 
-                    <div className="border-t border-gray-200"></div>
-                    <button
-                      onClick={() => {
-                        setShowAvatarMenu(false);
-                        setActiveSubmenu(null);
-                        handleLogout();
-                      }}
-                      className="block w-full px-4 py-2 text-sm text-left text-red-600 hover:bg-gray-100"
-                    >
-                      Đăng xuất
-                    </button>
+                      <div className="py-1">
+                        <button
+                          onClick={() =>
+                            setActiveSubmenu(
+                              activeSubmenu === "settings" ? null : "settings"
+                            )
+                          }
+                          className={menuButtonClass}
+                        >
+                          <span>Cài đặt</span>
+                          <svg
+                            className={`w-4 h-4 transition-transform ${
+                              activeSubmenu === "settings" ? "rotate-180" : ""
+                            }`}
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        </button>
+                        {activeSubmenu === "settings" && (
+                          <div className={submenuContainerClass}>
+                            <button
+                              onClick={() => {
+                                setShowAvatarMenu(false);
+                                setActiveSubmenu(null);
+                                navigate("/settings/notifications");
+                              }}
+                              className={menuLinkClass}
+                            >
+                              Thông báo
+                            </button>
+                            <button
+                              onClick={() => {
+                                setShowAvatarMenu(false);
+                                setActiveSubmenu(null);
+                                navigate("/settings/theme");
+                              }}
+                              className={menuLinkClass}
+                            >
+                              Chế độ tối
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="py-1">
+                        <button
+                          onClick={() => {
+                            setShowAvatarMenu(false);
+                            setActiveSubmenu(null);
+                            handleLogout();
+                          }}
+                          className="w-full px-4 py-2 text-sm font-semibold text-left text-red-600 hover:bg-red-50"
+                        >
+                          Đăng xuất
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>

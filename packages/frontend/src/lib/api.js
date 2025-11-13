@@ -79,6 +79,7 @@ export const endpoints = {
     return: "/api/payment/return",
     cancel: "/api/payment/cancel",
     mockUpgrade: "/api/payment/mock-upgrade",
+    myPurchases: "/api/payment/my-purchases",
   },
 
   support: {
@@ -579,6 +580,11 @@ export const createPaymentLinkApi = async (planId) => {
 
 export const verifyPaymentStatusApi = async (orderCode) => {
   const res = await api.post(endpoints.payment.verify, { orderCode });
+  return res.data;
+};
+
+export const listMyPurchasesApi = async () => {
+  const res = await api.get(endpoints.payment.myPurchases);
   return res.data;
 };
 

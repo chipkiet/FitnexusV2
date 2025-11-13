@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Bell, ChevronRight, Loader2, Mail, Flame, CheckCircle2 } from "lucide-react";
 import { useNotificationsFeed } from "../../hooks/useNotificationsFeed.js";
+import { useNavigate } from "react-router-dom";
 
 const ICON_MAP = {
   support_report: Mail,
@@ -21,6 +22,7 @@ export default function NotificationsDropdown({ buttonClassName = "", popoverCla
   const containerRef = useRef(null);
   const { items, loading, error, unreadCount, fetchNotifications, markRead, markAll } =
     useNotificationsFeed({ limit: 10, autoLoad: false });
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (open) fetchNotifications();
@@ -42,8 +44,15 @@ export default function NotificationsDropdown({ buttonClassName = "", popoverCla
     if (!notification?.read_at) {
       markRead(notification.notification_id);
     }
-    if (notification?.metadata?.url) {
-      window.location.assign(notification.metadata.url);
+    const destination = notification?.metadata?.url;
+    if (destination) {
+      if (/^https?:/i.test(destination)) {
+        window.location.assign(destination);
+      } else {
+        navigate(destination);
+      }
+    } else {
+      navigate(`/settings/notifications?focus=${notification.notification_id}`);
     }
   };
 
@@ -83,6 +92,13 @@ export default function NotificationsDropdown({ buttonClassName = "", popoverCla
               Đánh dấu đã đọc
             </button>
           </div>
+          <button
+            type="button"
+            onClick={() => navigate("/settings/notifications")}
+            className="w-full border-b border-slate-100 px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-blue-600 hover:bg-slate-50"
+          >
+            Xem trang thông báo
+          </button>
           <div className="max-h-96 overflow-y-auto">
             {loading ? (
               <div className="flex items-center justify-center py-8">

@@ -3,7 +3,7 @@ import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import authGuard from '../middleware/auth.guard.js';
 import authOrSessionGuard from '../middleware/authOrSession.guard.js';
-import { createPaymentLink, handlePayosWebhook, returnUrl, cancelUrl, verifyPaymentStatus, mockUpgradePremium } from '../controllers/payment.controller.js';
+import { createPaymentLink, handlePayosWebhook, returnUrl, cancelUrl, verifyPaymentStatus, mockUpgradePremium, listMyPurchases } from '../controllers/payment.controller.js';
 
 const router = Router();
 
@@ -36,6 +36,7 @@ router.get('/cancel', cancelUrl);
 
 // Dev-only: mock upgrade to Premium (no payment)
 router.post('/mock-upgrade', authOrSessionGuard, mockUpgradePremium);
+router.get('/my-purchases', authOrSessionGuard, listMyPurchases);
 
 export default router;
 

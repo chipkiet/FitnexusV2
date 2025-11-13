@@ -66,6 +66,7 @@ import AdminSupportReports from "./pages/admin/SupportReports.jsx";
 // Account pages
 import PersonalInfo from "./pages/account/PersonalInfo.jsx";
 import ChangePassword from "./pages/account/ChangePassword.jsx";
+import NotificationsCenter from "./pages/account/NotificationsCenter.jsx";
 // import Activity from "./pages/account/Activity.jsx";
 
 // Profile pages (only Avatar kept)
@@ -254,6 +255,22 @@ function App() {
             element={
               <PrivateRoute>
                 <ChangePassword />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/notifications"
+            element={
+              <PrivateRoute>
+                <NotificationsCenter />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/settings/notifications"
+            element={
+              <PrivateRoute>
+                <NotificationsCenter />
               </PrivateRoute>
             }
           />

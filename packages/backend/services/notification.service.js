@@ -1,5 +1,6 @@
 import Notification from "../models/notification.model.js";
 import User from "../models/user.model.js";
+import { Op } from "sequelize";
 
 export async function notifyUser(userId, { type = "general", title, body = "", metadata = null } = {}) {
   if (!userId || !title) return null;
@@ -29,4 +30,20 @@ export async function notifyAdmins(payload = {}) {
   } catch (err) {
     console.error("notifyAdmins error:", err?.message || err);
   }
+}
+
+export async function notifyUserOnce(userId, payload = {}, dedupeHours = 24) {
+  if (!userId || !payload?.title) return null;
+  const type = payload.type || "general";
+  const since = new Date(Date.now() - dedupeHours * 60 * 60 * 1000);
+  const existing = await Notification.findOne({
+    where: {
+      user_id: userId,
+      type,
+      title: payload.title,
+      created_at: { [Op.gte]: since },
+    },
+  });
+  if (existing) return existing;
+  return notifyUser(userId, payload);
 }
