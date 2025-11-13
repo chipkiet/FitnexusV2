@@ -26,7 +26,6 @@ import Exercise from "./pages/exercises/Exercise.jsx";
 import PlanNew from "./pages/plans/PlanNew.jsx";
 import PlanPicker from "./pages/plans/PlanPicker.jsx";
 import PlanDetail from "./pages/plans/PlanDetail.jsx";
-import PlanManagement from "./pages/plans/PlanManagement.jsx"; // Thêm import
 import PlanEdit from "./pages/plans/PlanEdit.jsx"; // Thêm import
 import Logout from "./pages/authentication/Logout.jsx";
 import NotFoundRedirect from "./pages/system/NotFoundRedirect.jsx";
@@ -196,16 +195,6 @@ function App() {
             element={
               <PrivateRoute>
                 <PlanNew />
-              </PrivateRoute>
-            }
-          />
-
-          {/* THÊM ROUTE QUẢN LÝ VÀ CHỈNH SỬA PLAN */}
-          <Route
-            path="/plans/manage"
-            element={
-              <PrivateRoute>
-                <PlanManagement />
               </PrivateRoute>
             }
           />

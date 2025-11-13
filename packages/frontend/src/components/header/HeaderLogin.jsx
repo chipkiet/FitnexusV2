@@ -259,17 +259,7 @@ export default function HeaderLogin() {
                 >
                   Tạo plan mới
                 </button>
-                <button
-                  role="menuitem"
-                  onClick={() =>
-                    !isAuthenticated
-                      ? navigate("/login", { state: { from: "/plans/manage" } })
-                      : navigate("/plans/manage")
-                  }
-                  className="w-full px-3 py-2 mt-1 text-left rounded-lg hover:bg-gray-50"
-                >
-                  Quản lý kế hoạch
-                </button>
+
               </div>
             )}
           </div>
