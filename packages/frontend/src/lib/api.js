@@ -17,7 +17,10 @@ export const api = axios.create({
   withCredentials: true,
   headers: { "Content-Type": "application/json" },
 });
-
+export const deleteAdminUser = async (id) => {
+  const res = await api.delete(`/api/admin/users/${id}`);
+  return res.data;
+};
 export const endpoints = {
   auth: {
     register: "/api/auth/register",

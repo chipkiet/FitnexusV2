@@ -12,7 +12,23 @@ const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 }, // Giới hạn file size tối đa là 5MB
 });
+router.delete("/:id", authGuard, async (req, res) => {
+  try {
+    const userId = req.params.id;
 
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    await user.destroy();
+
+    return res.json({ success: true, message: "User deleted" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
 // Route upload avatar
 router.post(
   '/me/avatar',

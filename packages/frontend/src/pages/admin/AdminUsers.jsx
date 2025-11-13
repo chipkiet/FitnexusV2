@@ -2,6 +2,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "../../context/auth.context.jsx";
 import { getAdminUsers, getAdminUsersStats } from "../../lib/api.js";
+import { deleteAdminUser } from "../../lib/api";
 import {
   Plus,
   Search,
@@ -33,7 +34,19 @@ export default function AdminUsers() {
     plan: { FREE: 0, PREMIUM: 0 },
     status: { ACTIVE: 0, INACTIVE: 0 },
   });
+const handleDelete = async (id) => {
+  const confirmDelete = window.confirm("Are you sure you want to delete this user?");
+  if (!confirmDelete) return;
 
+  try {
+    await deleteAdminUser(id);
+    await load();       // reload list
+    await loadStats();  // update stats
+  } catch (err) {
+    console.log(err);
+    alert("Failed to delete user");
+  }
+};
   const load = async () => {
     setLoading(true);
     try {
@@ -434,12 +447,13 @@ export default function AdminUsers() {
                           >
                             <Lock size={16} className="text-gray-600" />
                           </button>
-                          <button
-                            className="p-1.5 hover:bg-gray-100 rounded transition"
-                            title="Delete"
-                          >
-                            <Trash2 size={16} className="text-red-600" />
-                          </button>
+<button
+  className="p-1.5 hover:bg-gray-100 rounded transition"
+  title="Delete"
+  onClick={() => handleDelete(u.user_id)}
+>
+  <Trash2 size={16} className="text-red-600" />
+</button>
                           <button
                             className="p-1.5 hover:bg-gray-100 rounded transition"
                             title="More"
