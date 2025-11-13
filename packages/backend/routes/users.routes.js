@@ -12,6 +12,33 @@ const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 }, // Giới hạn file size tối đa là 5MB
 });
+router.patch("/users/:id/role", authGuard, async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const { role } = req.body;
+
+    // Danh sách role hợp lệ
+    const allowedRoles = ["USER", "ADMIN", "SUBADMIN", "TRAINER"];
+
+    if (!allowedRoles.includes(role)) {
+      return res.status(400).json({ success: false, message: "Invalid role" });
+    }
+
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    user.role = role;
+    await user.save();
+
+    return res.json({ success: true, message: "Role updated", data: user });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
 router.delete("/:id", authGuard, async (req, res) => {
   try {
     const userId = req.params.id;

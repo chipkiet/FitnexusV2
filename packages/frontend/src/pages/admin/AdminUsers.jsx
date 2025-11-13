@@ -2,6 +2,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "../../context/auth.context.jsx";
 import { getAdminUsers, getAdminUsersStats } from "../../lib/api.js";
+import { patchUserRole } from "../../lib/api.js";
+
 import { deleteAdminUser } from "../../lib/api";
 import {
   Plus,
@@ -28,6 +30,8 @@ export default function AdminUsers() {
   const [roleFilter, setRoleFilter] = useState("ALL");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [loading, setLoading] = useState(true);
+  const [editingUser, setEditingUser] = useState(null);
+const [selectedRole, setSelectedRole] = useState("USER");
   const [stats, setStats] = useState({
     total: 0,
     role: { ADMIN: 0, TRAINER: 0, USER: 0 },
@@ -113,8 +117,52 @@ const handleDelete = async (id) => {
   const page = Math.floor(offset / limit) + 1;
   const pages = Math.max(1, Math.ceil(displayTotal / limit));
 
+const saveRole = async () => {
+  try {
+    await patchUserRole(editingUser.user_id, selectedRole);
+    alert("Role updated!");
+    load(); // reload lại danh sách
+    setEditingUser(null);
+  } catch (err) {
+    alert("Update failed");
+  }
+};
+
   return (
     <div className="min-h-screen bg-gray-50">
+      {editingUser && (
+  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+    <div className="bg-white p-5 rounded-xl w-[350px]">
+      <h2 className="text-lg font-semibold mb-3">Change Role</h2>
+
+      <select
+        className="border px-3 py-2 w-full rounded"
+        value={selectedRole}
+        onChange={(e) => setSelectedRole(e.target.value)}
+      >
+        <option value="USER">USER</option>
+        <option value="ADMIN">ADMIN</option>
+        <option value="SUBADMIN">SUBADMIN</option>
+        <option value="TRAINER">TRAINER</option>
+      </select>
+
+      <div className="flex justify-end gap-2 mt-4">
+        <button
+          className="px-3 py-1 bg-gray-300 rounded"
+          onClick={() => setEditingUser(null)}
+        >
+          Cancel
+        </button>
+        <button
+          className="px-3 py-1 bg-green-500 text-white rounded"
+          onClick={saveRole}
+        >
+          Save
+        </button>
+      </div>
+    </div>
+  </div>
+)}
       {/* Header */}
       <div className="bg-white border-b">
         <div className="px-6 py-4 mx-auto max-w-7xl">
@@ -438,6 +486,10 @@ const handleDelete = async (id) => {
                           <button
                             className="p-1.5 hover:bg-gray-100 rounded transition"
                             title="Edit"
+                             onClick={() => {
+  setEditingUser(u);
+  setSelectedRole(u.role);
+}}
                           >
                             <Edit size={16} className="text-gray-600" />
                           </button>
