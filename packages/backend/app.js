@@ -27,6 +27,7 @@ import adminMetricsRoutes from "./routes/admin.metrics.routes.js";
 import adminRevenueRoutes from "./routes/admin.revenue.routes.js"; // ✅ Import route
 import supportRouter from "./routes/support.routes.js";
 import notificationRouter from "./routes/notification.routes.js";
+import { ensureAiApp } from "./ai/index.js";
 
 dotenv.config();
 import activityTracker from "./middleware/activity.tracker.js";
@@ -35,6 +36,22 @@ import activityTracker from "./middleware/activity.tracker.js";
 const app = express();
 const isDev = process.env.NODE_ENV !== "production";
 const FRONTEND = process.env.FRONTEND_URL || "http://localhost:5173";
+const defaultDevOrigins = [
+  "http://localhost:5174",
+  "http://localhost:5175",
+  "http://localhost:5178",
+  "http://localhost:5179",
+];
+const envAdditionalOrigins = (process.env.ADDITIONAL_CORS_ORIGINS || "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+const allowedOrigins = Array.from(
+  new Set([
+    FRONTEND,
+    ...(envAdditionalOrigins.length ? envAdditionalOrigins : defaultDevOrigins),
+  ])
+);
 
 /* -------------------- IPv4 preference -------------------- */
 try {
@@ -52,13 +69,7 @@ app.use(express.urlencoded({ extended: true, limit: "200kb" }));
 
 /* -------------------- CORS -------------------- */
 const corsOptions = {
-  origin: [
-    FRONTEND,
-    "http://localhost:5174",
-    "http://localhost:5175",
-    "http://localhost:5178",
-    "http://localhost:5179",
-  ],
+  origin: allowedOrigins,
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"],
   allowedHeaders: [
@@ -141,6 +152,8 @@ app.use("/api/billing", billingRouter);
 app.use("/api/payment", paymentRouter);
 app.use("/api/support", supportRouter);
 app.use("/api/notifications", notificationRouter);
+// Mount AI app under main backend as a sub-route for easy FE access
+app.use("/api/ai", ensureAiApp());
 
 // ✅ Di chuyển dòng này xuống đây sau khi app được khởi tạo
 app.use("/api/admin/revenue", adminRevenueRoutes);
