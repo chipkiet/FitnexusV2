@@ -7,7 +7,8 @@ import {
     addExerciseToPlan,
     listMyPlans,
     reorderPlanExercises,
-    updatePlanExercise
+    updatePlanExercise,
+    deletePlan
 } from "../controllers/plan.controller.js";
 
 const router = Router();
@@ -19,6 +20,8 @@ router.get("/", authOrSession, listMyPlans);
 router.post("/", authOrSession, createPlan);
 
 router.get("/:planId", authOrSession, getPlanById);
+
+router.delete("/:planId", authOrSession, deletePlan);
 
 router.post("/:planId/exercises", authOrSession, addExerciseToPlan);
 

@@ -4,7 +4,8 @@ import HeaderLogin from "../../components/header/HeaderLogin.jsx";
 import { 
   getPlanByIdApi, 
   reorderPlanExercisesApi, 
-  updatePlanExerciseApi,
+  updatePlanExerciseApi, 
+  deletePlanApi,
   api 
 } from "../../lib/api.js";
 import { listWorkoutSessionsApi } from "../../lib/api.js";
@@ -223,6 +224,27 @@ function ActiveOtherPlanModal({ activeSession, currentPlanName, onClose, onConti
   );
 }
 
+function DeleteConfirmationModal({ planName, onConfirm, onCancel, isDeleting }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onCancel}>
+      <div className="w-full max-w-md p-6 mx-4 bg-white shadow-2xl rounded-xl" onClick={(e) => e.stopPropagation()}>
+        <h3 className="mb-2 text-xl font-semibold text-red-800">Xác nhận xóa</h3>
+        <p className="mb-6 text-sm text-gray-600">
+          Bạn có chắc chắn muốn xóa vĩnh viễn kế hoạch "<b>{planName}</b>"? Tất cả bài tập trong kế hoạch này cũng sẽ bị xóa. Hành động này không thể hoàn tác.
+        </p>
+        <div className="flex gap-4">
+          <button onClick={onCancel} disabled={isDeleting} className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50">
+            Hủy
+          </button>
+          <button onClick={onConfirm} disabled={isDeleting} className="flex-1 px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-60">
+            {isDeleting ? "Đang xóa..." : "Xóa kế hoạch"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function PlanDetail() {
   const navigate = useNavigate();
   const { planId } = useParams();
@@ -239,6 +261,8 @@ export default function PlanDetail() {
   const [startingWorkout, setStartingWorkout] = useState(false);
   const [activeSessions, setActiveSessions] = useState([]);
   const [completedSessions, setCompletedSessions] = useState([]);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -351,6 +375,22 @@ export default function PlanDetail() {
     } catch (err) {
       console.error("Update exercise error:", err);
       setError({ message: "Không thể cập nhật bài tập" });
+    }
+  };
+
+  const handleDeletePlan = async () => {
+    setIsDeleting(true);
+    setError(null);
+    try {
+      const res = await deletePlanApi(planId);
+      if (res?.success) {
+        navigate('/plans/manage', { state: { toast: 'Kế hoạch đã được xóa thành công.' } });
+      } else {
+        throw new Error(res?.message || "Xóa kế hoạch thất bại.");
+      }
+    } catch (err) {
+      setError({ message: err.message || "Đã xảy ra lỗi khi xóa kế hoạch." });
+      setIsDeleting(false); // Giữ modal mở nếu có lỗi
     }
   };
 
@@ -515,6 +555,12 @@ export default function PlanDetail() {
                   >
                     {startingWorkout ? 'Đang chuẩn bị...' : 'Bắt đầu tập'}
                   </button>
+                  <button
+                    className="px-4 py-2 text-sm font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50 disabled:opacity-50"
+                    onClick={() => setShowDeleteModal(true)}
+                  >
+                    Xóa kế hoạch
+                  </button>
                 </div>
               </div>
             </div>
@@ -659,6 +705,14 @@ export default function PlanDetail() {
             onClose={() => setShowOtherPlanModal(false)}
             onContinueOther={handleContinueOther}
             onFinishOtherThenStart={handleFinishOtherThenStart}
+          />
+        )}
+        {showDeleteModal && (
+          <DeleteConfirmationModal
+            planName={plan?.name}
+            onConfirm={handleDeletePlan}
+            onCancel={() => setShowDeleteModal(false)}
+            isDeleting={isDeleting}
           />
         )}
       </main>
