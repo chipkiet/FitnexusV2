@@ -8,8 +8,9 @@ import {
   isTokenExpired,
 } from "./tokenManager.js";
 import {exp} from "@tensorflow/tfjs";
+import { env } from "../config/env.js";
 
-const BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3001";
+const BASE_URL = env.backendUrl;
 
 // Quan trọng: withCredentials để FE nhận cookie (Google OAuth)
 export const api = axios.create({

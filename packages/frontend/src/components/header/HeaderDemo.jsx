@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/auth.context.jsx";
 import logo from "../../assets/logo.png";
+import { env } from "../../config/env.js";
 
 export default function HeaderDemo() {
   const navigate = useNavigate();
@@ -224,7 +225,7 @@ export default function HeaderDemo() {
         {/* CTA phải: “Tải ứng dụng” + Đăng nhập (theo form eDoctor) */}
         <div className="items-center hidden gap-3 md:flex">
           {/* <a
-            href="https://example.com/download-app" // TODO: thay link store/app thực tế
+            href={env.appDownloadUrl}
             target="_blank"
             rel="noreferrer"
             className="px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-full hover:shadow-lg"
@@ -291,7 +292,7 @@ export default function HeaderDemo() {
             </button>
 
             <a
-              href="https://example.com/download-app" // TODO: thay link store/app thực tế
+              href={env.appDownloadUrl}
               target="_blank"
               rel="noreferrer"
               className="block w-full py-2 font-semibold text-left text-blue-600"
