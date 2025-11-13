@@ -30,6 +30,8 @@ import {
   FRONTEND_URL,
   ADDITIONAL_CORS_ORIGINS,
 } from "./config/env.js";
+import { ensureAiApp } from "./ai/index.js";
+
 import activityTracker from "./middleware/activity.tracker.js";
 
 /* -------------------- Khởi tạo app -------------------- */
@@ -50,7 +52,7 @@ try {
 } catch {}
 
 /* -------------------- PayOS Webhook Raw Body -------------------- */
-// ✅ Middleware này phải ĐẶT TRƯỚC express.json()
+// Middleware này phải ĐẶT TRƯỚC express.json()
 app.use("/api/payment/payos-webhook", bodyParser.raw({ type: "*/*" }));
 
 /* -------------------- Body & Cookies -------------------- */
@@ -143,6 +145,8 @@ app.use("/api/billing", billingRouter);
 app.use("/api/payment", paymentRouter);
 app.use("/api/support", supportRouter);
 app.use("/api/notifications", notificationRouter);
+// Mount AI app under main backend as a sub-route for easy FE access
+app.use("/api/ai", ensureAiApp());
 
 // ✅ Di chuyển dòng này xuống đây sau khi app được khởi tạo
 app.use("/api/admin/revenue", adminRevenueRoutes);
