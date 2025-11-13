@@ -14,6 +14,7 @@ import {
   Dumbbell,
   Wallet,
   MessageSquare,
+  LifeBuoy,
   Star,
   Bell,
   Search,
@@ -35,6 +36,7 @@ export default function AdminLayout() {
     trainer: false,
     financial: false,
     social: false,
+    support: true,
   });
 
   // Submenu cho Role và Plan
@@ -89,6 +91,12 @@ export default function AdminLayout() {
         icon: MessageSquare,
         label: "Social",
         children: [{ label: "Overview", to: "/admin/social" }],
+      },
+      {
+        key: "support",
+        icon: LifeBuoy,
+        label: "Support Desk",
+        children: [{ icon: MessageSquare, label: "Báo lỗi người dùng", to: "/admin/support" }],
       },
     ],
     []

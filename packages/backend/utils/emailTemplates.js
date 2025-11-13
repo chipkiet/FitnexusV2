@@ -321,6 +321,61 @@ export function buildBugReportEmail({
   return { subject, text, html };
 }
 
+export function buildBugReportResponseEmail({
+  brand = "Fitnexus",
+  responderName = "Đội ngũ Fitnexus",
+  message = "",
+  report = {},
+}) {
+  const subject = `[${brand}] Phản hồi báo lỗi: ${report?.title || "Cập nhật"}`;
+  const text = `Xin chào${report?.reporter?.fullName ? ` ${report.reporter.fullName}` : ""},\n\nChúng tôi đã cập nhật yêu cầu hỗ trợ của bạn với nội dung:\n${message}\n\nTrạng thái hiện tại: ${report?.status || "open"}.\n\nCảm ơn bạn đã đồng hành cùng ${brand}.`;
+
+  const html = `
+  <!doctype html>
+  <html lang="vi">
+  <head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <style>
+      body{margin:0;background:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;color:#0f172a;}
+      .wrap{padding:32px 12px;}
+      .card{max-width:720px;margin:0 auto;background:#fff;border-radius:18px;border:1px solid #e2e8f0;box-shadow:0 8px 30px rgba(15,23,42,.12);overflow:hidden;}
+      .header{background:#0f172a;color:#f8fafc;padding:24px 28px;}
+      .header h1{margin:0;font-size:20px;font-weight:700;}
+      .body{padding:28px;line-height:1.6;font-size:15px;}
+      .section{margin-top:20px;padding:18px;border-radius:12px;background:#f1f5f9;}
+      .label{font-size:13px;text-transform:uppercase;color:#94a3b8;font-weight:600;margin-bottom:6px;}
+      .muted{color:#64748b;font-size:13px;margin-top:24px;}
+      .signature{margin-top:24px;font-weight:600;}
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="card">
+        <div class="header">
+          <h1>Phản hồi yêu cầu hỗ trợ</h1>
+          <p>${escapeHtml(brand)} Support Desk</p>
+        </div>
+        <div class="body">
+          <p>Chào bạn${report?.reporter?.fullName ? ` ${escapeHtml(report.reporter.fullName)}` : ""},</p>
+          <p>Đội ngũ ${escapeHtml(brand)} đã cập nhật báo lỗi <strong>${escapeHtml(report?.title || "(Không tiêu đề)")}</strong>.</p>
+
+          <div class="section">
+            <div class="label">Phản hồi từ ${escapeHtml(responderName)}</div>
+            <div>${message ? message.split(/\r?\n/).map((line) => `<p style="margin:4px 0;">${escapeHtml(line)}</p>`).join('') : '<p style="margin:0;color:#94a3b8;">(Không có nội dung phản hồi)</p>'}</div>
+          </div>
+
+          <p class="signature">${escapeHtml(responderName)}</p>
+          <p class="muted">Nếu bạn cần thêm hỗ trợ, hãy trả lời email này để chúng tôi có thể giúp bạn nhanh nhất.</p>
+        </div>
+      </div>
+    </div>
+  </body>
+  </html>`;
+
+  return { subject, text, html };
+}
+
 function escapeHtml(s=""){
   return String(s)
     .replace(/&/g,"&amp;").replace(/</g,"&lt;")

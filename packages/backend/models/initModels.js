@@ -18,6 +18,7 @@ import WorkoutSessionSet from "./workout.session.set.model.js";
 import AIUsage from "./ai.usage.model.js";
 import SubscriptionPlan from "./subscription.plan.model.js";
 import Transaction from "./transaction.model.js";
+import BugReport from "./bugReport.model.js";
 
 // ✅ Giữ 1 biến toàn cục
 let initialized = false;
@@ -131,6 +132,11 @@ export function initModels() {
   SubscriptionPlan.hasMany(Transaction, { foreignKey: "plan_id", sourceKey: "plan_id", as: "transactions" });
   Transaction.belongsTo(SubscriptionPlan, { foreignKey: "plan_id", targetKey: "plan_id", as: "planTransaction" });
 
+  /* -------------------- SUPPORT -------------------- */
+  User.hasMany(BugReport, { foreignKey: "user_id", sourceKey: "user_id", as: "bugReports" });
+  BugReport.belongsTo(User, { foreignKey: "user_id", targetKey: "user_id", as: "reporter" });
+  BugReport.belongsTo(User, { foreignKey: "responded_by", targetKey: "user_id", as: "responder" });
+
   models = {
     User,
     PasswordReset,
@@ -152,6 +158,7 @@ export function initModels() {
     AIUsage,
     SubscriptionPlan,
     Transaction,
+    BugReport,
   };
 
   initialized = true;

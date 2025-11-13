@@ -61,6 +61,7 @@ import AdminRevenue from "./pages/admin/AdminRevenue.jsx";
 
 import AdminUsers from "./pages/admin/AdminUsers.jsx";
 import AdminPopularExercises from "./pages/admin/PopularExercises.jsx";
+import AdminSupportReports from "./pages/admin/SupportReports.jsx";
 
 // Account pages
 import PersonalInfo from "./pages/account/PersonalInfo.jsx";
@@ -309,6 +310,7 @@ function App() {
 
             {/* ThÃªm route nÃ y náº¿u báº¡n dÃ¹ng trang AdminUsers */}
             <Route path="users" element={<AdminUsers />} />
+            <Route path="support" element={<AdminSupportReports />} />
           </Route>
 
 

@@ -83,6 +83,9 @@ export const endpoints = {
 
   support: {
     report: "/api/support/report",
+    adminReports: "/api/support/reports",
+    adminReportById: (id) => `/api/support/reports/${id}`,
+    adminRespond: (id) => `/api/support/reports/${id}/respond`,
   },
 
   admin: {
@@ -505,6 +508,21 @@ export const submitBugReportApi = async ({
   const res = await api.post(endpoints.support.report, formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
+  return res.data;
+};
+
+export const adminListBugReportsApi = async (params = {}) => {
+  const res = await api.get(endpoints.support.adminReports, { params });
+  return res.data;
+};
+
+export const adminGetBugReportApi = async (reportId) => {
+  const res = await api.get(endpoints.support.adminReportById(reportId));
+  return res.data;
+};
+
+export const adminRespondBugReportApi = async (reportId, payload) => {
+  const res = await api.patch(endpoints.support.adminRespond(reportId), payload);
   return res.data;
 };
 
