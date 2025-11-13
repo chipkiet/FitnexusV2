@@ -35,6 +35,22 @@ import activityTracker from "./middleware/activity.tracker.js";
 const app = express();
 const isDev = process.env.NODE_ENV !== "production";
 const FRONTEND = process.env.FRONTEND_URL || "http://localhost:5173";
+const defaultDevOrigins = [
+  "http://localhost:5174",
+  "http://localhost:5175",
+  "http://localhost:5178",
+  "http://localhost:5179",
+];
+const envAdditionalOrigins = (process.env.ADDITIONAL_CORS_ORIGINS || "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+const allowedOrigins = Array.from(
+  new Set([
+    FRONTEND,
+    ...(envAdditionalOrigins.length ? envAdditionalOrigins : defaultDevOrigins),
+  ])
+);
 
 /* -------------------- IPv4 preference -------------------- */
 try {
@@ -52,13 +68,7 @@ app.use(express.urlencoded({ extended: true, limit: "200kb" }));
 
 /* -------------------- CORS -------------------- */
 const corsOptions = {
-  origin: [
-    FRONTEND,
-    "http://localhost:5174",
-    "http://localhost:5175",
-    "http://localhost:5178",
-    "http://localhost:5179",
-  ],
+  origin: allowedOrigins,
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"],
   allowedHeaders: [
