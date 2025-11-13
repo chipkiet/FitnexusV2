@@ -1,17 +1,14 @@
-const backendUrl = (import.meta.env?.VITE_BACKEND_URL || "").trim();
-const appDownloadUrl = (import.meta.env?.VITE_APP_DOWNLOAD_URL || "").trim();
+const fallback = (key, value) => {
+  console.warn(`[env] ${key} is missing. Using fallback "${value}".`);
+  return value;
+};
 
-if (!backendUrl) {
-  throw new Error(
-    "[env] Missing VITE_BACKEND_URL. Please set it in your .env file."
-  );
-}
+const backendUrlRaw = (import.meta.env?.VITE_BACKEND_URL || "").trim();
+const appDownloadUrlRaw = (import.meta.env?.VITE_APP_DOWNLOAD_URL || "").trim();
 
-if (!appDownloadUrl) {
-  throw new Error(
-    "[env] Missing VITE_APP_DOWNLOAD_URL. Please set it in your .env file."
-  );
-}
+const backendUrl = backendUrlRaw || fallback("VITE_BACKEND_URL", "http://localhost:3001");
+const appDownloadUrl =
+  appDownloadUrlRaw || fallback("VITE_APP_DOWNLOAD_URL", "https://fitnexus.app/download");
 
 export const env = {
   backendUrl,
