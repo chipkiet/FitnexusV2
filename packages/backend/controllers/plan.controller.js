@@ -529,3 +529,81 @@ export async function deletePlan(req, res) {
       .json({ success: false, message: "Internal server error" });
   }
 }
+
+export async function deleteExerciseFromPlan(req, res) {
+  const t = await sequelize.transaction();
+  try {
+    const userId = req.userId;
+    const planId = parseInt(req.params?.planId, 10);
+    const planExerciseId = parseInt(req.params?.planExerciseId, 10);
+
+    if (!Number.isFinite(planId) || planId <= 0) {
+      await t.rollback();
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid planId" });
+    }
+    if (!Number.isFinite(planExerciseId) || planExerciseId <= 0) {
+      await t.rollback();
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid planExerciseId" });
+    }
+
+    // Verify plan ownership
+    const plan = await WorkoutPlan.findOne({ where: { plan_id: planId }, transaction: t });
+    if (!plan) {
+      await t.rollback();
+      return res
+        .status(404)
+        .json({ success: false, message: "Plan not found" });
+    }
+    if (plan.creator_id !== userId) {
+      await t.rollback();
+      return res
+        .status(403)
+        .json({ success: false, message: "Not authorized" });
+    }
+
+    const deletedCount = await PlanExerciseDetail.destroy({
+      where: {
+        plan_exercise_id: planExerciseId,
+        plan_id: planId,
+      },
+      transaction: t,
+    });
+
+    if (deletedCount === 0) {
+      await t.rollback();
+      return res
+        .status(404)
+        .json({ success: false, message: "Exercise not found in plan" });
+    }
+
+    // Reorder remaining exercises
+    const remainingExercises = await PlanExerciseDetail.findAll({
+      where: { plan_id: planId },
+      order: [["session_order", "ASC"]],
+      transaction: t,
+    });
+
+    for (let i = 0; i < remainingExercises.length; i++) {
+      const exercise = remainingExercises[i];
+      if (exercise.session_order !== i + 1) {
+        await exercise.update({ session_order: i + 1 }, { transaction: t });
+      }
+    }
+
+    await t.commit();
+
+    return res
+      .status(200)
+      .json({ success: true, message: "Exercise removed from plan and reordered" });
+  } catch (err) {
+    await t.rollback();
+    console.error("deleteExerciseFromPlan error:", err);
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error" });
+  }
+}

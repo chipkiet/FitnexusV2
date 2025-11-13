@@ -8,7 +8,8 @@ import {
     listMyPlans,
     reorderPlanExercises,
     updatePlanExercise,
-    deletePlan
+    deletePlan,
+    deleteExerciseFromPlan
 } from "../controllers/plan.controller.js";
 
 const router = Router();
@@ -28,6 +29,9 @@ router.post("/:planId/exercises", authOrSession, addExerciseToPlan);
 router.put("/:planId/exercises/reorder", authGuard, reorderPlanExercises)
 
 router.patch("/:planId/exercises/:planExerciseId", authGuard, updatePlanExercise);
+
+router.delete("/:planId/exercises/:planExerciseId", authGuard, deleteExerciseFromPlan);
+
 
 
 export default router;

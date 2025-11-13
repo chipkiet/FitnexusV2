@@ -47,6 +47,8 @@ export const endpoints = {
     reorder: (id) => `/api/plans/${id}/exercises/reorder`,
     updateExercise: (planId, planExerciseId) =>
       `/api/plans/${planId}/exercises/${planExerciseId}`,
+    deleteExercise: (planId, planExerciseId) =>
+      `/api/plans/${planId}/exercises/${planExerciseId}`,
   },
 
   // OAuth session-based (Passport)
@@ -571,6 +573,11 @@ export const updatePlanExerciseApi = async (planId, planExerciseId, data) => {
     const res = await api.patch(endpoints.plans.updateExercise(planId, planExerciseId), data);
     return res.data;
 }
+
+export const deleteExerciseFromPlanApi = async (planId, planExerciseId) => {
+    const res = await api.delete(endpoints.plans.deleteExercise(planId, planExerciseId));
+    return res.data;
+};
 
 // ===== Workout convenience APIs =====
 export const getActiveWorkoutSessionApi = async () => {
