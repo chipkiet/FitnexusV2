@@ -251,6 +251,11 @@ export default function PlanDetail() {
         if (res?.success) {
           setPlan(res.data?.plan || null);
           setItems(res.data?.items || []);
+          // Nếu không tìm thấy plan, chuyển hướng người dùng đến trang tạo mới
+          if (!res.data?.plan) {
+            navigate('/plans/new');
+            return;
+          }
         } else {
           setError({ message: res?.message || "Không thể tải kế hoạch" });
         }

@@ -4,6 +4,29 @@ import { useAuth } from "../../context/auth.context.jsx";
 import { getMyPlansApi, addExerciseToPlanApi, listWorkoutSessionsApi } from "../../lib/api.js";
 
 export default function PlanPicker() {
+  // Modal hiển thị khi người dùng chưa có plan nào
+  function NoPlansModal({ onClose, onCreatePlan }) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose}>
+        <div className="w-full max-w-md p-6 mx-4 bg-white shadow-2xl rounded-xl" onClick={(e) => e.stopPropagation()}>
+          <h3 className="mb-2 text-xl font-semibold text-gray-900">
+            Chưa có kế hoạch luyện tập
+          </h3>
+          <p className="mb-6 text-sm text-gray-600">
+            Bạn cần tạo một kế hoạch trước khi thêm bài tập. Bạn có muốn tạo kế hoạch mới ngay bây giờ không?
+          </p>
+          <div className="space-y-3">
+            <button onClick={onCreatePlan} className="w-full px-4 py-3 text-sm font-semibold text-white transition-colors bg-green-600 rounded-lg hover:bg-green-700">
+              Tạo kế hoạch mới
+            </button>
+            <button onClick={onClose} className="w-full px-4 py-3 text-sm font-medium text-gray-700 transition-colors border-2 border-gray-300 rounded-lg hover:bg-gray-50">
+              Để sau
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
@@ -19,6 +42,7 @@ export default function PlanPicker() {
   const [items, setItems] = useState([]);
   const [completedPlanIds, setCompletedPlanIds] = useState(new Set());
   const [selectedPlanId, setSelectedPlanId] = useState(null);
+  const [showNoPlansModal, setShowNoPlansModal] = useState(false);
   const [saving, setSaving] = useState(false);
 
 
@@ -31,6 +55,10 @@ export default function PlanPicker() {
       const plans = Array.isArray(list) ? list : [];
       setItems(plans);
 
+      if (plans.length === 0) {
+        setShowNoPlansModal(true);
+      }
+
       // Fetch completed sessions to partition plans
       try {
         const sess = await listWorkoutSessionsApi({ status: 'completed', limit: 100, offset: 0 });
@@ -40,6 +68,7 @@ export default function PlanPicker() {
       } catch {}
     } catch (e) {
       // Nếu BE chưa có endpoint list, im lặng và để người dùng tạo mới
+      setShowNoPlansModal(true);
       setItems([]);
       setCompletedPlanIds(new Set());
     } finally {
@@ -52,7 +81,14 @@ export default function PlanPicker() {
   }, []);
 
   const handleAddToSelected = async () => {
-    if (!exerciseId || !selectedPlanId) return;
+    // Nếu chưa có plan nào, hiển thị modal yêu cầu tạo plan
+    if (items.length === 0) {
+      setShowNoPlansModal(true);
+      return;
+    }
+
+    // Nếu có plan nhưng chưa chọn, hiển thị lỗi
+    if (!exerciseId || !selectedPlanId) return; // Nút đã disabled nên trường hợp này ít xảy ra
     setSaving(true);
     setError(null);
     try {
@@ -135,7 +171,7 @@ export default function PlanPicker() {
           {loading ? (
             <div className="text-sm text-gray-600">Đang tải danh sách plan...</div>
           ) : items.length === 0 ? (
-            <div className="text-sm text-gray-500">Chưa có plan nào. Hãy tạo nhanh bên dưới.</div>
+            <div className="text-sm text-gray-500">Bạn chưa có kế hoạch nào.</div>
           ) : (
             <div className="space-y-4">
               {/* Chưa hoàn thành */}
@@ -216,7 +252,7 @@ export default function PlanPicker() {
           <div className="flex items-center gap-3 mt-4">
             <button
               type="button"
-              disabled={!selectedPlanId || !exerciseId || saving}
+              disabled={(items.length > 0 && !selectedPlanId) || !exerciseId || saving}
               onClick={handleAddToSelected}
               className="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-60"
             >
@@ -233,6 +269,12 @@ export default function PlanPicker() {
         </div>
 
         {/* Quick create removed as requested */}
+        {showNoPlansModal && (
+          <NoPlansModal
+            onClose={() => setShowNoPlansModal(false)}
+            onCreatePlan={() => navigate(`/plans/new?exerciseId=${exerciseId}`)}
+          />
+        )}
       </div>
     </div>
   );

@@ -425,6 +425,12 @@ export const getMyPlansApi = async ({ limit = 50, offset = 0 } = {}) => {
   return res.data; // expect { success, data: { items, total } } or similar
 };
 
+export const deletePlanApi = async (planId) => {
+  // SỬA LỖI: Trỏ đến endpoint đúng của người dùng
+  const res = await api.delete(endpoints.plans.byId(planId));
+  return res.data;
+};
+
 
 // ===== Admin: popular exercises =====
 export const getAdminPopularExercises = async ({ limit = 50, offset = 0, search = "" } = {}) => {
