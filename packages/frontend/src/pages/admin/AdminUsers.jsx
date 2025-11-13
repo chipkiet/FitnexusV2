@@ -2,9 +2,10 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "../../context/auth.context.jsx";
 import { getAdminUsers, getAdminUsersStats } from "../../lib/api.js";
-import { patchUserRole } from "../../lib/api.js";
+import { patchUserRole, patchUserPlan } from "../../lib/api.js";
 
-import { deleteAdminUser } from "../../lib/api";
+import { deleteAdminUser } from "../../lib/api.js";
+
 import {
   Plus,
   Search,
@@ -32,6 +33,7 @@ export default function AdminUsers() {
   const [loading, setLoading] = useState(true);
   const [editingUser, setEditingUser] = useState(null);
 const [selectedRole, setSelectedRole] = useState("USER");
+const [selectedPlan, setSelectedPlan] = useState("FREE");
   const [stats, setStats] = useState({
     total: 0,
     role: { ADMIN: 0, TRAINER: 0, USER: 0 },
@@ -117,26 +119,60 @@ const handleDelete = async (id) => {
   const page = Math.floor(offset / limit) + 1;
   const pages = Math.max(1, Math.ceil(displayTotal / limit));
 
-const saveRole = async () => {
+const saveUser = async () => {
   try {
     await patchUserRole(editingUser.user_id, selectedRole);
-    alert("Role updated!");
-    load(); // reload lại danh sách
+    await patchUserPlan(editingUser.user_id, selectedPlan);
+
+    alert("Cập nhật thành công!");
+    await load();
     setEditingUser(null);
+
   } catch (err) {
-    alert("Update failed");
+    console.error(err);
+    alert("Lỗi khi cập nhật");
   }
 };
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {editingUser && (
-  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-    <div className="bg-white p-5 rounded-xl w-[350px]">
-      <h2 className="text-lg font-semibold mb-3">Change Role</h2>
+{editingUser && (
+  <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50">
+    <div className="
+      fixed right-0 top-0 h-full w-[380px] bg-white shadow-2xl border-l 
+      animate-[slideIn_0.25s_ease-out] p-6 flex flex-col
+    ">
 
+      <style>
+        {`
+          @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+          }
+        `}
+      </style>
+
+      {/* TITLE */}
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl font-semibold text-gray-800">
+          Edit User
+        </h2>
+        <button
+          className="text-gray-600 hover:text-red-500"
+          onClick={() => {
+            setEditingUser(null);
+            setSelectedRole("USER");
+            setSelectedPlan("FREE");
+          }}
+        >
+          ✕
+        </button>
+      </div>
+
+      {/* ROLE */}
+      <label className="text-sm text-gray-600">Role</label>
       <select
-        className="border px-3 py-2 w-full rounded"
+        className="border px-3 py-2 w-full rounded mb-4"
         value={selectedRole}
         onChange={(e) => setSelectedRole(e.target.value)}
       >
@@ -146,16 +182,32 @@ const saveRole = async () => {
         <option value="TRAINER">TRAINER</option>
       </select>
 
-      <div className="flex justify-end gap-2 mt-4">
+      {/* PLAN */}
+      <label className="text-sm text-gray-600">Plan</label>
+      <select
+        className="border px-3 py-2 w-full rounded mb-4"
+        value={selectedPlan}
+        onChange={(e) => setSelectedPlan(e.target.value)}
+      >
+        <option value="FREE">FREE</option>
+        <option value="PREMIUM">PREMIUM</option>
+      </select>
+
+      {/* FOOTER BUTTONS */}
+      <div className="mt-auto pt-4 flex justify-end gap-2 border-t">
         <button
-          className="px-3 py-1 bg-gray-300 rounded"
-          onClick={() => setEditingUser(null)}
+          className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300"
+          onClick={() => {
+            setEditingUser(null);
+            setSelectedRole("USER");
+            setSelectedPlan("FREE");
+          }}
         >
           Cancel
         </button>
         <button
-          className="px-3 py-1 bg-green-500 text-white rounded"
-          onClick={saveRole}
+          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 shadow"
+          onClick={saveUser}
         >
           Save
         </button>
@@ -163,6 +215,7 @@ const saveRole = async () => {
     </div>
   </div>
 )}
+
       {/* Header */}
       <div className="bg-white border-b">
         <div className="px-6 py-4 mx-auto max-w-7xl">
@@ -489,6 +542,7 @@ const saveRole = async () => {
                              onClick={() => {
   setEditingUser(u);
   setSelectedRole(u.role);
+  setSelectedPlan(u.plan);
 }}
                           >
                             <Edit size={16} className="text-gray-600" />
