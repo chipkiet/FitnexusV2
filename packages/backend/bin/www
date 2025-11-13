@@ -8,6 +8,7 @@ import debugLib from 'debug'; // <-- Dùng import
 import http from 'http';
 import { connectDB } from '../config/database.js';
 import { initModels } from '../models/initModels.js';
+import { scheduleSubscriptionExpiryJob } from '../jobs/subscription.cron.js';
 
 const debug = debugLib('backend:server');
 
@@ -33,6 +34,7 @@ const server = http.createServer(app);
     await connectDB();
     // Initialize model associations once DB is ready
     initModels();
+    scheduleSubscriptionExpiryJob();
     server.listen(port);
     server.on('error', onError);
     server.on('listening', onListening);

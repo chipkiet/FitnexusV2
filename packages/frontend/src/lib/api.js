@@ -28,10 +28,14 @@ export const endpoints = {
     checkEmail: "/api/auth/check-email",
     checkPhone: "/api/auth/check-phone",
     forgot: "/api/auth/forgot-password",
+    googleOtpVerify: "/api/auth/google/otp/verify",
+    googleOtpResend: "/api/auth/google/otp/resend",
     updatePersonalInfo: "/api/auth/personal-info",
     avatar: "/api/auth/avatar",
     logoutSession: "/api/auth/logout-session",
     changePassword: "/api/auth/change-password",
+    streak: "/api/auth/streak",
+    streakPing: "/api/auth/streak/ping",
     // loginHistory removed
   },
 
@@ -75,6 +79,10 @@ export const endpoints = {
     return: "/api/payment/return",
     cancel: "/api/payment/cancel",
     mockUpgrade: "/api/payment/mock-upgrade",
+  },
+
+  support: {
+    report: "/api/support/report",
   },
 
   admin: {
@@ -454,6 +462,49 @@ export const getExerciseFavoriteStatus = async (exerciseId) => {
 // List current user's favorite exercises
 export const getMyFavoriteExercisesApi = async () => {
   const res = await api.get('/api/exercises/favorites');
+  return res.data;
+};
+
+export const verifyGoogleOtpApi = async (code, otpToken) => {
+  const res = await api.post(endpoints.auth.googleOtpVerify, { code, otpToken });
+  return res.data;
+};
+
+export const resendGoogleOtpApi = async (otpToken) => {
+  const res = await api.post(endpoints.auth.googleOtpResend, { otpToken });
+  return res.data;
+};
+
+export const getLoginStreakSummary = async () => {
+  const res = await api.get(endpoints.auth.streak);
+  return res.data;
+};
+
+export const pingLoginStreak = async () => {
+  const res = await api.post(endpoints.auth.streakPing);
+  return res.data;
+};
+
+// ===== Support APIs =====
+export const submitBugReportApi = async ({
+  title,
+  description,
+  steps,
+  severity,
+  contactEmail,
+  screenshot,
+} = {}) => {
+  const formData = new FormData();
+  if (title) formData.append("title", title);
+  if (description) formData.append("description", description);
+  if (steps) formData.append("steps", steps);
+  if (severity) formData.append("severity", severity);
+  if (contactEmail) formData.append("contactEmail", contactEmail);
+  if (screenshot) formData.append("screenshot", screenshot);
+
+  const res = await api.post(endpoints.support.report, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
   return res.data;
 };
 

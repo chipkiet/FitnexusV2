@@ -8,7 +8,7 @@ export function scheduleSubscriptionExpiryJob() {
   cron.schedule('1 0 * * *', async () => {
     try {
       await User.update(
-        { user_type: 'free', user_exp_date: null },
+        { plan: 'FREE', user_type: 'free', user_exp_date: null },
         {
           where: {
             user_type: 'premium',

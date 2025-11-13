@@ -197,6 +197,130 @@ Nếu không phải bạn yêu cầu, vui lòng bỏ qua email này.`;
   return { subject, text, html };
 }
 
+export function buildBugReportEmail({
+  title = "Báo lỗi người dùng",
+  severity = "medium",
+  description = "",
+  steps = "",
+  screenshotUrl = null,
+  reporter = null,
+  contactEmail = "",
+  brand = "Fitnexus",
+}) {
+  const severityMap = {
+    low: { label: "Thấp", bg: "#ecfdf5", color: "#047857" },
+    medium: { label: "Trung bình", bg: "#fef9c3", color: "#92400e" },
+    high: { label: "Cao", bg: "#fee2e2", color: "#b91c1c" },
+  };
+  const severityMeta = severityMap[severity] || severityMap.medium;
+
+  const formatMultiline = (text = "") =>
+    escapeHtml(text || "")
+      .replace(/\r\n/g, "\n")
+      .replace(/\n/g, "<br/>");
+
+  const reporterLabel = reporter
+    ? `#${reporter.id} — ${escapeHtml(
+        reporter.fullName || reporter.username || reporter.email || "Không rõ"
+      )} (${escapeHtml(reporter.plan || "UNKNOWN")})`
+    : "Không xác định";
+
+  const screenshotSection = screenshotUrl
+    ? `<a href="${screenshotUrl}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;padding:10px 14px;border-radius:8px;background:#eef2ff;color:#1d4ed8;font-weight:600;text-decoration:none;">🔗 Mở ảnh đính kèm</a>`
+    : `<span style="color:#94a3b8;">Không có ảnh đính kèm</span>`;
+
+  const subject = `[${brand}] Báo lỗi: ${title || "Không tiêu đề"}`;
+  const textParts = [
+    `Tiêu đề: ${title}`,
+    `Mức độ: ${severityMeta.label}`,
+    `Người gửi: ${reporterLabel}`,
+    contactEmail ? `Liên hệ: ${contactEmail}` : null,
+    "",
+    "Mô tả lỗi:",
+    description || "(Không có mô tả)",
+    "",
+    steps ? `Các bước tái hiện:\n${steps}` : "",
+    screenshotUrl ? `Ảnh: ${screenshotUrl}` : "",
+  ].filter(Boolean);
+  const text = textParts.join("\n");
+
+  const html = `
+  <!doctype html>
+  <html lang="vi">
+  <head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <style>
+      body{margin:0;background:#0f172a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;}
+      .wrap{padding:32px 12px;}
+      .card{max-width:720px;margin:0 auto;background:#ffffff;border-radius:18px;overflow:hidden;box-shadow:0 20px 45px rgba(15,23,42,.35);}
+      .header{background:#0f172a;color:#f8fafc;padding:28px 32px;}
+      .header h1{margin:0;font-size:22px;font-weight:700;}
+      .header p{margin:6px 0 0;font-size:14px;color:#cbd5f5;}
+      .inner{padding:28px 32px;color:#0f172a;}
+      .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:18px;margin-bottom:24px;}
+      .label{font-size:13px;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;font-weight:600;margin-bottom:6px;}
+      .value{font-size:15px;font-weight:600;}
+      .badge{display:inline-flex;align-items:center;font-size:13px;font-weight:700;border-radius:999px;padding:4px 12px;}
+      .section{border:1px solid #e2e8f0;border-radius:14px;padding:18px 20px;margin-bottom:22px;background:#f8fafc;}
+      .section h3{margin:0 0 10px;font-size:16px;color:#0f172a;}
+      .section p{margin:0;font-size:14px;line-height:1.6;color:#1e293b;}
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="card">
+        <div class="header">
+          <h1>Báo lỗi mới từ người dùng</h1>
+          <p>${escapeHtml(brand)} Support Desk</p>
+        </div>
+        <div class="inner">
+          <div class="grid">
+            <div>
+              <div class="label">Tiêu đề</div>
+              <div class="value">${escapeHtml(title || "Không tiêu đề")}</div>
+            </div>
+            <div>
+              <div class="label">Mức độ</div>
+              <div class="value">
+                <span class="badge" style="background:${severityMeta.bg};color:${severityMeta.color};">
+                  ${severityMeta.label}
+                </span>
+              </div>
+            </div>
+            <div>
+              <div class="label">Người gửi</div>
+              <div class="value">${reporterLabel}</div>
+            </div>
+            <div>
+              <div class="label">Liên hệ</div>
+              <div class="value">${escapeHtml(contactEmail || "Không cung cấp")}</div>
+            </div>
+          </div>
+
+          <div class="section">
+            <h3>Mô tả lỗi</h3>
+            <p>${formatMultiline(description || "(Không có mô tả)")}</p>
+          </div>
+
+          <div class="section">
+            <h3>Các bước tái hiện</h3>
+            <p>${steps ? formatMultiline(steps) : "<span style='color:#94a3b8;'>Không cung cấp</span>"}</p>
+          </div>
+
+          <div class="section">
+            <h3>Ảnh đính kèm</h3>
+            ${screenshotSection}
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+  </html>`;
+
+  return { subject, text, html };
+}
+
 function escapeHtml(s=""){
   return String(s)
     .replace(/&/g,"&amp;").replace(/</g,"&lt;")

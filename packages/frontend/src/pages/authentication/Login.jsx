@@ -106,6 +106,13 @@ export default function Login() {
   const location = useLocation();
   useEffect(() => {
     const q = new URLSearchParams(location.search);
+    if (q.get("googleOtp") === "1") {
+      navigate(`/login/otp?${q.toString()}`, { replace: true });
+    }
+  }, [location.search, navigate]);
+
+  useEffect(() => {
+    const q = new URLSearchParams(location.search);
     if (q.get("oauth") === "not_found") {
       setShowNotFound(true);
       setNfEmail(q.get("email") || "");

@@ -18,7 +18,10 @@ import {
   logout,
   changePassword,
   updatePersonalInfo,
+  streakSummary,
+  pingStreak,
 } from "../controllers/auth.controller.js";
+import { resendGoogleOtp, verifyGoogleOtp } from "../controllers/googleOtp.controller.js";
 import authGuard from "../middleware/auth.guard.js";
 import { registerValidation, loginValidation } from "../middleware/auth.validation.js";
 import { body, validationResult } from "express-validator";
@@ -148,6 +151,10 @@ router.post("/forgot-password", forgotLimiter, forgotPassword);
 router.post("/reset-password", resetPassword);
 router.post("/send-otp", otpLimiter, sendOtp);
 router.post("/verify-otp", verifyOtp);
+router.get("/streak", authGuard, streakSummary);
+router.post("/streak/ping", authGuard, pingStreak);
+router.post("/google/otp/resend", otpLimiter, resendGoogleOtp);
+router.post("/google/otp/verify", verifyGoogleOtp);
 
 // Change password (authenticated)
 const changePasswordValidation = [

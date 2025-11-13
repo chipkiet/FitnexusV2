@@ -143,7 +143,7 @@ export default function Pricing() {
               <Sparkles className="w-4 h-4" /> Trải nghiệm Fitnexus Premium
             </span>
             <h1 className="text-3xl font-bold text-slate-900 sm:text-4xl">
-              Khám phá Fitnexus Premium – nơi kế hoạch tập luyện, các bài tập yêu thích và dữ liệu tiến độ của bạn được đồng bộ hóa để mang đến một trải nghiệm tập luyện mượt mà và hiệu quả hơn bao giờ hết.
+              Nâng cấp Fitnexus Premium để đồng bộ kế hoạch, bài tập và tiến độ của bạn – trải nghiệm tập luyện mượt mà và hiệu quả hơn bao giờ hết.
             </h1>
             <p className="max-w-3xl mx-auto text-base text-slate-600">
               Fitnexus Premium hỗ trợ AI Coach, mô hình 3D, kế hoạch cá nhân và báo cáo tiến độ chi tiết giúp bạn giữ động lực và đạt mục tiêu nhanh hơn.
@@ -205,7 +205,7 @@ export default function Pricing() {
                       {isAuthenticated ? (busy ? 'Đang xử lý...' : 'Thanh toán và nâng cấp') : 'Đăng nhập để mua'}
                     </button>
                     <p className="mt-3 text-xs text-slate-400">
-                      Spotify Premium sẽ được kích hoạt với tài khoản Fitnexus của bạn ngay sau khi thanh toán thành công.
+                     Premium sẽ được kích hoạt với tài khoản Fitnexus của bạn ngay sau khi thanh toán thành công.
                     </p>
                   </article>
                 );
@@ -223,7 +223,7 @@ export default function Pricing() {
         <section className="py-16 bg-white">
           <div className="max-w-6xl px-4 mx-auto">
             <div className="max-w-3xl mb-10">
-              <h2 className="text-2xl font-semibold text-slate-900">Spotify Premium tích hợp giúp bạn tập tốt hơn</h2>
+              <h2 className="text-2xl font-semibold text-slate-900"> Premium tích hợp giúp bạn tập tốt hơn</h2>
               <p className="mt-3 text-base text-slate-600">
                 Tổng hợp những tính năng chỉ có ở gói Premium của Fitnexus. Mỗi mục được đồng bộ với các module sẵn có trong dự án: AI Trainer, Nutrition AI, Onboarding và thống kê tiến độ.
               </p>

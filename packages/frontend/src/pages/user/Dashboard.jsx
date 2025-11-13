@@ -1,9 +1,15 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../context/auth.context.jsx";
 import { useNavigate } from "react-router-dom";
 import HeaderLogin from "../../components/header/HeaderLogin.jsx";
 import ChatWidget from "../../components/common/ChatWidget.jsx";
-import { getMyPlansApi, listWorkoutSessionsApi } from "../../lib/api.js";
+import { Flame } from "lucide-react";
+import {
+  getMyPlansApi,
+  listWorkoutSessionsApi,
+  getLoginStreakSummary,
+  pingLoginStreak,
+} from "../../lib/api.js";
 
 // Dashboard images (added to assets/)
 import ImgAI from "../../assets/dashboard/AITrainer.png";
@@ -23,6 +29,7 @@ const VXP_ROUTE_MAP = {
   community: "/community",
   pricing: "/pricing",
 };
+const STREAK_MODAL_KEY = "fnx_streak_modal_date";
 
 function vxpGo(key, navigate) {
   const el = document.querySelector(`[data-nav="${key}"]`);
@@ -43,6 +50,25 @@ export default function Dashboard() {
   const [plansError, setPlansError] = useState(null);
   const [plans, setPlans] = useState([]);
   const [completedPlanIds, setCompletedPlanIds] = useState(new Set());
+  const [streakState, setStreakState] = useState({
+    loading: true,
+    data: null,
+    error: null,
+  });
+  const [showStreakModal, setShowStreakModal] = useState(false);
+  const weekdayFormatter = useMemo(
+    () => new Intl.DateTimeFormat("vi-VN", { weekday: "short" }),
+    []
+  );
+  const dateFormatter = useMemo(
+    () => new Intl.DateTimeFormat("vi-VN", { day: "2-digit", month: "2-digit" }),
+    []
+  );
+  const timelineFallback = useMemo(
+    () => Array.from({ length: 10 }, () => ({ date: null, active: false })),
+    []
+  );
+  const closeStreakModal = () => setShowStreakModal(false);
 
   useEffect(() => {
     const loadPlans = async () => {
@@ -78,6 +104,59 @@ export default function Dashboard() {
       setPlansLoading(false);
     };
     loadPlans();
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+    const loadStreak = async () => {
+      let serverTriggered = false;
+      try {
+        const pingRes = await pingLoginStreak();
+        serverTriggered = !!pingRes?.triggered;
+      } catch {}
+      try {
+        const res = await getLoginStreakSummary();
+        if (!mounted) return;
+        const data = res?.data || null;
+        setStreakState({ loading: false, data, error: null });
+        if (data?.timeline?.length) {
+          const latest = data.timeline[data.timeline.length - 1];
+          if (latest.active) {
+            let shouldShow = serverTriggered;
+            if (!shouldShow) {
+              try {
+                const stored = localStorage.getItem(STREAK_MODAL_KEY);
+                if (stored !== latest.date) {
+                  shouldShow = true;
+                  localStorage.setItem(STREAK_MODAL_KEY, latest.date);
+                }
+              } catch {
+                shouldShow = true;
+              }
+            } else {
+              try {
+                localStorage.setItem(STREAK_MODAL_KEY, latest.date);
+              } catch {}
+            }
+            if (shouldShow) setShowStreakModal(true);
+          }
+        }
+      } catch (error) {
+        if (!mounted) return;
+        setStreakState({
+          loading: false,
+          data: null,
+          error:
+            error?.response?.data?.message ||
+            error?.message ||
+            "Không tải được dữ liệu streak",
+        });
+      }
+    };
+    loadStreak();
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   return (
@@ -233,22 +312,83 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Streak placeholder */}
             <div className="p-5 bg-white border rounded-xl border-slate-200">
-              <h3 className="font-semibold text-slate-900">
-                Chuỗi ngày (Streak)
-              </h3>
-              <div className="mt-3 grid grid-cols-7 gap-1.5">
-                {Array.from({ length: 14 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="h-6 border border-dashed rounded-md border-slate-300 bg-slate-50"
-                  ></div>
-                ))}
+              <div className="flex items-start justify-between">
+                <div>
+                  <h3 className="font-semibold text-slate-900">
+                    Chuỗi ngày (Streak)
+                  </h3>
+                  <p className="mt-1 text-xs text-slate-500">
+                    Hiện tại:{" "}
+                    <span className="font-semibold text-slate-900">
+                      {streakState.data?.currentStreak ?? 0} ngày
+                    </span>{" "}
+                    · Kỷ lục:{" "}
+                    <span className="font-semibold text-slate-900">
+                      {streakState.data?.bestStreak ?? 0} ngày
+                    </span>
+                  </p>
+                </div>
+                <div className="flex items-center gap-1 text-amber-500">
+                  <Flame className="w-5 h-5" />
+                  <span className="text-3xl font-bold text-slate-900">
+                    {streakState.data?.currentStreak ?? 0}
+                  </span>
+                </div>
               </div>
-              <div className="mt-2 text-[11px] text-slate-500">
-                Sẽ hiển thị dải streak thật khi có dữ liệu.
+              <div className="mt-4">
+                {streakState.loading ? (
+                  <div className="grid grid-cols-10 gap-1.5 animate-pulse">
+                    {Array.from({ length: 10 }).map((_, i) => (
+                      <div
+                        key={i}
+                        className="h-16 rounded-2xl bg-slate-100 border border-slate-200"
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-10 gap-1.5">
+                    {(streakState.data?.timeline?.length
+                      ? streakState.data.timeline
+                      : timelineFallback
+                    ).map((day, idx) => {
+                      const dateObj = day.date ? new Date(day.date) : null;
+                      const dayLabel = dateObj
+                        ? weekdayFormatter.format(dateObj)
+                        : "--";
+                      const dateLabel = dateObj
+                        ? dateFormatter.format(dateObj)
+                        : "--";
+                      return (
+                        <div
+                          key={day.date || `empty-${idx}`}
+                          className={`flex flex-col items-center justify-center rounded-2xl border px-2 py-3 text-center ${
+                            day.active
+                              ? "border-transparent bg-gradient-to-br from-amber-100 to-orange-200 text-amber-900 shadow"
+                              : "border-dashed border-slate-200 bg-slate-50 text-slate-400"
+                          }`}
+                        >
+                          <span className="text-[10px] uppercase tracking-wide">
+                            {dayLabel}
+                          </span>
+                          <span className="text-sm font-semibold">
+                            {dateLabel}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
+              {streakState.error ? (
+                <div className="mt-3 text-xs text-rose-500">
+                  {streakState.error}
+                </div>
+              ) : (
+                <div className="mt-2 text-[11px] text-slate-500">
+                  Luyện tập mỗi ngày để duy trì chuỗi streak và mở khoá huy hiệu.
+                </div>
+              )}
             </div>
           </aside>
 
@@ -608,6 +748,41 @@ export default function Dashboard() {
 
       {/* Floating Chat Widget */}
       <ChatWidget />
+
+      {showStreakModal && streakState.data?.currentStreak ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 py-8">
+          <div className="w-full max-w-md p-8 bg-white rounded-3xl shadow-2xl border border-slate-100 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-amber-100 via-white to-blue-100 opacity-60 pointer-events-none"></div>
+            <div className="relative">
+              <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 rounded-full bg-amber-100 text-amber-600 shadow-inner">
+                <Flame className="w-8 h-8" />
+              </div>
+              <h3 className="text-2xl font-bold text-center text-slate-900">
+                Chuỗi {streakState.data.currentStreak} ngày!
+              </h3>
+              <p className="mt-3 text-center text-slate-600">
+                Tuyệt vời! Bạn đã đăng nhập liên tiếp trong{" "}
+                <span className="font-semibold text-slate-900">
+                  {streakState.data.currentStreak}
+                </span>{" "}
+                ngày. Hãy giữ vững phong độ để phá kỷ lục cá nhân
+                {streakState.data.bestStreak >
+                streakState.data.currentStreak
+                  ? ` (${streakState.data.bestStreak} ngày).`
+                  : " nhé!"}
+              </p>
+              <div className="mt-6 flex justify-center">
+                <button
+                  onClick={closeStreakModal}
+                  className="px-6 py-2 font-semibold text-white rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 shadow-lg hover:shadow-xl"
+                >
+                  Tiếp tục luyện tập
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

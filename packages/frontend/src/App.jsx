@@ -7,6 +7,7 @@ import { ThemeProvider } from "./context/theme.context.jsx";
 
 import Register from "./pages/authentication/Register.jsx";
 import Login from "./pages/authentication/Login.jsx";
+import GoogleOtp from "./pages/authentication/GoogleOtp.jsx";
 import ForgotPassword from "./pages/authentication/ForgotPassword.jsx";
 import VerifyCode from "./pages/authentication/VerifyCode.jsx";
 import ResetPassword from "./pages/authentication/ResetPassword.jsx";
@@ -116,6 +117,7 @@ function App() {
       <Router>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/login/otp" element={<GoogleOtp />} />
           <Route path="/register" element={<Register />} />
           <Route path="/onboarding" element={<OnboardingEntry />} />
           <Route path="/onboarding" element={<Navigate to="/onboarding/age" replace />} />

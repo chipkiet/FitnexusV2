@@ -1,6 +1,6 @@
 // packages/backend/controllers/auth.controller.js
 import User from "../models/user.model.js";
- 
+
 import jwt from "jsonwebtoken";
 import { validationResult } from "express-validator";
 import { Op } from "sequelize";
@@ -10,6 +10,12 @@ import PasswordReset from "../models/passwordReset.model.js";
 import { sendMail } from "../utils/mailer.js";
 import { buildResetPasswordEmail } from "../utils/emailTemplates.js";
 import { uploadBuffer } from "../utils/cloudinary.js";
+import { ensureActiveSubscription } from "../services/subscription.service.js";
+import {
+  recordLoginActivity,
+  fetchStreakTimeline,
+  ensureDailyStreakPing,
+} from "../services/streak.service.js";
 
 const generateTokens = (userId, role, rememberMe = false) => {
   const accessTokenExpiry = rememberMe ? "30d" : "4h";
@@ -82,6 +88,8 @@ export const register = async (req, res) => {
       provider: "local",
       status: "ACTIVE",
     });
+
+    await recordLoginActivity(newUser, req);
 
     const { accessToken, refreshToken } = generateTokens(
       newUser.user_id,
@@ -160,10 +168,13 @@ export const login = async (req, res) => {
       });
     }
 
+    await ensureActiveSubscription(user);
+
     user.lastLoginAt = new Date();
     user.lastActiveAt = new Date();
     user.status = "ACTIVE";
     await user.save({ fields: ["lastLoginAt", "lastActiveAt"] });
+    await recordLoginActivity(user, req);
 
     const { accessToken, refreshToken } = generateTokens(
       user.user_id, user.role, rememberMe
@@ -230,6 +241,8 @@ export const refreshToken = async (req, res) => {
       });
     }
 
+    await ensureActiveSubscription(user);
+
     // Issue new access & rotate refresh
     const { accessToken, refreshToken: newRefreshToken } = generateTokens(
       user.user_id, user.role, true
@@ -256,6 +269,8 @@ export const me = async (req, res) => {
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found" });
     }
+    await ensureActiveSubscription(user);
+
     return res.json({
       success: true,
       message: "User profile",
@@ -321,6 +336,43 @@ export const checkPhone = async (req, res) => {
   } catch (error) {
     console.error("Check phone error:", error);
     res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+export const streakSummary = async (req, res) => {
+  try {
+    const user = await User.findByPk(req.userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+    const days = Math.min(Math.max(parseInt(req.query.days, 10) || 10, 7), 30);
+    const timeline = await fetchStreakTimeline(user.user_id, days);
+    return res.json({
+      success: true,
+      data: {
+        currentStreak: user.login_streak || 0,
+        bestStreak: user.max_login_streak || 0,
+        lastUpdatedAt: user.login_streak_updated_at,
+        timeline,
+      },
+    });
+  } catch (error) {
+    console.error("streakSummary error:", error);
+    return res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+export const pingStreak = async (req, res) => {
+  try {
+    const user = await User.findByPk(req.userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+    const result = await ensureDailyStreakPing(user, req);
+    return res.json({ success: true, triggered: !!result.triggered });
+  } catch (error) {
+    console.error("pingStreak error:", error);
+    return res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 
