@@ -7,6 +7,7 @@ import { useTheme } from "../../context/theme.context.jsx";
 import { Crown } from "lucide-react";
 import { getMyFavoriteExercisesApi } from "../../lib/api.js";
 import NotificationsDropdown from "../common/NotificationsDropdown.jsx";
+import { env } from "../../config/env.js";
 
 export default function HeaderLogin() {
   const navigate = useNavigate();
@@ -259,6 +260,7 @@ export default function HeaderLogin() {
                 >
                   Tạo plan mới
                 </button>
+
               </div>
             )}
           </div>
@@ -358,9 +360,7 @@ export default function HeaderLogin() {
                   className="flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 >
                   {(() => {
-                    const be =
-                      import.meta.env.VITE_BACKEND_URL ||
-                      "http://localhost:3001";
+                    const be = env.backendUrl;
                     const raw = user?.avatarUrl || "";
                     let src = null;
                     if (raw) {
@@ -659,6 +659,16 @@ export default function HeaderLogin() {
                 >
                   Tạo plan mới
                 </button>
+                <button
+                  className="block w-full px-3 py-2 text-left rounded-md hover:bg-gray-50"
+                  onClick={() =>
+                    !isAuthenticated
+                      ? navigate("/login", { state: { from: "/plans/manage" } })
+                      : navigate("/plans/manage")
+                  }
+                >
+                  Quản lý kế hoạch
+                </button>
               </div>
             </details>
 
@@ -697,7 +707,7 @@ export default function HeaderLogin() {
             )}
 
             <a
-              href="https://example.com/download-app"
+              href={env.appDownloadUrl}
               target="_blank"
               rel="noreferrer"
               className="block w-full py-2 font-semibold text-left text-blue-600"

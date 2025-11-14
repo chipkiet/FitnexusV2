@@ -3,8 +3,8 @@ import express from "express";
 import dns from "dns";
 import cors from "cors";
 import morgan from "morgan";
-import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
+import dotenv from "dotenv";
 
 import workoutRouter from "./routes/workout.routes.js";
 import helmet from "helmet";
@@ -27,6 +27,11 @@ import adminMetricsRoutes from "./routes/admin.metrics.routes.js";
 import adminRevenueRoutes from "./routes/admin.revenue.routes.js";
 import supportRouter from "./routes/support.routes.js";
 import notificationRouter from "./routes/notification.routes.js";
+import {
+  FRONTEND_URL,
+  ADDITIONAL_CORS_ORIGINS,
+} from "./config/env.js";
+import { ensureAiApp } from "./ai/index.js";
 
 import activityTracker from "./middleware/activity.tracker.js";
 
@@ -35,9 +40,13 @@ dotenv.config();
 /* -------------------- INIT APP -------------------- */
 const app = express();
 const isDev = process.env.NODE_ENV !== "production";
-const FRONTEND = process.env.FRONTEND_URL || "http://localhost:5173";
 
-/* -------------------- ALLOWED ORIGINS -------------------- */
+/* -------------------- FRONTEND & ALLOWED ORIGINS -------------------- */
+const FRONTEND =
+  FRONTEND_URL ||
+  process.env.FRONTEND_URL ||
+  "http://localhost:5173";
+
 const defaultDevOrigins = [
   "http://localhost:5174",
   "http://localhost:5175",
@@ -45,7 +54,11 @@ const defaultDevOrigins = [
   "http://localhost:5179",
 ];
 
-const envAdditionalOrigins = (process.env.ADDITIONAL_CORS_ORIGINS || "")
+const envAdditionalOrigins = (
+  ADDITIONAL_CORS_ORIGINS ||
+  process.env.ADDITIONAL_CORS_ORIGINS ||
+  ""
+)
   .split(",")
   .map((o) => o.trim())
   .filter(Boolean);
@@ -53,16 +66,20 @@ const envAdditionalOrigins = (process.env.ADDITIONAL_CORS_ORIGINS || "")
 const allowedOrigins = Array.from(
   new Set([
     FRONTEND,
-    ...(envAdditionalOrigins.length ? envAdditionalOrigins : defaultDevOrigins),
+    ...(envAdditionalOrigins.length
+      ? envAdditionalOrigins
+      : isDev
+      ? defaultDevOrigins
+      : []),
   ])
-);
+).filter(Boolean);
 
 /* -------------------- IPv4 PRIORITY -------------------- */
 try {
   dns.setDefaultResultOrder?.("ipv4first");
 } catch {}
 
-/* -------------------- PAYOS RAW BODY -------------------- */
+/* -------------------- PayOS Webhook Raw Body (phải đặt trước express.json) -------------------- */
 app.use("/api/payment/payos-webhook", bodyParser.raw({ type: "*/*" }));
 
 /* -------------------- BODY PARSER & COOKIE -------------------- */
@@ -153,6 +170,8 @@ app.use("/api/billing", billingRouter);
 app.use("/api/payment", paymentRouter);
 app.use("/api/support", supportRouter);
 app.use("/api/notifications", notificationRouter);
+// Mount AI app under main backend as a sub-route for easy FE access
+app.use("/api/ai", ensureAiApp());
 
 app.use("/api/admin/revenue", adminRevenueRoutes);
 app.use("/api/admin/metrics", adminMetricsRoutes);

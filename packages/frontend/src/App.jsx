@@ -26,6 +26,7 @@ import Exercise from "./pages/exercises/Exercise.jsx";
 import PlanNew from "./pages/plans/PlanNew.jsx";
 import PlanPicker from "./pages/plans/PlanPicker.jsx";
 import PlanDetail from "./pages/plans/PlanDetail.jsx";
+import PlanEdit from "./pages/plans/PlanEdit.jsx"; // Thêm import
 import Logout from "./pages/authentication/Logout.jsx";
 import NotFoundRedirect from "./pages/system/NotFoundRedirect.jsx";
 import WorkoutRun from "./pages/workout/WorkoutRun.jsx";
@@ -190,14 +191,6 @@ function App() {
             }
           />
           <Route
-            path="/plans/select"
-            element={
-              <PrivateRoute>
-                <PlanPicker />
-              </PrivateRoute>
-            }
-          />
-          <Route
             path="/plans/new"
             element={
               <PrivateRoute>
@@ -205,7 +198,14 @@ function App() {
               </PrivateRoute>
             }
           />
-
+          <Route
+            path="/plans/edit/:planId"
+            element={
+              <PrivateRoute>
+                <PlanEdit />
+              </PrivateRoute>
+            }
+          />
           <Route
             path="/exercises/:id"
             element={

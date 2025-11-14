@@ -8,8 +8,9 @@ import {
   isTokenExpired,
 } from "./tokenManager.js";
 import {exp} from "@tensorflow/tfjs";
+import { env } from "../config/env.js";
 
-const BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3001";
+const BASE_URL = env.backendUrl;
 
 // Quan trọng: withCredentials để FE nhận cookie (Google OAuth)
 export const api = axios.create({
@@ -49,6 +50,8 @@ export const endpoints = {
     items: (id) => `/api/plans/${id}/exercises`,
     reorder: (id) => `/api/plans/${id}/exercises/reorder`,
     updateExercise: (planId, planExerciseId) =>
+      `/api/plans/${planId}/exercises/${planExerciseId}`,
+    deleteExercise: (planId, planExerciseId) =>
       `/api/plans/${planId}/exercises/${planExerciseId}`,
   },
 
@@ -96,6 +99,12 @@ export const endpoints = {
     list: "/api/notifications",
     markRead: (id) => `/api/notifications/${id}/read`,
     markAll: "/api/notifications/read-all",
+  },
+
+  // AI endpoints (proxied via backend, also available on separate AI port)
+  ai: {
+    health: "/api/ai/health",
+    chat: "/api/ai/chat",
   },
 
   admin: {
@@ -428,6 +437,17 @@ export const getMyPlansApi = async ({ limit = 50, offset = 0 } = {}) => {
   return res.data; // expect { success, data: { items, total } } or similar
 };
 
+export const updatePlanApi = async (planId, data) => {
+  const res = await api.put(endpoints.plans.byId(planId), data);
+  return res.data;
+};
+
+export const deletePlanApi = async (planId) => {
+  // Đảm bảo hàm này trỏ đến endpoint đúng của người dùng
+  const res = await api.delete(endpoints.plans.byId(planId));
+  return res.data;
+};
+
 
 // ===== Admin: popular exercises =====
 export const getAdminPopularExercises = async ({ limit = 50, offset = 0, search = "" } = {}) => {
@@ -563,6 +583,11 @@ export const updatePlanExerciseApi = async (planId, planExerciseId, data) => {
     const res = await api.patch(endpoints.plans.updateExercise(planId, planExerciseId), data);
     return res.data;
 }
+
+export const deleteExerciseFromPlanApi = async (planId, planExerciseId) => {
+    const res = await api.delete(endpoints.plans.deleteExercise(planId, planExerciseId));
+    return res.data;
+};
 
 // ===== Workout convenience APIs =====
 export const getActiveWorkoutSessionApi = async () => {

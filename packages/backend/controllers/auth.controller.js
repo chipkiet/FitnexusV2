@@ -17,6 +17,7 @@ import {
   fetchStreakTimeline,
   ensureDailyStreakPing,
 } from "../services/streak.service.js";
+import { FRONTEND_RESET_URL } from "../config/env.js";
 
 const generateTokens = (userId, role, rememberMe = false) => {
   const accessTokenExpiry = rememberMe ? "30d" : "4h";
@@ -415,9 +416,7 @@ export const forgotPassword = async (req, res, next) => {
       used_at: null,
     });
 
-    const resetBase =
-      process.env.FRONTEND_RESET_URL || `${process.env.FRONTEND_URL}/reset-password`;
-    const resetUrl = new URL(resetBase);
+    const resetUrl = new URL(FRONTEND_RESET_URL);
     resetUrl.searchParams.set("token", token);
 
     const { subject, html, text } = buildResetPasswordEmail({
