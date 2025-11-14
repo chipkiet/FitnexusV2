@@ -12,6 +12,7 @@ const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 }, // Giới hạn file size tối đa là 5MB
 });
+
 router.patch("/users/:id/role", authGuard, async (req, res) => {
   try {
     const userId = req.params.id;
@@ -38,7 +39,7 @@ router.patch("/users/:id/role", authGuard, async (req, res) => {
     return res.status(500).json({ success: false, message: "Server error" });
   }
 });
-
+//Delete
 router.delete("/:id", authGuard, async (req, res) => {
   try {
     const userId = req.params.id;
@@ -56,6 +57,10 @@ router.delete("/:id", authGuard, async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
+
+
+
+
 // Route upload avatar
 router.post(
   '/me/avatar',

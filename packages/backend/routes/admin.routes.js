@@ -27,6 +27,8 @@ import {
 } from '../controllers/adminSub.controller.js';
 
 const router = express.Router();
+router.patch("/users/:id/role", updateUserRole);
+router.patch("/users/:id/plan", updateUserPlan);
 
 router.patch('/users/:id/lock',   authGuard, permissionGuard('manage:users'), lockUser);
 router.patch('/users/:id/unlock', authGuard, permissionGuard('manage:users'), unlockUser);
