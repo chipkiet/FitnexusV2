@@ -1,4 +1,6 @@
 // utils/emailTemplates.js
+import { FRONTEND_URL } from "../config/env.js";
+
 export function buildResetPasswordEmail({
   name = "bạn",
   resetUrl,
@@ -91,7 +93,7 @@ export function buildPremiumUpgradedEmailVn2({
   dashboardUrl, // ignored
   brand = "Fitnexus",
   supportEmail = process.env.SMTP_USER,
-  websiteUrl = process.env.FRONTEND_URL || "https://fitnexus.app",
+  websiteUrl = FRONTEND_URL,
 }) {
   const upgradedStr = new Date(upgradedAt || Date.now()).toLocaleDateString("vi-VN");
   const expiresStr = expiresAt ? new Date(expiresAt).toLocaleDateString("vi-VN") : null;

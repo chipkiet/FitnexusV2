@@ -5,6 +5,7 @@ import { createGoogleLoginOtp, createGoogleOtpState } from "../services/googleOt
 import { sendMail } from "../utils/mailer.js";
 import { buildEmailOtpTemplate } from "../utils/emailTemplates.js";
 import User from "../models/user.model.js";
+import { FRONTEND_URL } from "../config/env.js";
 
 const router = express.Router();
 
@@ -25,13 +26,13 @@ router.get(
 router.get(
   "/google/callback",
   passport.authenticate("google", {
-    failureRedirect: `${process.env.FRONTEND_URL}/login`,
+    failureRedirect: `${FRONTEND_URL}/login`,
     keepSessionInfo: true,
   }),
   async (req, res) => {
     try {
       if (!req.user) {
-        return res.redirect(`${process.env.FRONTEND_URL}/login?oauth=failed`);
+        return res.redirect(`${FRONTEND_URL}/login?oauth=failed`);
       }
 
       const baseUserId = req.user.user_id || req.user.id;
@@ -40,7 +41,7 @@ router.get(
           ? req.user
           : await User.findByPk(baseUserId);
       if (!oauthUser) {
-        return res.redirect(`${process.env.FRONTEND_URL}/login?oauth=failed`);
+        return res.redirect(`${FRONTEND_URL}/login?oauth=failed`);
       }
 
       const userId = oauthUser.user_id || oauthUser.id || baseUserId;
@@ -68,7 +69,7 @@ router.get(
         );
       }
 
-      const url = new URL("/login/otp", process.env.FRONTEND_URL);
+      const url = new URL("/login/otp", FRONTEND_URL);
       if (oauthUser.email) url.searchParams.set("email", oauthUser.email);
       url.searchParams.set("otpToken", otpToken);
       if (redirectHint) {
@@ -77,7 +78,7 @@ router.get(
       return res.redirect(url.toString());
     } catch (error) {
       console.error("Google OAuth OTP error:", error);
-      return res.redirect(`${process.env.FRONTEND_URL}/login?oauth=error`);
+      return res.redirect(`${FRONTEND_URL}/login?oauth=error`);
     }
   }
 );

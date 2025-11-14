@@ -25,6 +25,7 @@ import { resendGoogleOtp, verifyGoogleOtp } from "../controllers/googleOtp.contr
 import authGuard from "../middleware/auth.guard.js";
 import { registerValidation, loginValidation } from "../middleware/auth.validation.js";
 import { body, validationResult } from "express-validator";
+import { FRONTEND_URL } from "../config/env.js";
 
 const router = express.Router();
 
@@ -74,11 +75,11 @@ router.get(
 router.get(
   "/google/callback",
   passport.authenticate("google", {
-    failureRedirect: `${process.env.FRONTEND_URL}/login`,
+    failureRedirect: `${FRONTEND_URL}/login`,
     session: false,
   }),
   async (req, res) => {
-    if (!req.user) return res.redirect(`${process.env.FRONTEND_URL}/login`);
+    if (!req.user) return res.redirect(`${FRONTEND_URL}/login`);
 
     const oauthUser = req.user;
     if (oauthUser && typeof oauthUser.save === "function") {
@@ -105,7 +106,7 @@ router.get(
 
     let targetOrigin = "*";
     try {
-      targetOrigin = new URL(process.env.FRONTEND_URL).origin;
+      targetOrigin = new URL(FRONTEND_URL).origin;
     } catch {
       targetOrigin = "*";
     }
@@ -130,7 +131,7 @@ router.get(
     } catch (e) {} finally {
       window.close();
       setTimeout(function(){
-        try { window.location.replace(${JSON.stringify(process.env.FRONTEND_URL)}); } catch(_) {}
+        try { window.location.replace(${JSON.stringify(FRONTEND_URL)}); } catch(_) {}
       }, 300);
     }
   })();
@@ -143,7 +144,7 @@ OK
 router.get("/logout-session", (req, res, next) => {
   req.logout((err) => {
     if (err) return next(err);
-    res.redirect(process.env.FRONTEND_URL);
+    res.redirect(FRONTEND_URL);
   });
 });
 

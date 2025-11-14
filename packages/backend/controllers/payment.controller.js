@@ -8,6 +8,7 @@ import payos, { payosEnabled } from "../services/payos.client.js";
 import { sendMail } from "../utils/mailer.js";
 import { buildPremiumUpgradedEmailVn2 as buildPremiumUpgradedEmail } from "../utils/emailTemplates.js";
 import { notifyUser } from "../services/notification.service.js";
+import { FRONTEND_URL, BACKEND_URL } from "../config/env.js";
 
 dns.setDefaultResultOrder?.("ipv4first");
 
@@ -73,8 +74,8 @@ export async function createPaymentLink(req, res) {
       payos_order_code: orderCode,
     });
 
-    const backendUrl = process.env.BACKEND_URL || "http://localhost:3001";
-    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+    const backendUrl = BACKEND_URL;
+    const frontendUrl = FRONTEND_URL;
     const useBackendReturn = String(process.env.PAYOS_USE_BACKEND_RETURN ?? '1') !== '0';
     const returnUrl = useBackendReturn
       ? `${backendUrl}/api/payment/return`
@@ -200,7 +201,7 @@ export async function handlePayosWebhook(req, res) {
         try {
           const upgradedUser = await User.findByPk(tx.user_id);
           if (upgradedUser?.email) {
-            const frontend = process.env.FRONTEND_URL || "http://localhost:5173";
+            const frontend = FRONTEND_URL;
             const tpl = buildPremiumUpgradedEmail({
               name: upgradedUser.fullName || upgradedUser.username || "bạn",
               expiresAt: newExpiryDate,
@@ -235,7 +236,7 @@ export async function handlePayosWebhook(req, res) {
 
 // === Redirect sau khi thanh toán ===
 export async function returnUrl(req, res) {
-  const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+  const frontendUrl = FRONTEND_URL;
   try {
     const orderCodeRaw = req.query?.orderCode;
     const orderCode = Number(orderCodeRaw);
@@ -271,7 +272,7 @@ export async function returnUrl(req, res) {
 
 export async function cancelUrl(req, res) {
   try {
-    const frontend = process.env.FRONTEND_URL || "http://localhost:5173";
+    const frontend = FRONTEND_URL;
     return res.redirect(`${frontend}/dashboard`);
 
   } catch {
@@ -319,7 +320,7 @@ export async function verifyPaymentStatus(req, res) {
         try {
           const upgradedUser = await User.findByPk(tx.user_id);
           if (upgradedUser?.email) {
-            const frontend = process.env.FRONTEND_URL || "http://localhost:5173";
+            const frontend = FRONTEND_URL;
             const tpl = buildPremiumUpgradedEmail({
               name: upgradedUser.fullName || upgradedUser.username || "bạn",
               expiresAt: newExpiryDate,
@@ -366,7 +367,7 @@ export async function mockUpgradePremium(req, res) {
     const user = await User.findByPk(userId);
     try {
       if (user?.email) {
-        const frontend = process.env.FRONTEND_URL || "http://localhost:5173";
+        const frontend = FRONTEND_URL;
         const tpl = buildPremiumUpgradedEmail({
           name: user.fullName || user.username || 'bạn',
           expiresAt: newExpiryDate,

@@ -3,7 +3,6 @@ import express from "express";
 import dns from "dns";
 import cors from "cors";
 import morgan from "morgan";
-import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import workoutRouter from "./routes/workout.routes.js";
 import helmet from "helmet";
@@ -27,30 +26,24 @@ import adminMetricsRoutes from "./routes/admin.metrics.routes.js";
 import adminRevenueRoutes from "./routes/admin.revenue.routes.js"; // ✅ Import route
 import supportRouter from "./routes/support.routes.js";
 import notificationRouter from "./routes/notification.routes.js";
+import {
+  FRONTEND_URL,
+  ADDITIONAL_CORS_ORIGINS,
+} from "./config/env.js";
 import { ensureAiApp } from "./ai/index.js";
 
-dotenv.config();
 import activityTracker from "./middleware/activity.tracker.js";
 
 /* -------------------- Khởi tạo app -------------------- */
 const app = express();
 const isDev = process.env.NODE_ENV !== "production";
-const FRONTEND = process.env.FRONTEND_URL || "http://localhost:5173";
-const defaultDevOrigins = [
-  "http://localhost:5174",
-  "http://localhost:5175",
-  "http://localhost:5178",
-  "http://localhost:5179",
-];
-const envAdditionalOrigins = (process.env.ADDITIONAL_CORS_ORIGINS || "")
+const FRONTEND = FRONTEND_URL;
+const envAdditionalOrigins = (ADDITIONAL_CORS_ORIGINS || "")
   .split(",")
   .map((origin) => origin.trim())
   .filter(Boolean);
-const allowedOrigins = Array.from(
-  new Set([
-    FRONTEND,
-    ...(envAdditionalOrigins.length ? envAdditionalOrigins : defaultDevOrigins),
-  ])
+const allowedOrigins = Array.from(new Set([FRONTEND, ...envAdditionalOrigins])).filter(
+  Boolean
 );
 
 /* -------------------- IPv4 preference -------------------- */
@@ -59,7 +52,7 @@ try {
 } catch {}
 
 /* -------------------- PayOS Webhook Raw Body -------------------- */
-// ✅ Middleware này phải ĐẶT TRƯỚC express.json()
+// Middleware này phải ĐẶT TRƯỚC express.json()
 app.use("/api/payment/payos-webhook", bodyParser.raw({ type: "*/*" }));
 
 /* -------------------- Body & Cookies -------------------- */

@@ -98,28 +98,22 @@ export function createAiExpressApp() {
   if (process.env.GEMINI_API_KEY) {
     try {
       genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-      // eslint-disable-next-line no-console
       console.log("[AI] Gemini API initialized");
     } catch (e) {
-      // eslint-disable-next-line no-console
       console.error("[AI] Failed to initialize Gemini:", e);
     }
   } else {
-    // eslint-disable-next-line no-console
     console.warn("[AI] GEMINI_API_KEY not set - AI will run in limited mode");
   }
 
-  // Build code index on first init
   if (!indexer) {
     const projectRoot = getProjectRoot();
     indexer = new CodeIndexer({ rootDir: projectRoot });
     setImmediate(() => {
       try {
         indexer.build();
-        // eslint-disable-next-line no-console
         console.log(`[AI] Indexed codebase: ${indexer.chunks.length} chunks`);
       } catch (e) {
-        // eslint-disable-next-line no-console
         console.error("[AI] Index build error:", e);
       }
     });
@@ -136,19 +130,99 @@ export function createAiExpressApp() {
     });
   });
 
-  // Basic rate limit để tránh spam/many-requests
   const chatLimiter = rateLimit({
     windowMs: 60 * 1000, // 1 phút
     max: 8, // tối đa 8 yêu cầu/phút mỗi IP
     standardHeaders: true,
     legacyHeaders: false,
-    message: { success: false, message: "Quá nhiều yêu cầu chat. Vui lòng thử lại sau." },
+    message: {
+      success: false,
+      message: "Quá nhiều yêu cầu chat. Vui lòng thử lại sau.",
+    },
   });
 
   app.post("/chat", chatLimiter, async (req, res) => {
-    const { message = "", history = [] } = req.body || {};
+    const { message: rawMessage = "", history = [] } = req.body || {};
+    let message = rawMessage;
     if (!message || typeof message !== "string") {
-      return res.status(400).json({ success: false, message: "message is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "message is required" });
+    }
+
+    function levenshtein(a, b) {
+      a = String(a || "");
+      b = String(b || "");
+
+      const m = a.length;
+      const n = b.length;
+
+      // nếu 1 trong 2 rỗng
+      if (m === 0) return n;
+      if (n === 0) return m;
+
+      // tạo ma trận (n+1) cột
+      const dp = Array.from({ length: n + 1 }, () => new Array(m + 1));
+
+      // khởi tạo hàng 0, cột 0
+      for (let i = 0; i <= m; i++) dp[0][i] = i;
+      for (let j = 0; j <= n; j++) dp[j][0] = j;
+
+      for (let j = 1; j <= n; j++) {
+        for (let i = 1; i <= m; i++) {
+          const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+
+          dp[j][i] = Math.min(
+            dp[j][i - 1] + 1, // insert
+            dp[j - 1][i] + 1, // delete
+            dp[j - 1][i - 1] + cost // replace
+          );
+        }
+      }
+
+      return dp[n][m];
+    }
+
+    const keywords = [
+      "streak",
+      "ai trainer",
+      "nutrition",
+      "subscription",
+      "profile",
+      "workout",
+      "challenge",
+      "plan",
+      "meal",
+      "history",
+    ];
+
+    function resolveKeyword(input) {
+      input = input.toLowerCase().trim();
+
+      // exact match
+      if (keywords.includes(input)) return input;
+
+      // fuzzy match (approximate)
+      let best = null;
+      let bestScore = Infinity;
+
+      for (const key of keywords) {
+        const score = levenshtein(input, key);
+        if (score < bestScore) {
+          best = key;
+          bestScore = score;
+        }
+      }
+
+      // threshold: nếu sai chính tả nhẹ (khoảng cách <= 3 ký tự)
+      if (bestScore <= 3) return best;
+
+      return null;
+    }
+
+    const resolved = resolveKeyword(message, keywords);
+    if (resolved) {
+      message = `Người dùng hỏi: "${message}". Hệ thống xác định họ đang muốn nói về tính năng: "${resolved}".`;
     }
 
     const top = indexer?.search(message, 8) || [];
@@ -161,7 +235,9 @@ export function createAiExpressApp() {
 
 Yêu cầu trả lời:
 - Ngắn gọn, dễ hiểu, tập trung vào: tính năng, cách thao tác, lợi ích cho người dùng.
-- Trả lời bằng tiếng Việt, dùng Markdown: tiêu đề ngắn, danh sách "- ", xuống dòng rõ ràng.
+- Trả lời bằng tiếng Việt , xuống dòng rõ ràng.
+- Không dùng markdown: không dùng *, **, -, _, #.
+- Nếu cần liệt kê, dùng bullet "•".
 - Nếu thiếu dữ liệu, hãy nói rõ chưa có thông tin chi tiết và đưa ra hướng dẫn tổng quát.
 - Không nhắc đến đường dẫn/tên file/thư mục, chi tiết mã nguồn hay tên bảng DB cụ thể.
 
@@ -195,13 +271,21 @@ ${contextBlocks.join("\n\n")}`;
         const chat = model.startChat({
           history: [
             { role: "user", parts: [{ text: systemPrompt }] },
-            { role: "model", parts: [{ text: "Đã hiểu. Mình là trợ lý AI của Fitnexus và sẵn sàng hỗ trợ!" }] },
+            {
+              role: "model",
+              parts: [
+                {
+                  text: "Đã hiểu. Mình là trợ lý AI của Fitnexus và sẵn sàng hỗ trợ!",
+                },
+              ],
+            },
             ...chatHistory,
           ],
         });
 
         const result = await chat.sendMessage(userPromptWithContext);
-        const reply = result.response.text() || "Xin lỗi, mình chưa tạo được phản hồi.";
+        const reply =
+          result.response.text() || "Xin lỗi, mình chưa tạo được phản hồi.";
         return res.json({ success: true, data: { reply } });
       }
 
