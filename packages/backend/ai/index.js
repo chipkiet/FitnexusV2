@@ -194,6 +194,12 @@ export function createAiExpressApp() {
       "plan",
       "meal",
       "history",
+      // 3D modeling related
+      "model3d",
+      "3d",
+      "3d model",
+      "mô hình 3d",
+      "modeling 3d",
     ];
 
     function resolveKeyword(input) {
@@ -201,6 +207,19 @@ export function createAiExpressApp() {
 
       // exact match
       if (keywords.includes(input)) return input;
+
+      // quick contains checks for 3D/modeling phrases
+      const k3d = [
+        "model3d",
+        "3d model",
+        "mô hình 3d",
+        "mo hinh 3d",
+        "modeling 3d",
+        "3d",
+      ];
+      for (const k of k3d) {
+        if (input.includes(k)) return "model3d";
+      }
 
       // fuzzy match (approximate)
       let best = null;
@@ -225,6 +244,9 @@ export function createAiExpressApp() {
       message = `Người dùng hỏi: "${message}". Hệ thống xác định họ đang muốn nói về tính năng: "${resolved}".`;
     }
 
+    const is3D =
+      resolved === "model3d" ||
+      ["3d", "3d model", "mô hình 3d", "modeling 3d"].includes(resolved);
     const top = indexer?.search(message, 8) || [];
     const contextBlocks = top.map((ch) => ch.text.substring(0, 800));
 
@@ -248,6 +270,17 @@ Mô hình dữ liệu (Sequelize Models, rút gọn):
 ${dbDesc || "(Không lấy được mô tả mô hình)"}
 `;
 
+    const systemPromptFinal = is3D
+      ? `${systemPrompt}
+
+Ghi chú về tính năng Mô hình 3D:
+• Cho phép xem mô hình cơ thể người 3D, xoay/zoom để quan sát.
+• Chọn nhóm cơ trực tiếp trên mô hình để xem bài tập liên quan (primary/secondary).
+• Có chế độ xem thử; khi đăng nhập sẽ đầy đủ chức năng.
+• Cách truy cập: mở mục "Mô hình 3D/Modeling 3D" trong ứng dụng và làm theo hướng dẫn trên màn hình.
+`
+      : systemPrompt;
+
     const userPromptWithContext = `${message}
 
 Ngữ cảnh mã liên quan (top matches):
@@ -270,7 +303,7 @@ ${contextBlocks.join("\n\n")}`;
 
         const chat = model.startChat({
           history: [
-            { role: "user", parts: [{ text: systemPrompt }] },
+            { role: "user", parts: [{ text: systemPromptFinal }] },
             {
               role: "model",
               parts: [
@@ -284,8 +317,15 @@ ${contextBlocks.join("\n\n")}`;
         });
 
         const result = await chat.sendMessage(userPromptWithContext);
-        const reply =
+        let reply =
           result.response.text() || "Xin lỗi, mình chưa tạo được phản hồi.";
+        reply = reply
+          // bỏ **bold**
+          .replace(/\*\*(.+?)\*\*/g, "$1")
+          // đổi "- " đầu dòng thành bullet • (phòng khi nó vẫn dùng -)
+          .replace(/^- /gm, "• ")
+          // nếu vẫn còn sót dấu * lẻ, xoá luôn (tuỳ ông)
+          .replace(/\*/g, "");
         return res.json({ success: true, data: { reply } });
       }
 
