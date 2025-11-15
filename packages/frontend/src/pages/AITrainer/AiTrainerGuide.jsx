@@ -8,6 +8,8 @@ import b2 from "../../assets/aitrainer/B2.png";
 import b3 from "../../assets/aitrainer/B3.png";
 import b31 from "../../assets/aitrainer/B3-1.png";
 import b4 from "../../assets/aitrainer/B4.png";
+import b5 from "../../assets/aitrainer/B5.png";
+import b6 from "../../assets/aitrainer/B6.png";
 
 export default function AiTrainerGuide() {
   const navigate = useNavigate();
@@ -238,32 +240,36 @@ export default function AiTrainerGuide() {
                 Ghi nhận thực chiến
               </h3>
               <p className="mt-2 text-sm leading-6 text-gray-700">
-                Sau mỗi buổi, bạn ghi lại set/reps/tạ, mức mệt, và feedback. AI
-                dùng dữ liệu này để điều chỉnh khối lượng tuần sau, đảm bảo tiến
-                bộ mà không quá tải.
+                Bạn sẽ nhận được một plan chứa toàn bộ các bài tập được đề xuất
+                bởi AI Trainer dựa trên những phân tích thu được từ cơ thể bạn.
+                Plan này sẽ được lưu lại và sẽ được so sánh sau này để đánh giá
+                tiến bộ của bạn và giới hạn cơ thể bạn qua thời gian.
               </p>
-              <div className="mt-4 overflow-hidden border-2 border-dashed rounded-xl border-rose-200">
-                <div className="flex items-center justify-center w-full h-48 bg-rose-50/40 text-rose-600">
-                  <span className="text-sm">
-                    Khung ảnh 6: Biểu đồ tiến độ / PR
-                  </span>
+              <div className="mt-4 overflow-hidden bg-white border-2 border-dashed rounded-xl border-rose-200">
+                <div className="flex items-center justify-center w-full h-64 p-2 md:h-80 bg-rose-50/40 sm:p-4">
+                  <img
+                    src={b5}
+                    alt="image-ai"
+                    className="object-contain w-auto max-h-full"
+                  />
                 </div>
               </div>
             </div>
             <div className="p-5 bg-white border rounded-2xl border-rose-200/70">
               <h3 className="text-base font-semibold text-gray-900">
-                Cập nhật kiểu hình (tùy chọn)
+                Bắt đầu tập
               </h3>
               <p className="mt-2 text-sm leading-6 text-gray-700">
-                Định kỳ (4–8 tuần), bạn có thể tải ảnh mới để AI đánh giá lại tỉ
-                lệ, từ đó tinh chỉnh mục tiêu và ưu tiên nhóm cơ cho chu kỳ tiếp
-                theo.
+                Bạn bắt đầu tập các bài tập đã được thêm vào plan, sau khi hoàn
+                thành, lịch sử tập luyện của bạn sẽ được lưu vào plan
               </p>
-              <div className="mt-4 overflow-hidden border-2 border-dashed rounded-xl border-rose-200">
-                <div className="flex items-center justify-center w-full h-48 bg-rose-50/40 text-rose-600">
-                  <span className="text-sm">
-                    Khung ảnh 7: So sánh trước/sau
-                  </span>
+              <div className="mt-4 overflow-hidden bg-white border-2 border-dashed rounded-xl border-rose-200">
+                <div className="flex items-center justify-center w-full h-64 p-2 md:h-80 bg-rose-50/40 sm:p-4">
+                  <img
+                    src={b6}
+                    alt="image-ai"
+                    className="object-contain w-auto max-h-full"
+                  />
                 </div>
               </div>
             </div>

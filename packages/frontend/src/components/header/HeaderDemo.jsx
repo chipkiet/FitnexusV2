@@ -68,7 +68,6 @@ export default function HeaderDemo() {
   return (
     <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/85 backdrop-blur-xl">
       <div className="flex items-center justify-between px-4 py-2 mx-auto max-w-7xl">
-       
         <button
           onClick={() => navigate("/")}
           className="-m-2.5 p-2.5 shrink-0"
@@ -96,7 +95,6 @@ export default function HeaderDemo() {
           >
             AI
           </button>
-          
 
           <div className="relative" ref={workoutRef}>
             <button
@@ -106,8 +104,12 @@ export default function HeaderDemo() {
               className="inline-flex items-center text-sm text-gray-800 hover:text-blue-600"
             >
               Luyện tập
-              <svg className="w-4 h-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z"/>
+              <svg
+                className="w-4 h-4 ml-1"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" />
               </svg>
             </button>
 
@@ -122,8 +124,12 @@ export default function HeaderDemo() {
                   onClick={() => navigate("/exercises-demo")}
                   className="w-full px-3 py-2 text-left rounded-lg hover:bg-gray-50"
                 >
-                  <div className="text-sm font-semibold text-gray-900">Xem tất cả bài tập</div>
-                  <div className="text-xs text-gray-500">1000+ bài tập theo nhóm cơ</div>
+                  <div className="text-sm font-semibold text-gray-900">
+                    Xem tất cả bài tập
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    1000+ bài tập theo nhóm cơ
+                  </div>
                 </button>
 
                 <div className="h-px my-2 bg-gray-200" />
@@ -166,13 +172,6 @@ export default function HeaderDemo() {
           >
             Dinh dưỡng
           </button>
-          <button
-            onClick={() => navigate("/shopping-demo")}
-            className="text-sm text-gray-800 hover:text-blue-600"
-          >
-            Shopping
-          </button>
-
         </nav>
 
         {/* CTA phải: “Tải ứng dụng” + Đăng nhập (theo form eDoctor) */}
@@ -190,7 +189,7 @@ export default function HeaderDemo() {
             onClick={() => navigate(isAuthenticated ? "/dashboard" : "/login")}
             className="text-sm font-semibold text-gray-700 hover:text-blue-600"
           >
-            {isAuthenticated ? (user?.username ?? "Tài khoản") : "Đăng nhập"}
+            {isAuthenticated ? user?.username ?? "Tài khoản" : "Đăng nhập"}
           </button>
         </div>
       </div>
@@ -199,7 +198,10 @@ export default function HeaderDemo() {
       {openMobile && (
         <div className="bg-white border-t border-gray-200 md:hidden">
           <div className="px-4 py-3 space-y-2">
-            <button className="block w-full py-2 text-left" onClick={() => navigate("/")}>
+            <button
+              className="block w-full py-2 text-left"
+              onClick={() => navigate("/")}
+            >
               Trang chủ
             </button>
 
@@ -218,7 +220,9 @@ export default function HeaderDemo() {
                 <button
                   className="block w-full px-3 py-2 text-left rounded-md hover:bg-gray-50"
                   onClick={() =>
-                    !isAuthenticated ? navigate("/login", { state: { from: "/plans" } }) : navigate("/plans")
+                    !isAuthenticated
+                      ? navigate("/login", { state: { from: "/plans" } })
+                      : navigate("/plans")
                   }
                 >
                   Kế hoạch của tôi
@@ -226,7 +230,9 @@ export default function HeaderDemo() {
                 <button
                   className="block w-full px-3 py-2 text-left rounded-md hover:bg-gray-50"
                   onClick={() =>
-                    !isAuthenticated ? navigate("/login", { state: { from: "/plans/new" } }) : navigate("/plans/new")
+                    !isAuthenticated
+                      ? navigate("/login", { state: { from: "/plans/new" } })
+                      : navigate("/plans/new")
                   }
                 >
                   Tạo plan mới
@@ -234,13 +240,22 @@ export default function HeaderDemo() {
               </div>
             </details>
 
-            <button className="block w-full py-2 text-left" onClick={() => navigate("/modeling-demo")}>
+            <button
+              className="block w-full py-2 text-left"
+              onClick={() => navigate("/modeling-demo")}
+            >
               Mô hình hoá
             </button>
-            <button className="block w-full py-2 text-left" onClick={() => navigate("/nutrition-demo")}>
+            <button
+              className="block w-full py-2 text-left"
+              onClick={() => navigate("/nutrition-demo")}
+            >
               Dinh dưỡng
             </button>
-            <button className="block w-full py-2 text-left" onClick={() => navigate("/community")}>
+            <button
+              className="block w-full py-2 text-left"
+              onClick={() => navigate("/community")}
+            >
               Cộng đồng
             </button>
 
@@ -254,8 +269,13 @@ export default function HeaderDemo() {
             </a>
 
             <div className="pt-2 border-t">
-              <button className="w-full px-4 py-2 border rounded-full" onClick={() => navigate(isAuthenticated ? "/dashboard" : "/login")}>
-                {isAuthenticated ? (user?.username ?? "Tài khoản") : "Đăng nhập"}
+              <button
+                className="w-full px-4 py-2 border rounded-full"
+                onClick={() =>
+                  navigate(isAuthenticated ? "/dashboard" : "/login")
+                }
+              >
+                {isAuthenticated ? user?.username ?? "Tài khoản" : "Đăng nhập"}
               </button>
             </div>
           </div>
