@@ -339,7 +339,7 @@ export default function HeaderLogin() {
           </button>
 
           <button
-            onClick={() => navigate("/nutrition-ai")}
+            onClick={() => navigate("/screenshots")}
             className="text-sm text-gray-800 hover:text-blue-600"
           >
             Thư viện ảnh

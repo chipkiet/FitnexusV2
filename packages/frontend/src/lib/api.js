@@ -101,6 +101,10 @@ export const endpoints = {
     markAll: "/api/notifications/read-all",
   },
 
+  screenshots: {
+    list: "/api/user-screenshots",
+  },
+
   // AI endpoints (proxied via backend, also available on separate AI port)
   ai: {
     health: "/api/ai/health",
@@ -406,7 +410,12 @@ export const createSubAdmin = async ({ email, username, password }) => {
 };
 
 // ===== Plans convenience APIs =====
-export const createPlanApi = async ({ name, description, difficulty_level, is_public }) => {
+export const createPlanApi = async ({
+  name,
+  description,
+  difficulty_level,
+  is_public,
+}) => {
   const res = await api.post(endpoints.plans.base, {
     name,
     description,
@@ -421,7 +430,14 @@ export const getPlanByIdApi = async (planId) => {
   return res.data;
 };
 
-export const addExerciseToPlanApi = async ({ planId, exercise_id, session_order, sets_recommended, reps_recommended, rest_period_seconds }) => {
+export const addExerciseToPlanApi = async ({
+  planId,
+  exercise_id,
+  session_order,
+  sets_recommended,
+  reps_recommended,
+  rest_period_seconds,
+}) => {
   const res = await api.post(endpoints.plans.items(planId), {
     exercise_id,
     session_order,
@@ -433,7 +449,9 @@ export const addExerciseToPlanApi = async ({ planId, exercise_id, session_order,
 };
 
 export const getMyPlansApi = async ({ limit = 50, offset = 0 } = {}) => {
-  const res = await api.get(endpoints.plans.base, { params: { mine: 1, limit, offset } });
+  const res = await api.get(endpoints.plans.base, {
+    params: { mine: 1, limit, offset },
+  });
   return res.data; // expect { success, data: { items, total } } or similar
 };
 
@@ -448,26 +466,36 @@ export const deletePlanApi = async (planId) => {
   return res.data;
 };
 
-
 // ===== Admin: popular exercises =====
-export const getAdminPopularExercises = async ({ limit = 50, offset = 0, search = "" } = {}) => {
+export const getAdminPopularExercises = async ({
+  limit = 50,
+  offset = 0,
+  search = "",
+} = {}) => {
   const params = { limit, offset };
   if (search) params.search = search;
-  const res = await api.get('/api/admin/popular-exercises', { params });
+  const res = await api.get("/api/admin/popular-exercises", { params });
   return res.data;
 };
 
 // Admin User Plans API
-export const getAdminUserPlans = async ({ limit = 50, offset = 0, search = "", status = "" } = {}) => {
+export const getAdminUserPlans = async ({
+  limit = 50,
+  offset = 0,
+  search = "",
+  status = "",
+} = {}) => {
   const params = { limit, offset };
   if (search) params.search = search;
   if (status) params.status = status;
-  const res = await api.get('/api/admin/user-plans', { params });
+  const res = await api.get("/api/admin/user-plans", { params });
   return res.data;
 };
 
 export const updatePlanStatus = async (planId, status) => {
-  const res = await api.put(`/api/admin/user-plans/${planId}/status`, { status });
+  const res = await api.put(`/api/admin/user-plans/${planId}/status`, {
+    status,
+  });
   return res.data;
 };
 
@@ -494,12 +522,15 @@ export const getExerciseFavoriteStatus = async (exerciseId) => {
 
 // List current user's favorite exercises
 export const getMyFavoriteExercisesApi = async () => {
-  const res = await api.get('/api/exercises/favorites');
+  const res = await api.get("/api/exercises/favorites");
   return res.data;
 };
 
 export const verifyGoogleOtpApi = async (code, otpToken) => {
-  const res = await api.post(endpoints.auth.googleOtpVerify, { code, otpToken });
+  const res = await api.post(endpoints.auth.googleOtpVerify, {
+    code,
+    otpToken,
+  });
   return res.data;
 };
 
@@ -552,7 +583,10 @@ export const adminGetBugReportApi = async (reportId) => {
 };
 
 export const adminRespondBugReportApi = async (reportId, payload) => {
-  const res = await api.patch(endpoints.support.adminRespond(reportId), payload);
+  const res = await api.patch(
+    endpoints.support.adminRespond(reportId),
+    payload
+  );
   return res.data;
 };
 
@@ -573,25 +607,29 @@ export const markAllNotificationsReadApi = async () => {
 
 export default api;
 
-
 export const reorderPlanExercisesApi = async (planId, exercises) => {
-    const res = await api.put(endpoints.plans.reorder(planId), {exercises});
-    return res.data;
+  const res = await api.put(endpoints.plans.reorder(planId), { exercises });
+  return res.data;
 };
 
 export const updatePlanExerciseApi = async (planId, planExerciseId, data) => {
-    const res = await api.patch(endpoints.plans.updateExercise(planId, planExerciseId), data);
-    return res.data;
-}
+  const res = await api.patch(
+    endpoints.plans.updateExercise(planId, planExerciseId),
+    data
+  );
+  return res.data;
+};
 
 export const deleteExerciseFromPlanApi = async (planId, planExerciseId) => {
-    const res = await api.delete(endpoints.plans.deleteExercise(planId, planExerciseId));
-    return res.data;
+  const res = await api.delete(
+    endpoints.plans.deleteExercise(planId, planExerciseId)
+  );
+  return res.data;
 };
 
 // ===== Workout convenience APIs =====
 export const getActiveWorkoutSessionApi = async () => {
-  const res = await api.get('/api/workout/active');
+  const res = await api.get("/api/workout/active");
   return res.data;
 };
 
@@ -617,7 +655,7 @@ export const listMyPurchasesApi = async () => {
 };
 
 export const createWorkoutSessionApi = async ({ plan_id, notes }) => {
-  const res = await api.post('/api/workout', { plan_id, notes });
+  const res = await api.post("/api/workout", { plan_id, notes });
   return res.data;
 };
 
@@ -641,15 +679,32 @@ export const completeWorkoutSessionApi = async (sessionId, payload = {}) => {
   return res.data;
 };
 
-export const listWorkoutSessionsApi = async ({ planId, status, limit = 20, offset = 0 } = {}) => {
+export const listWorkoutSessionsApi = async ({
+  planId,
+  status,
+  limit = 20,
+  offset = 0,
+} = {}) => {
   const params = { limit, offset };
   if (planId) params.planId = planId;
   if (status) params.status = status;
-  const res = await api.get('/api/workout', { params });
+  const res = await api.get("/api/workout", { params });
   return res.data;
 };
 
 export const mockUpgradePremiumApi = async () => {
   const res = await api.post(endpoints.payment.mockUpgrade);
+  return res.data;
+};
+
+// ===== Screenshots APIs =====
+export const listUserScreenshotsApi = async ({
+  feature,
+  page = 1,
+  limit = 20,
+} = {}) => {
+  const params = { page, limit };
+  if (feature && feature !== "all") params.feature = feature;
+  const res = await api.get(endpoints.screenshots.list, { params });
   return res.data;
 };
