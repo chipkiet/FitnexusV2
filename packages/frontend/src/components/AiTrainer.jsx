@@ -259,9 +259,9 @@ const AiTrainer = () => {
 
           {/* Results Section */}
           {(isLoading || analysisResult) && (
-            <div className="grid grid-cols-1 gap-8 mt-10 lg:grid-cols-2">
-              {/* Original Image */}
-              <div className="p-6 bg-white border border-blue-100 shadow-lg rounded-2xl">
+            <div className="flex gap-8 mt-10">
+              {/* Original Image - 30% */}
+              <div className="w-[30%] p-6 bg-white border border-blue-100 shadow-lg rounded-2xl flex-shrink-0">
                 <h3 className="mb-4 text-2xl font-extrabold text-rose-600">
                   Ảnh gốc
                 </h3>
@@ -269,13 +269,13 @@ const AiTrainer = () => {
                   <img
                     src={previewImage}
                     alt="Preview"
-                    className="rounded-lg shadow"
+                    className="w-full rounded-lg shadow"
                   />
                 )}
               </div>
 
-              {/* Processed Image & Analysis */}
-              <div className="p-6 bg-white border border-blue-100 shadow-lg rounded-2xl">
+              {/* Processed Image & Analysis - 60% */}
+              <div className="flex-1 p-6 bg-white border border-blue-100 shadow-lg rounded-2xl">
                 <h3 className="mb-4 text-2xl font-extrabold text-rose-600">
                   Kết quả phân tích
                 </h3>
@@ -286,53 +286,95 @@ const AiTrainer = () => {
                 )}
                 {analysisResult && (
                   <div className="space-y-6">
-                    <img
-                      src={analysisResult.processed_image_url}
-                      alt="Processed"
-                      className="mb-2 rounded-lg shadow"
-                    />
-                    {/* Metrics & Assessment first */}
-                    <MetricsPanel
-                      analysisResult={analysisResult}
-                      heightCm={heightCm}
-                    />
+                    <div className="flex gap-6">
+                      {/* Processed image - same size as original */}
+                      <div className="w-[50%] flex-shrink-0">
+                        <img
+                          src={analysisResult.processed_image_url}
+                          alt="Processed"
+                          className="w-full rounded-lg shadow"
+                        />
+                      </div>
 
-                    {/* Textual analysis and exercise suggestions combined */}
-                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                      {/* Metrics beside image */}
+                      <div className="flex-1">
+                        <MetricsPanel
+                          analysisResult={analysisResult}
+                          heightCm={heightCm}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Textual analysis and exercise suggestions - full width */}
+                    <div className="grid grid-cols-2 gap-6">
                       {/* Textual analysis */}
-                      <div className="p-4 bg-rose-50 border border-rose-200 rounded-lg">
-                        <h4 className="mb-2 text-lg font-extrabold text-rose-600">Phân tích chi tiết</h4>
+                      <div className="p-4 border rounded-lg bg-rose-50 border-rose-200">
+                        <h4 className="mb-2 text-lg font-extrabold text-rose-600">
+                          Phân tích chi tiết
+                        </h4>
                         {analysisResult.analysis_data?.body_type && (
-                          <p className="mb-1"><strong className="text-rose-700">Dáng:</strong> {analysisResult.analysis_data.body_type}</p>
+                          <p className="mb-1">
+                            <strong className="text-rose-700">Dáng:</strong>{" "}
+                            {analysisResult.analysis_data.body_type}
+                          </p>
                         )}
                         {analysisResult.analysis_data?.body_analysis && (
-                          <p className="mb-2 text-slate-700 whitespace-pre-line">{analysisResult.analysis_data.body_analysis}</p>
+                          <p className="mb-2 whitespace-pre-line text-slate-700">
+                            {analysisResult.analysis_data.body_analysis}
+                          </p>
                         )}
                         {analysisResult.analysis_data?.nutrition_advice && (
-                          <p className="mb-1"><strong className="text-blue-700">Dinh dưỡng:</strong> {analysisResult.analysis_data.nutrition_advice}</p>
+                          <p className="mb-1">
+                            <strong className="text-blue-700">
+                              Dinh dưỡng:
+                            </strong>{" "}
+                            {analysisResult.analysis_data.nutrition_advice}
+                          </p>
                         )}
                         {analysisResult.analysis_data?.lifestyle_tips && (
-                          <p className="mb-1"><strong className="text-blue-700">Lối sống:</strong> {analysisResult.analysis_data.lifestyle_tips}</p>
+                          <p className="mb-1">
+                            <strong className="text-blue-700">Lối sống:</strong>{" "}
+                            {analysisResult.analysis_data.lifestyle_tips}
+                          </p>
                         )}
                         {analysisResult.analysis_data?.estimated_timeline && (
-                          <p className="mb-1"><strong className="text-blue-700">Lộ trình ước tính:</strong> {analysisResult.analysis_data.estimated_timeline}</p>
+                          <p className="mb-1">
+                            <strong className="text-blue-700">
+                              Lộ trình ước tính:
+                            </strong>{" "}
+                            {analysisResult.analysis_data.estimated_timeline}
+                          </p>
                         )}
                         {analysisResult.analysis_data?.advice && (
-                          <p className="mt-2"><strong className="text-blue-700">Lời khuyên:</strong> {analysisResult.analysis_data.advice}</p>
+                          <p className="mt-2">
+                            <strong className="text-blue-700">
+                              Lời khuyên:
+                            </strong>{" "}
+                            {analysisResult.analysis_data.advice}
+                          </p>
                         )}
                       </div>
 
                       {/* Exercise suggestions + create plan */}
-                      <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                        <h4 className="mb-2 text-lg font-extrabold text-blue-700">Đề xuất bài tập</h4>
-                        {Array.isArray(analysisResult.analysis_data?.exercises) && analysisResult.analysis_data.exercises.length > 0 ? (
+                      <div className="p-4 border border-blue-200 rounded-lg bg-blue-50">
+                        <h4 className="mb-2 text-lg font-extrabold text-blue-700">
+                          Đề xuất bài tập
+                        </h4>
+                        {Array.isArray(
+                          analysisResult.analysis_data?.exercises
+                        ) &&
+                        analysisResult.analysis_data.exercises.length > 0 ? (
                           <ul className="mb-3 space-y-1 list-disc list-inside text-slate-800">
-                            {analysisResult.analysis_data.exercises.map((ex, i) => (
-                              <li key={i}>{ex}</li>
-                            ))}
+                            {analysisResult.analysis_data.exercises.map(
+                              (ex, i) => (
+                                <li key={i}>{ex}</li>
+                              )
+                            )}
                           </ul>
                         ) : (
-                          <p className="mb-3 text-slate-700">Chưa có danh sách bài tập gợi ý.</p>
+                          <p className="mb-3 text-slate-700">
+                            Chưa có danh sách bài tập gợi ý.
+                          </p>
                         )}
                         <button
                           type="button"
@@ -340,10 +382,14 @@ const AiTrainer = () => {
                           disabled={isCreatingPlan}
                           className="px-5 py-2 font-semibold text-white rounded-lg bg-rose-500 hover:bg-rose-600 disabled:bg-rose-200"
                         >
-                          {isCreatingPlan ? 'Đang tạo plan...' : 'Tạo plan từ gợi ý'}
+                          {isCreatingPlan
+                            ? "Đang tạo plan..."
+                            : "Tạo plan từ gợi ý"}
                         </button>
                         {planCreateMsg && (
-                          <p className="mt-2 text-sm text-rose-700">{planCreateMsg}</p>
+                          <p className="mt-2 text-sm text-rose-700">
+                            {planCreateMsg}
+                          </p>
                         )}
                       </div>
                     </div>
