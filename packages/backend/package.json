@@ -11,7 +11,7 @@
     "db:migrate": "sequelize-cli db:migrate",
     "db:migrate:undo": "sequelize-cli db:migrate:undo",
     "db:migrate:undo:all": "sequelize-cli db:migrate:undo:all",
-    "migration:create": "sequelize-cli migration:generate --name",
+    "db:migrate:create": "sequelize-cli migration:generate --name",
     "model:create": "sequelize-cli model:generate --name",
     "seed:create": "sequelize-cli seed:generate --name",
     "db:seed": "sequelize-cli db:seed:all",
@@ -20,6 +20,7 @@
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "@payos/node": "^2.0.3",
+    "@supabase/supabase-js": "^2.81.1",
     "axios": "^1.12.2",
     "bcrypt": "^6.0.0",
     "cloudinary": "^1.41.3",

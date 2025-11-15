@@ -260,7 +260,6 @@ export default function HeaderLogin() {
                 >
                   Tạo plan mới
                 </button>
-
               </div>
             )}
           </div>
@@ -337,6 +336,13 @@ export default function HeaderLogin() {
             className="text-sm text-gray-800 hover:text-blue-600"
           >
             Dinh dưỡng
+          </button>
+
+          <button
+            onClick={() => navigate("/nutrition-ai")}
+            className="text-sm text-gray-800 hover:text-blue-600"
+          >
+            Thư viện ảnh
           </button>
         </nav>
 

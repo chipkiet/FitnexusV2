@@ -35,6 +35,8 @@ import { ensureAiApp } from "./ai/index.js";
 
 import activityTracker from "./middleware/activity.tracker.js";
 
+import userScreenshotsRouter from "./routes/userScreenshots.routes.js";
+
 dotenv.config();
 
 /* -------------------- INIT APP -------------------- */
@@ -43,9 +45,7 @@ const isDev = process.env.NODE_ENV !== "production";
 
 /* -------------------- FRONTEND & ALLOWED ORIGINS -------------------- */
 const FRONTEND =
-  FRONTEND_URL ||
-  process.env.FRONTEND_URL ||
-  "http://localhost:5173";
+  FRONTEND_URL || process.env.FRONTEND_URL || "http://localhost:5173";
 
 const defaultDevOrigins = [
   "http://localhost:5174",
@@ -182,6 +182,8 @@ app.use("/api/trainer", trainerRouter);
 app.use("/api/exercises", exerciseRouter);
 app.use("/api/plans", planRouter);
 app.use("/api/workout", workoutRouter);
+
+app.use("/api/user-screenshots", userScreenshotsRouter);
 
 /* -------------------- HEALTH CHECK -------------------- */
 app.get("/api/health", (_req, res) => {
