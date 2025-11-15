@@ -3,6 +3,7 @@ import api from '../lib/api.js';
 import HeaderLogin from './header/HeaderLogin.jsx';
 import { useNavigate } from 'react-router-dom';
 import { createPlanApi, addExerciseToPlanApi } from '../lib/api.js';
+import ScreenshotCapture from './screenshot/ScreenshotCapture.jsx';
 
 const AiTrainer = () => {
   const navigate = useNavigate();
@@ -13,6 +14,7 @@ const AiTrainer = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const fileInputRef = useRef(null);
+  const containerRef = useRef(null);
   const [isCreatingPlan, setIsCreatingPlan] = useState(false);
   const [planCreateMsg, setPlanCreateMsg] = useState("");
 
@@ -173,7 +175,13 @@ const AiTrainer = () => {
   return (
     <div>
       <HeaderLogin />
-      <div className="w-full p-4 mx-auto max-w-7xl sm:p-6 lg:p-8">
+      <ScreenshotCapture
+        targetRef={containerRef}
+        feature="ai_trainer"
+        disabled={!analysisResult}
+        description="Ảnh kết quả AI Trainer"
+      />
+      <div ref={containerRef} className="w-full p-4 mx-auto max-w-7xl sm:p-6 lg:p-8">
         {/* Header */}
         <header className="mb-8 text-center">
           <h1 className="text-4xl font-extrabold text-blue-300 sm:text-5xl">

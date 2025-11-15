@@ -7,6 +7,7 @@ import "./NutritionAI.css";
 import { useAuth } from "../../context/auth.context.jsx";
 import HeaderLogin from "../../components/header/HeaderLogin.jsx";
 import HeaderDemo from "../../components/header/HeaderDemo.jsx";
+import ScreenshotCapture from "../../components/screenshot/ScreenshotCapture.jsx";
 
 function centerCropToSquare(imgEl, size = 224) {
   const s = Math.min(imgEl.naturalWidth, imgEl.naturalHeight);
@@ -43,6 +44,7 @@ export default function FoodCalorie() {
   const gramsRef = useRef();
   const sizeRef = useRef();
   const fileRef = useRef();
+  const containerRef = useRef(null);
 
   const models = useMemo(() => ({ net: null, clf: null }), []);
 
@@ -410,12 +412,15 @@ export default function FoodCalorie() {
   }
 
     return (
-
       <div className="flex flex-col min-h-screen bg-white">
-
         {isAuthenticated ? <HeaderLogin /> : <HeaderDemo />}
-
-        <div className="flex flex-col flex-grow fc-page">
+        <ScreenshotCapture
+          targetRef={containerRef}
+          feature="nutrition_ai"
+          disabled={!result}
+          description="Ảnh kết quả Nutrition AI"
+        />
+        <div ref={containerRef} className="flex flex-col flex-grow fc-page">
 
           {/* Hidden global file input */}
 
