@@ -405,18 +405,12 @@ export async function listMyPurchases(req, res) {
       order: [['created_at', 'DESC']],
     });
 
-    const activePlanId =
-      user?.user_type === 'premium'
-        ? transactions.find((tx) => tx.status === 'completed')?.plan_id || null
-        : null;
-
-    const purchases = transactions.map((tx) => {
+    const purchasesRaw = transactions.map((tx) => {
       const plan = tx.planTransaction;
       const expiresAt =
         tx.status === 'completed' && plan?.duration_days
           ? new Date(tx.created_at.getTime() + plan.duration_days * DAY_MS)
           : null;
-      const isActive = !!(activePlanId && plan && plan.plan_id === activePlanId && user?.user_type === 'premium');
       return {
         transactionId: tx.transaction_id,
         planId: plan?.plan_id || tx.plan_id,
@@ -427,10 +421,34 @@ export async function listMyPurchases(req, res) {
         status: tx.status,
         purchasedAt: tx.created_at,
         expiresAt,
-        isActive,
-        activeUntil: isActive ? user?.user_exp_date : null,
+        isActive: false,
+        activeUntil: null,
       };
     });
+
+    // Đảm bảo chỉ 1 purchase được đánh dấu đang hoạt động
+    let activeIndex = -1;
+    if (user?.user_type === 'premium' && purchasesRaw.length) {
+      const userExp = user.user_exp_date ? new Date(user.user_exp_date).getTime() : null;
+      if (userExp) {
+        activeIndex = purchasesRaw.findIndex((p) => {
+          if (!p.expiresAt) return false;
+          const expTime = new Date(p.expiresAt).getTime();
+          // So sánh gần bằng ngày hết hạn hiện tại
+          return Math.abs(expTime - userExp) < DAY_MS;
+        });
+      }
+      if (activeIndex === -1) {
+        // Fallback: giao dịch completed mới nhất
+        activeIndex = purchasesRaw.findIndex((p) => p.status === 'completed');
+      }
+    }
+
+    const purchases = purchasesRaw.map((p, idx) => ({
+      ...p,
+      isActive: idx === activeIndex,
+      activeUntil: idx === activeIndex ? user?.user_exp_date : null,
+    }));
 
     return res.json({ success: true, data: { purchases, subscription: user } });
   } catch (err) {

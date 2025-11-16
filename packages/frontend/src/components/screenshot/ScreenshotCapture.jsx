@@ -160,12 +160,12 @@ export default function ScreenshotCapture({
 
   return (
     <>
-      <div className="flex justify-end mb-2">
+      <div className="fixed z-40 flex items-center justify-end bottom-6 right-4 sm:bottom-8 sm:right-8">
         <button
           type="button"
           onClick={handleOpen}
           disabled={disabled}
-          className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-rose-700 border border-rose-300 rounded-full bg-rose-50 hover:bg-rose-100 disabled:opacity-50"
+          className="inline-flex items-center px-3 py-2 text-xs font-medium text-rose-700 border border-rose-300 rounded-full shadow-md bg-rose-50 hover:bg-rose-100 disabled:opacity-50"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -241,4 +241,3 @@ export default function ScreenshotCapture({
     </>
   );
 }
-

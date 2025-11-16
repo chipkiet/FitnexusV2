@@ -25,6 +25,8 @@ import ImgAI from "../../assets/dashboard/AITrainer.png";
 import ImgExercise from "../../assets/dashboard/Exercise.png";
 import ImgModel from "../../assets/dashboard/Model.png";
 import ImgNutrition from "../../assets/dashboard/Nutrition.png";
+import { normalize } from "three/src/math/MathUtils.js";
+import { raw } from "body-parser";
 
 // Simple route map to trigger navbar or navigate
 const VXP_ROUTE_MAP = {
@@ -87,7 +89,8 @@ function vxpGo(key, navigate) {
 export default function Dashboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const premiumByType = user?.user_type && String(user.user_type).toLowerCase() === "premium";
+  const premiumByType =
+    user?.user_type && String(user.user_type).toLowerCase() === "premium";
   const premiumByPlan = String(user?.plan || "").toUpperCase() === "PREMIUM";
   const isAdmin = String(user?.role || "").toUpperCase() === "ADMIN";
   const isPremiumOrAdmin = premiumByType || premiumByPlan || isAdmin;
@@ -152,6 +155,7 @@ const reviewFormRef = useRef(null);
   );
   const numberFormatter = useMemo(() => new Intl.NumberFormat("vi-VN"), []);
   const timelineFallback = useMemo(() => Array.from({ length: 10 }, () => ({ date: null, active: false })), []);
+
   const closeStreakModal = () => setShowStreakModal(false);
   const scrollToReviewForm = () => {
     reviewFormRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -585,6 +589,52 @@ const reviewFormRef = useRef(null);
     }
   };
 
+  const [weeklyChart, setWeeklyChart] = useState([]);
+
+  const weeklySummary = useMemo(() => {
+    if (!weeklyChart || weeklyChart.length === 0) return null;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+
+    const todayKey = today.toISOString().slice(0, 10);
+    const yesterdayKey = yesterday.toISOString().slice(0, 10);
+
+    const byKey = new Map(weeklyChart.map((d) => [d.key, d]));
+    const todayCount = byKey.get(todayKey)?.count ?? 0;
+    const yesterdayCount = byKey.get(yesterdayKey)?.count ?? 0;
+    const diff = todayCount - yesterdayCount;
+
+    const totalWeek = weeklyChart.reduce((sum, d) => sum + d.count, 0);
+    const maxCount =
+      weeklyChart.reduce((max, d) => (d.count > max ? d.count : max), 0) || 0;
+
+    const weeklyGoal = 6;
+    const progress =
+      weeklyGoal > 0
+        ? Math.min(100, Math.round((totalWeek / weeklyGoal) * 100))
+        : 0;
+    const n = weeklyChart.length;
+    const points = weeklyChart
+      .map((d, idx) => {
+        const x = n > 1 ? (idx / (n - 1)) * 100 : 50;
+        const y = maxCount > 0 ? 100 - (d.count / maxCount) * 100 : 100;
+        return `${x}, ${y}`;
+      })
+      .join(" ");
+
+    return {
+      todayCount,
+      yesterdayCount,
+      diff,
+      totalWeek,
+      maxCount,
+      progress,
+      points,
+    };
+  }, [weeklyChart]);
+
   // Load plans and completed sessions
   useEffect(() => {
     const loadPlans = async () => {
@@ -596,13 +646,71 @@ const reviewFormRef = useRef(null);
         setPlans(Array.isArray(list) ? list : []);
       } catch (e) {
         setPlans([]);
-        setPlansError({ message: e?.response?.data?.message || e?.message || "Không tải được kế hoạch" });
+        setPlansError({
+          message:
+            e?.response?.data?.message ||
+            e?.message ||
+            "Không tải được kế hoạch",
+        });
       }
       try {
-        const sess = await listWorkoutSessionsApi({ status: "completed", limit: 100, offset: 0 });
+        const sess = await listWorkoutSessionsApi({
+          status: "completed",
+          limit: 100,
+          offset: 0,
+        });
         const itemsSess = sess?.data?.items ?? sess?.data ?? [];
-        const setIds = new Set((Array.isArray(itemsSess) ? itemsSess : []).map((s) => s.plan_id).filter((v) => Number.isFinite(v)));
+        const normalizedSessions = Array.isArray(itemsSess) ? itemsSess : [];
+        const setIds = new Set(
+          normalizedSessions
+            .map((s) => s.plan_id)
+            .filter((v) => Number.isFinite(v))
+        );
         setCompletedPlanIds(setIds);
+
+        const now = new Date();
+        const start = new Date();
+
+        start.setHours(0, 0, 0, 0);
+        now.setHours(0, 0, 0, 0);
+
+        start.setDate(now.getDate() - 6);
+
+        const dayBuckets = [];
+        const bucketMap = new Map();
+
+        for (let i = 0; i < 7; i++) {
+          const d = new Date(start);
+          d.setDate(start.getDate() + i);
+          const key = d.toISOString().slice(0, 10);
+          const bucket = { key, date: d, count: 0 };
+          dayBuckets.push(bucket);
+          bucketMap.set(key, bucket);
+        }
+
+        normalizedSessions.forEach((s) => {
+          const rawDate =
+            s.completed_at ||
+            s.end_time ||
+            s.ended_at ||
+            s.updated_at ||
+            s.created_at ||
+            s.createdAt ||
+            s.updatedAt;
+          if (!rawDate) return;
+
+          const d = new Date(rawDate);
+          if (Number.isNaN(d.getTime())) return;
+
+          d.setHours(0, 0, 0, 0);
+          const key = d.toISOString().slice(0, 10);
+          const bucket = bucketMap.get(key);
+          if (bucket) {
+            bucket.count += 1;
+          }
+        });
+
+        setWeeklyChart(dayBuckets);
       } catch {}
       setPlansLoading(false);
     };
@@ -632,7 +740,8 @@ const reviewFormRef = useRef(null);
       try {
         const raw = sessionStorage.getItem("current_plan_context");
         const ctx = raw ? JSON.parse(raw) : null;
-        if (ctx?.plan_id) suggested = { plan_id: ctx.plan_id, name: ctx.name || "Kế hoạch" };
+        if (ctx?.plan_id)
+          suggested = { plan_id: ctx.plan_id, name: ctx.name || "Kế hoạch" };
       } catch {}
       if (!suggested && Array.isArray(plans) && plans.length > 0) {
         const p = plans[0];
@@ -641,7 +750,9 @@ const reviewFormRef = useRef(null);
       if (mounted) setSuggestedPlan(suggested);
       if (mounted) setContinueLoading(false);
     })();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, [plans]);
 
   // Load streak
@@ -673,7 +784,9 @@ const reviewFormRef = useRef(null);
                 shouldShow = true;
               }
             } else {
-              try { localStorage.setItem(STREAK_MODAL_KEY, latest.date); } catch {}
+              try {
+                localStorage.setItem(STREAK_MODAL_KEY, latest.date);
+              } catch {}
             }
             if (shouldShow) setShowStreakModal(true);
           }
@@ -683,12 +796,17 @@ const reviewFormRef = useRef(null);
         setStreakState({
           loading: false,
           data: null,
-          error: error?.response?.data?.message || error?.message || "Không tải được dữ liệu streak",
+          error:
+            error?.response?.data?.message ||
+            error?.message ||
+            "Không tải được dữ liệu streak",
         });
       }
     };
     loadStreak();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const handleContinueWorkout = async () => {
@@ -699,8 +817,12 @@ const reviewFormRef = useRef(null);
         return;
       }
       if (suggestedPlan?.plan_id) {
-        const res = await createWorkoutSessionApi({ plan_id: suggestedPlan.plan_id, notes: "" });
-        const sid = res?.data?.session_id || res?.session_id || res?.data?.id || null;
+        const res = await createWorkoutSessionApi({
+          plan_id: suggestedPlan.plan_id,
+          notes: "",
+        });
+        const sid =
+          res?.data?.session_id || res?.session_id || res?.data?.id || null;
         if (sid) {
           navigate(`/workout-run/${sid}`);
           return;
@@ -775,25 +897,107 @@ const reviewFormRef = useRef(null);
           {/* Left 30%: Thành tựu / Kế hoạch / Streak */}
           <aside className="space-y-5 md:col-span-3">
             {/* Hero metric */}
+            {/* Hero metric: Thành tựu hôm nay + biểu đồ 7 ngày */}
             <div className="p-5 border rounded-xl border-slate-200 bg-slate-50">
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold text-slate-900">
                   Thành tựu hôm nay
                 </h3>
-                <span className="text-[11px] text-slate-500">Placeholder</span>
+                <span className="text-[11px] text-slate-500">
+                  7 ngày gần đây
+                </span>
               </div>
+
               <div className="mt-4">
                 <div className="text-4xl font-extrabold tracking-tight text-slate-900">
-                  —
+                  {weeklySummary ? weeklySummary.todayCount : "—"}
                 </div>
+
                 <div className="mt-2 text-xs text-slate-500">
-                  So với hôm qua: —
+                  {weeklySummary ? (
+                    weeklySummary.diff === 0 ? (
+                      <>Tương đương hôm qua</>
+                    ) : weeklySummary.diff > 0 ? (
+                      <>Cao hơn hôm qua {weeklySummary.diff} buổi</>
+                    ) : (
+                      <>Thấp hơn hôm qua {Math.abs(weeklySummary.diff)} buổi</>
+                    )
+                  ) : (
+                    <>So với hôm qua: —</>
+                  )}
                 </div>
-                <div className="mt-4 h-1.5 w-full rounded-full bg-slate-200">
-                  <div className="h-1.5 w-0 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500"></div>
+
+                {/* Biểu đồ cột + đường line */}
+                <div className="relative mt-4">
+                  {weeklyChart && weeklyChart.length > 0 ? (
+                    <>
+                      <div className="flex items-end h-24 gap-1.5">
+                        {weeklyChart.map((d) => {
+                          const max = weeklySummary?.maxCount || 0;
+                          const ratio = max > 0 ? d.count / max : 0;
+                          const barHeight = ratio > 0 ? ratio * 100 : 4; // tối thiểu 4% để còn thấy cột
+
+                          const dayLabel = weekdayFormatter.format(d.date); // T2, T3,...
+                          return (
+                            <div
+                              key={d.key}
+                              className="flex flex-col items-center justify-end flex-1"
+                            >
+                              <div
+                                className="w-full rounded-t-md bg-gradient-to-t from-blue-500 to-indigo-400"
+                                style={{ height: `${barHeight}%` }}
+                              ></div>
+                              <span className="mt-1 text-[10px] text-slate-500">
+                                {dayLabel}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Line chart overlay */}
+                      {weeklySummary?.points && (
+                        <svg
+                          viewBox="0 0 100 100"
+                          preserveAspectRatio="none"
+                          className="absolute inset-x-0 w-full h-16 pointer-events-none bottom-7"
+                        >
+                          <polyline
+                            fill="none"
+                            stroke="rgba(59,130,246,0.9)"
+                            strokeWidth="1.5"
+                            points={weeklySummary.points}
+                          />
+                        </svg>
+                      )}
+                    </>
+                  ) : (
+                    <div className="flex items-center justify-center h-24 text-xs text-slate-500">
+                      Chưa có buổi tập hoàn thành trong 7 ngày gần đây.
+                    </div>
+                  )}
+                </div>
+
+                {/* Progress bar theo tổng tuần / mục tiêu 5 buổi */}
+                <div className="mt-4 h-1.5 w-full rounded-full bg-slate-200 overflow-hidden">
+                  <div
+                    className="h-1.5 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all"
+                    style={{
+                      width: weeklySummary
+                        ? `${weeklySummary.progress}%`
+                        : "0%",
+                    }}
+                  ></div>
                 </div>
                 <div className="mt-2 text-[11px] text-slate-500">
-                  Tiến độ đạt mục tiêu: —%
+                  {weeklySummary ? (
+                    <>
+                      Tuần này: {weeklySummary.totalWeek} buổi · Mục tiêu 5 buổi
+                      /tuần
+                    </>
+                  ) : (
+                    <>Tiến độ đạt mục tiêu: —%</>
+                  )}
                 </div>
               </div>
             </div>
@@ -1068,7 +1272,7 @@ const reviewFormRef = useRef(null);
 
       {/* COMMUNITY REVIEWS */}
       <section className="px-8 py-16 bg-white md:px-20">
-        <div className="max-w-7xl mx-auto space-y-8">
+        <div className="mx-auto space-y-8 max-w-7xl">
           <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
             <div>
               <p className="text-xs font-semibold tracking-[0.28em] uppercase text-slate-500">
@@ -1084,7 +1288,7 @@ const reviewFormRef = useRef(null);
             <div className="flex flex-wrap items-center gap-3">
               <button
                 type="button"
-                className="px-5 py-2 text-sm font-semibold text-blue-600 border rounded-full border-blue-200 hover:bg-blue-50"
+                className="px-5 py-2 text-sm font-semibold text-blue-600 border border-blue-200 rounded-full hover:bg-blue-50"
                 onClick={scrollToReviewForm}
               >
                 Viết đánh giá
@@ -1122,7 +1326,7 @@ const reviewFormRef = useRef(null);
                     }`}
                   >
                     <span className="text-sm font-semibold w-9">{item.star}★</span>
-                    <div className="flex-1 h-2 rounded-full bg-white/20 overflow-hidden">
+                    <div className="flex-1 h-2 overflow-hidden rounded-full bg-white/20">
                       <div
                         className="h-full bg-amber-300"
                         style={{ width: `${item.percentage}%` }}
@@ -1133,7 +1337,7 @@ const reviewFormRef = useRef(null);
                 ))}
                 <button
                   type="button"
-                  className="text-xs text-white/70 underline underline-offset-4 hover:text-white"
+                  className="text-xs underline text-white/70 underline-offset-4 hover:text-white"
                   onClick={() => setRatingFilter(0)}
                 >
                   {ratingFilter ? "Xóa lọc theo sao" : "Đang xem tất cả"}
@@ -1141,7 +1345,7 @@ const reviewFormRef = useRef(null);
               </div>
 
               <div className="grid grid-cols-1 gap-3 text-sm">
-                <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/5 border border-white/10">
+                <div className="flex items-center gap-3 p-3 border rounded-2xl bg-white/5 border-white/10">
                   <Star className="w-4 h-4 text-amber-300" />
                   <div>
                     <p className="text-[11px] uppercase tracking-wide text-white/60">Tổng lượt đánh giá</p>
@@ -1152,7 +1356,7 @@ const reviewFormRef = useRef(null);
                 </div>
               </div>
 
-              <div className="p-4 rounded-2xl border border-white/10 bg-white/5">
+              <div className="p-4 border rounded-2xl border-white/10 bg-white/5">
                 <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/70">
                   <MessageCircle className="w-4 h-4 text-white" />
                   Chủ đề nổi bật
@@ -1169,7 +1373,7 @@ const reviewFormRef = useRef(null);
                 </div>
               </div>
 
-              <div className="p-4 rounded-2xl border border-white/15 bg-white/10">
+              <div className="p-4 border rounded-2xl border-white/15 bg-white/10">
                 <p className="text-xs font-semibold tracking-[0.3em] uppercase text-white/60">
                   Viết đánh giá của bạn
                 </p>
@@ -1222,7 +1426,7 @@ const reviewFormRef = useRef(null);
                         maxLength={80}
                         value={reviewForm.headline}
                         onChange={(e) => handleReviewFieldChange("headline", e.target.value)}
-                        className="w-full px-3 py-2 mt-1 text-xs text-slate-900 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-200"
+                        className="w-full px-3 py-2 mt-1 text-xs bg-white text-slate-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-200"
                         placeholder="Ví dụ: AI Trainer quá hữu ích"
                       />
                     </div>
@@ -1233,7 +1437,7 @@ const reviewFormRef = useRef(null);
                         maxLength={80}
                         value={reviewForm.program}
                         onChange={(e) => handleReviewFieldChange("program", e.target.value)}
-                        className="w-full px-3 py-2 mt-1 text-xs text-slate-900 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-200"
+                        className="w-full px-3 py-2 mt-1 text-xs bg-white text-slate-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-200"
                         placeholder="AI Trainer · Hybrid Strength"
                       />
                     </div>
@@ -1244,7 +1448,7 @@ const reviewFormRef = useRef(null);
                       type="text"
                       value={reviewForm.tags}
                       onChange={(e) => handleReviewFieldChange("tags", e.target.value)}
-                      className="w-full px-3 py-2 mt-1 text-xs text-slate-900 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-200"
+                      className="w-full px-3 py-2 mt-1 text-xs bg-white text-slate-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-200"
                       placeholder="AI Trainer, Nutrition"
                     />
                   </div>
@@ -1254,7 +1458,7 @@ const reviewFormRef = useRef(null);
                       rows={4}
                       value={reviewForm.comment}
                       onChange={(e) => handleReviewFieldChange("comment", e.target.value)}
-                      className="w-full px-3 py-2 mt-1 text-xs text-slate-900 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-200"
+                      className="w-full px-3 py-2 mt-1 text-xs bg-white text-slate-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-200"
                       placeholder="Chia sẻ cảm nhận thực tế sau khi luyện tập..."
                     />
                   </div>
@@ -1274,7 +1478,7 @@ const reviewFormRef = useRef(null);
                       {reviewPreviews.length ? (
                         <div className="flex flex-wrap gap-2">
                           {reviewPreviews.map((preview) => (
-                            <div key={preview.url} className="w-16 h-16 overflow-hidden rounded-lg border border-white/20">
+                            <div key={preview.url} className="w-16 h-16 overflow-hidden border rounded-lg border-white/20">
                               <img src={preview.url} alt={preview.name} className="object-cover w-full h-full" />
                             </div>
                           ))}
@@ -1337,7 +1541,7 @@ const reviewFormRef = useRef(null);
                   </div>
                 ) : null}
                 {!reviewsLoading && !reviewsError && filteredReviews.length === 0 ? (
-                  <div className="p-6 text-center border rounded-2xl border-dashed border-slate-200 text-slate-500">
+                  <div className="p-6 text-center border border-dashed rounded-2xl border-slate-200 text-slate-500">
                     Chưa có đánh giá cho điều kiện lọc hiện tại. Hãy là người đầu tiên chia sẻ cảm nhận!
                   </div>
                 ) : null}
@@ -1367,7 +1571,7 @@ const reviewFormRef = useRef(null);
                       const hiddenComments = Math.max(sortedComments.length - COMMENT_PREVIEW_LIMIT, 0);
 
                       return (
-                        <div className="mt-6 border-t border-slate-100 pt-5">
+                        <div className="pt-5 mt-6 border-t border-slate-100">
                           <div className="flex items-center justify-between text-xs font-semibold text-slate-600">
                             <span>Bình luận ({numberFormatter.format(review.comment_count || 0)})</span>
                           </div>
@@ -1475,7 +1679,7 @@ const reviewFormRef = useRef(null);
                                             </div>
                                           ) : null}
                                           <div className="flex flex-wrap items-center gap-2">
-                                            <label className="px-3 py-1 text-xs font-semibold text-blue-600 border rounded-full border-blue-200 cursor-pointer">
+                                            <label className="px-3 py-1 text-xs font-semibold text-blue-600 border border-blue-200 rounded-full cursor-pointer">
                                               <input
                                                 type="file"
                                                 accept="image/*"
@@ -1502,14 +1706,14 @@ const reviewFormRef = useRef(null);
                                             <button
                                               type="button"
                                               onClick={() => handleUpdateCommentSubmit(reviewId, commentId)}
-                                              className="px-3 py-1 text-xs font-semibold text-white rounded-full bg-blue-600 hover:bg-blue-700"
+                                              className="px-3 py-1 text-xs font-semibold text-white bg-blue-600 rounded-full hover:bg-blue-700"
                                             >
                                               Lưu
                                             </button>
                                             <button
                                               type="button"
                                               onClick={() => handleCancelEditComment(commentId)}
-                                              className="px-3 py-1 text-xs font-semibold text-slate-600 border rounded-full border-slate-300"
+                                              className="px-3 py-1 text-xs font-semibold border rounded-full text-slate-600 border-slate-300"
                                             >
                                               Huỷ
                                             </button>
@@ -1542,7 +1746,7 @@ const reviewFormRef = useRef(null);
                                                   href={url}
                                                   target="_blank"
                                                   rel="noopener noreferrer"
-                                                  className="block w-20 h-20 overflow-hidden rounded-lg border border-slate-200"
+                                                  className="block w-20 h-20 overflow-hidden border rounded-lg border-slate-200"
                                                 >
                                                   <img src={url} alt="comment" className="object-cover w-full h-full" />
                                                 </a>
@@ -1574,7 +1778,7 @@ const reviewFormRef = useRef(null);
                                 <div className="pt-1">
                                   {renderAvatar(user?.avatarUrl, currentUserName, "w-10 h-10 text-xs")}
                                 </div>
-                                <div className="flex flex-1 items-center gap-2">
+                                <div className="flex items-center flex-1 gap-2">
                                   <input
                                     type="text"
                                     value={commentDrafts[reviewId] || ""}
@@ -1584,7 +1788,7 @@ const reviewFormRef = useRef(null);
                                   />
                                   <button
                                     type="submit"
-                                    className="px-3 py-2 text-xs font-semibold text-white rounded-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
+                                    className="px-3 py-2 text-xs font-semibold text-white bg-blue-600 rounded-full hover:bg-blue-700 disabled:opacity-50"
                                     disabled={commentSubmitting[reviewId] || !(commentDrafts[reviewId] || "").trim()}
                                   >
                                     {commentSubmitting[reviewId] ? "Đang gửi..." : "Gửi"}
@@ -1607,7 +1811,7 @@ const reviewFormRef = useRef(null);
                                     {commentPreviews[reviewId].map((preview) => (
                                       <div
                                         key={preview.url}
-                                        className="w-14 h-14 rounded-lg overflow-hidden border border-slate-200"
+                                        className="overflow-hidden border rounded-lg w-14 h-14 border-slate-200"
                                       >
                                         <img src={preview.url} alt={preview.name} className="object-cover w-full h-full" />
                                       </div>
@@ -1624,7 +1828,7 @@ const reviewFormRef = useRef(null);
                     return (
                       <article
                         key={reviewId}
-                        className="p-7 transition border-2 rounded-3xl border-slate-200 hover:border-blue-400 hover:shadow-lg bg-white"
+                        className="transition bg-white border-2 p-7 rounded-3xl border-slate-200 hover:border-blue-400 hover:shadow-lg"
                       >
                         <div className="flex flex-wrap items-start justify-between gap-4">
                           <div className="flex items-center gap-3">
@@ -1703,7 +1907,7 @@ const reviewFormRef = useRef(null);
                                 href={url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="block w-24 h-24 overflow-hidden rounded-xl border border-slate-200"
+                                className="block w-24 h-24 overflow-hidden border rounded-xl border-slate-200"
                               >
                                 <img src={url} alt="media" className="object-cover w-full h-full" />
                               </a>
@@ -1716,7 +1920,7 @@ const reviewFormRef = useRef(null);
                             {review.tags.map((tag) => (
                               <span
                                 key={`${review.review_id}-${tag}`}
-                                className="px-3 py-1 text-xs font-semibold text-slate-600 bg-slate-100 rounded-full"
+                                className="px-3 py-1 text-xs font-semibold rounded-full text-slate-600 bg-slate-100"
                               >
                                 #{tag}
                               </span>
@@ -1751,7 +1955,7 @@ const reviewFormRef = useRef(null);
                   <div className="pt-2 text-center">
                     <button
                       type="button"
-                      className="px-5 py-2 text-sm font-semibold text-blue-600 border rounded-full border-blue-200 hover:bg-blue-50"
+                      className="px-5 py-2 text-sm font-semibold text-blue-600 border border-blue-200 rounded-full hover:bg-blue-50"
                       onClick={() => vxpGo("community", navigate)}
                     >
                       Xem thêm bài viết
