@@ -40,6 +40,10 @@ const VXP_ROUTE_MAP = {
 };
 const STREAK_MODAL_KEY = "fnx_streak_modal_date";
 const DEFAULT_RATING_COUNTS = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+const REVIEW_PREVIEW_LIMIT = 3;
+const REVIEW_CONTENT_LIMIT = 200;
+const COMMENT_PREVIEW_LIMIT = 2;
+const COMMENT_CONTENT_LIMIT = 150;
 
 const getInitials = (name = "") => {
   const parts = String(name || "")
@@ -64,6 +68,11 @@ const renderAvatar = (url, name, className = "w-12 h-12") => {
 };
 
 const isBlobUrl = (url = "") => typeof url === "string" && url.startsWith("blob:");
+const needsTruncate = (text = "", limit = 0) => (text || "").length > limit;
+const formatTruncatedText = (text = "", limit = 0) => {
+  if (!text) return "";
+  return text.length <= limit ? text : `${text.slice(0, limit)}…`;
+};
 
 function vxpGo(key, navigate) {
   const el = document.querySelector(`[data-nav="${key}"]`);
@@ -125,7 +134,10 @@ export default function Dashboard() {
   const [commentEditing, setCommentEditing] = useState({});
   const [reviewMenus, setReviewMenus] = useState(null);
   const [editingReviewId, setEditingReviewId] = useState(null);
-  const reviewFormRef = useRef(null);
+  const [expandedReviewContent, setExpandedReviewContent] = useState({});
+  const [commentExpanded, setCommentExpanded] = useState({});
+  const [expandedCommentContent, setExpandedCommentContent] = useState({});
+const reviewFormRef = useRef(null);
   const currentUserName = useMemo(
     () => user?.full_name || user?.name || user?.username || user?.email?.split("@")[0] || "Thành viên ẩn danh",
     [user]
@@ -141,6 +153,9 @@ export default function Dashboard() {
   const numberFormatter = useMemo(() => new Intl.NumberFormat("vi-VN"), []);
   const timelineFallback = useMemo(() => Array.from({ length: 10 }, () => ({ date: null, active: false })), []);
   const closeStreakModal = () => setShowStreakModal(false);
+  const scrollToReviewForm = () => {
+    reviewFormRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
   const ratingBreakdown = useMemo(() => {
     return [5, 4, 3, 2, 1].map((star) => {
       const count = reviewStats.ratingCounts?.[star] ?? 0;
@@ -161,6 +176,11 @@ export default function Dashboard() {
       .map(([tag, count]) => ({ tag, count }));
   }, [reviews]);
   const filteredReviews = useMemo(() => reviews, [reviews]);
+  const displayedReviews = useMemo(
+    () => filteredReviews.slice(0, REVIEW_PREVIEW_LIMIT),
+    [filteredReviews]
+  );
+  const hiddenReviewCount = Math.max(filteredReviews.length - REVIEW_PREVIEW_LIMIT, 0);
   useEffect(() => {
     return () => {
       Object.values(commentPreviews).forEach((list) => {
@@ -235,6 +255,9 @@ export default function Dashboard() {
   }, [loadReviews]);
   const toggleRatingFilter = (value) => {
     setRatingFilter((prev) => (prev === value ? 0 : value));
+  };
+  const toggleCommentVisibility = (reviewId) => {
+    setCommentExpanded((prev) => ({ ...prev, [reviewId]: !prev[reviewId] }));
   };
   const renderStars = (value) => (
     <div className="flex items-center gap-1">
@@ -399,11 +422,12 @@ export default function Dashboard() {
             ? {
                 ...review,
                 comment_count: (review.comment_count || 0) + 1,
-                comments: [newComment, ...(review.comments || [])],
+                comments: [...(review.comments || []), newComment],
               }
             : review
         )
       );
+      setCommentExpanded((prev) => ({ ...prev, [reviewId]: true }));
       setCommentDrafts((prev) => ({ ...prev, [reviewId]: "" }));
       handleCommentFilesChange(reviewId, []);
     } catch (error) {
@@ -1029,18 +1053,14 @@ export default function Dashboard() {
               </button>
 
               {/* Cộng đồng */}
-              <button
-                type="button"
-                onClick={() => vxpGo("community", navigate)}
-                className="overflow-hidden text-left transition bg-white border shadow-sm group rounded-xl border-slate-200 hover:border-blue-400 md:col-span-2"
-              >
+              <div className="overflow-hidden text-left transition bg-white border shadow-sm group rounded-xl border-slate-200 hover:border-blue-400 md:col-span-2">
                 <div className="p-4">
                   <div className="font-semibold text-slate-900">Cộng đồng</div>
                   <div className="mt-1 text-xs text-slate-600">
                     Kết nối, chia sẻ kinh nghiệm và tham gia thử thách.
                   </div>
                 </div>
-              </button>
+              </div>
             </div>
           </main>
         </div>
@@ -1065,16 +1085,9 @@ export default function Dashboard() {
               <button
                 type="button"
                 className="px-5 py-2 text-sm font-semibold text-blue-600 border rounded-full border-blue-200 hover:bg-blue-50"
-                onClick={() => vxpGo("community", navigate)}
+                onClick={scrollToReviewForm}
               >
                 Viết đánh giá
-              </button>
-              <button
-                type="button"
-                className="px-5 py-2 text-sm font-semibold text-white rounded-full bg-blue-600 hover:bg-blue-700"
-                onClick={() => vxpGo("community", navigate)}
-              >
-                Vào cộng đồng
               </button>
             </div>
           </div>
@@ -1330,337 +1343,421 @@ export default function Dashboard() {
                 ) : null}
                 {!reviewsLoading &&
                   !reviewsError &&
-                  filteredReviews.map((review) => (
-                    <article
-                      key={review.review_id}
-                      className="p-7 transition border-2 rounded-3xl border-slate-200 hover:border-blue-400 hover:shadow-lg bg-white"
-                    >
-                      <div className="flex flex-wrap items-start justify-between gap-4">
-                        <div className="flex items-center gap-3">
-                          {renderAvatar(review.avatar_url, review.display_name, "w-14 h-14 text-lg")}
-                          <div>
-                            <p className="text-base font-semibold text-slate-900">
-                              {review.display_name}
-                            </p>
-                            <p className="text-xs text-slate-500">{review.program}</p>
+                  displayedReviews.map((review) => {
+                    const reviewId = review.review_id;
+                    const reviewBody = review.comment || "";
+                    const reviewExpanded = !!expandedReviewContent[reviewId];
+                    const reviewShouldTruncate = needsTruncate(reviewBody, REVIEW_CONTENT_LIMIT);
+                    const reviewDisplayText =
+                      reviewExpanded || !reviewShouldTruncate
+                        ? reviewBody
+                        : formatTruncatedText(reviewBody, REVIEW_CONTENT_LIMIT);
+
+                    const commentSection = (() => {
+                      const allComments = review.comments || [];
+                      const sortedComments = [...allComments].sort((a, b) => {
+                        const aDate = new Date(a.created_at || a.createdAt || 0).getTime();
+                        const bDate = new Date(b.created_at || b.createdAt || 0).getTime();
+                        return aDate - bDate;
+                      });
+                      const expanded = !!commentExpanded[reviewId];
+                      const visibleComments = expanded
+                        ? sortedComments
+                        : sortedComments.slice(0, COMMENT_PREVIEW_LIMIT);
+                      const hiddenComments = Math.max(sortedComments.length - COMMENT_PREVIEW_LIMIT, 0);
+
+                      return (
+                        <div className="mt-6 border-t border-slate-100 pt-5">
+                          <div className="flex items-center justify-between text-xs font-semibold text-slate-600">
+                            <span>Bình luận ({numberFormatter.format(review.comment_count || 0)})</span>
                           </div>
-                        </div>
-                        <div className="flex items-center gap-2 text-xs text-slate-500">
-                          <div>{reviewDateFormatter.format(new Date(review.created_at))}</div>
-                          {user &&
-                          (user.user_id === review.user_id || isCurrentUserAdmin) ? (
-                            <div className="relative">
-                              <button
-                                type="button"
-                                className="px-2 py-1 text-slate-500 hover:text-slate-700"
-                                onClick={() =>
-                                  setReviewMenus((prev) => (prev === review.review_id ? null : review.review_id))
-                                }
-                              >
-                                ...
-                              </button>
-                              {reviewMenus === review.review_id ? (
-                                <div className="absolute right-0 z-10 w-32 mt-1 text-xs bg-white border rounded-lg shadow border-slate-200">
-                                  <button
-                                    type="button"
-                                    className="w-full px-3 py-2 text-left hover:bg-slate-50"
-                                    onClick={() => handleStartEditReview(review)}
-                                  >
-                                    Sửa
-                                  </button>
-                                  <button
-                                    type="button"
-                                    className="w-full px-3 py-2 text-left text-rose-600 hover:bg-rose-50"
-                                    onClick={() => handleDeleteReview(review.review_id)}
-                                  >
-                                    Xoá
-                                  </button>
-                                </div>
-                              ) : null}
-                            </div>
-                          ) : null}
-                        </div>
-                      </div>
+                          <div className="mt-3 space-y-4">
+                            {visibleComments.map((comment) => {
+                              const commentId = comment.comment_id || comment.id;
+                              const canEdit =
+                                user &&
+                                (user.user_id === comment.user_id || String(user.role || "").toUpperCase() === "ADMIN");
+                              const editState = commentEditing[commentId] || null;
+                              const commentBody = comment.content || "";
+                              const commentExpandedState = !!expandedCommentContent[commentId];
+                              const commentShouldTruncate = needsTruncate(commentBody, COMMENT_CONTENT_LIMIT);
+                              const commentDisplayText =
+                                commentExpandedState || !commentShouldTruncate
+                                  ? commentBody
+                                  : formatTruncatedText(commentBody, COMMENT_CONTENT_LIMIT);
 
-                    <div className="flex items-center gap-2 mt-3">
-                      {renderStars(review.rating)}
-                      <span className="text-sm font-semibold text-slate-700">{review.rating}.0</span>
-                    </div>
-
-                    {review.headline ? (
-                      <h3 className="mt-2 text-base font-semibold text-slate-900">
-                        {review.headline}
-                      </h3>
-                    ) : null}
-                    <p className="mt-1 text-base leading-relaxed text-slate-600">
-                      {review.comment}
-                    </p>
-                    {review.media_urls?.length ? (
-                      <div className="flex flex-wrap gap-2 mt-3">
-                        {review.media_urls.map((url) => (
-                          <a
-                            key={url}
-                            href={url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="block w-24 h-24 overflow-hidden rounded-xl border border-slate-200"
-                          >
-                            <img src={url} alt="media" className="object-cover w-full h-full" />
-                          </a>
-                        ))}
-                      </div>
-                    ) : null}
-
-                    {review.tags?.length ? (
-                      <div className="flex flex-wrap gap-2 mt-3">
-                        {review.tags.map((tag) => (
-                          <span
-                            key={`${review.review_id}-${tag}`}
-                            className="px-3 py-1 text-xs font-semibold text-slate-600 bg-slate-100 rounded-full"
-                          >
-                            #{tag}
-                          </span>
-                        ))}
-                      </div>
-                    ) : null}
-
-                    <div className="flex flex-wrap items-center justify-between gap-3 mt-4 text-xs text-slate-500">
-                      <div className="flex flex-wrap items-center gap-4">
-                        <button
-                          type="button"
-                          onClick={() => handleToggleHelpful(review)}
-                          disabled={helpfulLoading[review.review_id]}
-                          className={`flex items-center gap-1 text-sm px-3 py-1.5 border rounded-full transition ${
-                            review.userVote
-                              ? "text-blue-600 border-blue-200 bg-blue-50"
-                              : "text-slate-600 border-slate-200 hover:border-blue-200"
-                          } ${helpfulLoading[review.review_id] ? "opacity-60" : ""}`}
-                        >
-                          <ThumbsUp
-                            className={`w-4 h-4 ${review.userVote ? "text-blue-600" : "text-slate-500"}`}
-                          />
-                          {review.userVote ? "Đã hữu ích" : "Hữu ích"}
-                          <span className="ml-1">
-                            {numberFormatter.format(review.helpful_count || 0)}
-                          </span>
-                        </button>
-                      </div>
-                    </div>
-                      <div className="mt-6 border-t border-slate-100 pt-5">
-                        <div className="flex items-center justify-between text-xs font-semibold text-slate-600">
-                          <span>Bình luận ({numberFormatter.format(review.comment_count || 0)})</span>
-                        </div>
-                        <div className="mt-3 space-y-4">
-                          {(review.comments || []).map((comment) => {
-                          const commentId = comment.comment_id || comment.id;
-                          const canEdit =
-                            user && (user.user_id === comment.user_id || String(user.role || "").toUpperCase() === "ADMIN");
-                          const editState = commentEditing[commentId] || null;
-                          return (
-                            <div key={commentId} className="p-4 text-sm bg-slate-50 rounded-2xl">
-                              <div className="flex items-start gap-3">
-                                {renderAvatar(comment.avatar_url, comment.display_name, "w-10 h-10 text-xs")}
-                                <div className="flex-1">
-                                  <div className="flex items-start justify-between gap-2">
-                                    <div>
-                                      <div className="flex items-center gap-2">
-                                        <span className="font-semibold text-slate-900">{comment.display_name}</span>
-                                        {comment.role === "ADMIN" ? (
-                                          <span className="px-2 py-0.5 text-[10px] font-semibold uppercase rounded-full bg-amber-100 text-amber-700">
-                                            Admin
+                              return (
+                                <div key={commentId} className="p-4 text-sm bg-slate-50 rounded-2xl">
+                                  <div className="flex items-start gap-3">
+                                    {renderAvatar(comment.avatar_url, comment.display_name, "w-10 h-10 text-xs")}
+                                    <div className="flex-1">
+                                      <div className="flex items-start justify-between gap-2">
+                                        <div>
+                                          <div className="flex items-center gap-2">
+                                            <span className="font-semibold text-slate-900">{comment.display_name}</span>
+                                            {comment.role === "ADMIN" ? (
+                                              <span className="px-2 py-0.5 text-[10px] font-semibold uppercase rounded-full bg-amber-100 text-amber-700">
+                                                Admin
+                                              </span>
+                                            ) : null}
+                                          </div>
+                                          <span className="text-[10px] text-slate-400">
+                                            {reviewDateFormatter.format(new Date(comment.created_at))}
                                           </span>
-                                        ) : null}
-                                      </div>
-                                      <span className="text-[10px] text-slate-400">
-                                        {reviewDateFormatter.format(new Date(comment.created_at))}
-                                      </span>
-                                    </div>
-                                    {canEdit ? (
-                                      <div className="relative">
-                                        <button
-                                          type="button"
-                                          className="px-2 py-1 text-slate-500 hover:text-slate-700"
-                                          onClick={() => toggleCommentMenu(commentId)}
-                                        >
-                                          ...
-                                        </button>
-                                        {commentMenus === commentId ? (
-                                          <div className="absolute right-0 z-10 w-32 mt-1 text-xs bg-white border rounded-lg shadow border-slate-200">
+                                        </div>
+                                        {canEdit ? (
+                                          <div className="relative">
                                             <button
                                               type="button"
-                                              className="w-full px-3 py-2 text-left hover:bg-slate-50"
-                                              onClick={() => handleStartEditComment(review.review_id, comment)}
+                                              className="px-2 py-1 text-slate-500 hover:text-slate-700"
+                                              onClick={() => toggleCommentMenu(commentId)}
                                             >
-                                              Sửa
+                                              ...
                                             </button>
-                                            <button
-                                              type="button"
-                                              className="w-full px-3 py-2 text-left text-rose-600 hover:bg-rose-50"
-                                              onClick={() => {
-                                                toggleCommentMenu(null);
-                                                handleDeleteComment(review.review_id, commentId);
-                                              }}
-                                            >
-                                              Xoá
-                                            </button>
+                                            {commentMenus === commentId ? (
+                                              <div className="absolute right-0 z-10 w-32 mt-1 text-xs bg-white border rounded-lg shadow border-slate-200">
+                                                <button
+                                                  type="button"
+                                                  className="w-full px-3 py-2 text-left hover:bg-slate-50"
+                                                  onClick={() => handleStartEditComment(reviewId, comment)}
+                                                >
+                                                  Sửa
+                                                </button>
+                                                <button
+                                                  type="button"
+                                                  className="w-full px-3 py-2 text-left text-rose-600 hover:bg-rose-50"
+                                                  onClick={() => {
+                                                    toggleCommentMenu(null);
+                                                    handleDeleteComment(reviewId, commentId);
+                                                  }}
+                                                >
+                                                  Xoá
+                                                </button>
+                                              </div>
+                                            ) : null}
                                           </div>
                                         ) : null}
                                       </div>
-                                    ) : null}
-                                  </div>
-                              {editState ? (
-                                <div className="mt-2 space-y-2">
-                                  <textarea
-                                    rows={3}
-                                    value={editState.text}
-                                    onChange={(e) =>
-                                      setCommentEditing((prev) => ({
-                                        ...prev,
-                                        [commentId]: { ...editState, text: e.target.value },
-                                      }))
-                                    }
-                                    className="w-full px-3 py-2 text-xs border rounded-lg border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-100"
-                                  />
-                                  {comment.media_urls?.length ? (
-                                    <div className="flex flex-wrap gap-2">
-                                      {comment.media_urls.map((url) => (
-                                        <label
-                                          key={url}
-                                          className={`flex items-center gap-1 px-2 py-1 text-[10px] border rounded-full ${
-                                            editState.retainMedia?.includes(url)
-                                              ? "bg-blue-50 text-blue-700 border-blue-200"
-                                              : "border-slate-200 text-slate-500"
-                                          }`}
-                                        >
-                                          <input
-                                            type="checkbox"
-                                            className="hidden"
-                                            checked={editState.retainMedia?.includes(url)}
-                                            onChange={() => handleEditRetainToggle(commentId, url)}
+                                      {editState ? (
+                                        <div className="mt-2 space-y-2">
+                                          <textarea
+                                            rows={3}
+                                            value={editState.text}
+                                            onChange={(e) =>
+                                              setCommentEditing((prev) => ({
+                                                ...prev,
+                                                [commentId]: { ...editState, text: e.target.value },
+                                              }))
+                                            }
+                                            className="w-full px-3 py-2 text-xs border rounded-lg border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-100"
                                           />
-                                          {editState.retainMedia?.includes(url) ? "Giữ" : "Bỏ"}
-                                          <span className="truncate max-w-[80px]">{url.split("/").pop()}</span>
-                                        </label>
-                                      ))}
-                                    </div>
-                                  ) : null}
-                                  <div className="flex flex-wrap items-center gap-2">
-                                    <label className="px-3 py-1 text-xs font-semibold text-blue-600 border rounded-full border-blue-200 cursor-pointer">
-                                      <input
-                                        type="file"
-                                        accept="image/*"
-                                        multiple
-                                        className="hidden"
-                                        onChange={(e) => handleEditFilesChange(commentId, e.target.files)}
-                                      />
-                                      + Thêm ảnh
-                                    </label>
-                                    {editState.previews?.length ? (
-                                      <div className="flex flex-wrap gap-2">
-                                        {editState.previews.map((preview) => (
-                                          <div key={preview.url} className="w-12 h-12 overflow-hidden border rounded-lg border-slate-200">
-                                            <img src={preview.url} alt={preview.name} className="object-cover w-full h-full" />
+                                          {comment.media_urls?.length ? (
+                                            <div className="flex flex-wrap gap-2">
+                                              {comment.media_urls.map((url) => (
+                                                <label
+                                                  key={url}
+                                                  className={`flex items-center gap-1 px-2 py-1 text-[10px] border rounded-full ${
+                                                    editState.retainMedia?.includes(url)
+                                                      ? "bg-blue-50 text-blue-700 border-blue-200"
+                                                      : "border-slate-200 text-slate-500"
+                                                  }`}
+                                                >
+                                                  <input
+                                                    type="checkbox"
+                                                    className="hidden"
+                                                    checked={editState.retainMedia?.includes(url)}
+                                                    onChange={() => handleEditRetainToggle(commentId, url)}
+                                                  />
+                                                  {editState.retainMedia?.includes(url) ? "Giữ" : "Bỏ"}
+                                                  <span className="truncate max-w-[80px]">{url.split("/").pop()}</span>
+                                                </label>
+                                              ))}
+                                            </div>
+                                          ) : null}
+                                          <div className="flex flex-wrap items-center gap-2">
+                                            <label className="px-3 py-1 text-xs font-semibold text-blue-600 border rounded-full border-blue-200 cursor-pointer">
+                                              <input
+                                                type="file"
+                                                accept="image/*"
+                                                multiple
+                                                className="hidden"
+                                                onChange={(e) => handleEditFilesChange(commentId, e.target.files)}
+                                              />
+                                              + Thêm ảnh
+                                            </label>
+                                            {editState.previews?.length ? (
+                                              <div className="flex flex-wrap gap-2">
+                                                {editState.previews.map((preview) => (
+                                                  <div
+                                                    key={preview.url}
+                                                    className="w-12 h-12 overflow-hidden border rounded-lg border-slate-200"
+                                                  >
+                                                    <img src={preview.url} alt={preview.name} className="object-cover w-full h-full" />
+                                                  </div>
+                                                ))}
+                                              </div>
+                                            ) : null}
                                           </div>
-                                        ))}
-                                      </div>
-                                    ) : null}
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    <button
-                                      type="button"
-                                      onClick={() => handleUpdateCommentSubmit(review.review_id, commentId)}
-                                      className="px-3 py-1 text-xs font-semibold text-white rounded-full bg-blue-600 hover:bg-blue-700"
-                                    >
-                                      Lưu
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={() => handleCancelEditComment(commentId)}
-                                      className="px-3 py-1 text-xs font-semibold text-slate-600 border rounded-full border-slate-300"
-                                    >
-                                      Huỷ
-                                    </button>
+                                          <div className="flex items-center gap-2">
+                                            <button
+                                              type="button"
+                                              onClick={() => handleUpdateCommentSubmit(reviewId, commentId)}
+                                              className="px-3 py-1 text-xs font-semibold text-white rounded-full bg-blue-600 hover:bg-blue-700"
+                                            >
+                                              Lưu
+                                            </button>
+                                            <button
+                                              type="button"
+                                              onClick={() => handleCancelEditComment(commentId)}
+                                              className="px-3 py-1 text-xs font-semibold text-slate-600 border rounded-full border-slate-300"
+                                            >
+                                              Huỷ
+                                            </button>
+                                          </div>
+                                        </div>
+                                      ) : (
+                                        <>
+                                          <p className="mt-2 text-slate-600">
+                                            {commentDisplayText}
+                                            {commentShouldTruncate ? (
+                                              <button
+                                                type="button"
+                                                className="ml-1 text-[11px] font-semibold text-blue-600 hover:underline"
+                                                onClick={() =>
+                                                  setExpandedCommentContent((prev) => ({
+                                                    ...prev,
+                                                    [commentId]: !commentExpandedState,
+                                                  }))
+                                                }
+                                              >
+                                                {commentExpandedState ? "Thu gọn" : "Xem thêm"}
+                                              </button>
+                                            ) : null}
+                                          </p>
+                                          {comment.media_urls?.length ? (
+                                            <div className="flex flex-wrap gap-2 mt-2">
+                                              {comment.media_urls.map((url) => (
+                                                <a
+                                                  key={url}
+                                                  href={url}
+                                                  target="_blank"
+                                                  rel="noopener noreferrer"
+                                                  className="block w-20 h-20 overflow-hidden rounded-lg border border-slate-200"
+                                                >
+                                                  <img src={url} alt="comment" className="object-cover w-full h-full" />
+                                                </a>
+                                              ))}
+                                            </div>
+                                          ) : null}
+                                        </>
+                                      )}
+                                    </div>
                                   </div>
                                 </div>
-                              ) : (
-                                <>
-                                  <p className="mt-2 text-slate-600">{comment.content}</p>
-                                  {comment.media_urls?.length ? (
-                                    <div className="flex flex-wrap gap-2 mt-2">
-                                      {comment.media_urls.map((url) => (
-                                        <a
-                                          key={url}
-                                          href={url}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          className="block w-20 h-20 overflow-hidden rounded-lg border border-slate-200"
-                                        >
-                                          <img src={url} alt="comment" className="object-cover w-full h-full" />
-                                        </a>
-                                      ))}
-                                    </div>
-                                  ) : null}
-                                </>
-                              )}
+                              );
+                            })}
+                            {hiddenComments > 0 ? (
+                              <div className="pt-2 text-center">
+                                <button
+                                  type="button"
+                                  className="text-xs font-semibold text-blue-600 hover:underline"
+                                  onClick={() => toggleCommentVisibility(reviewId)}
+                                >
+                                  {expanded
+                                    ? "Thu gọn bình luận"
+                                    : `Xem thêm bình luận${hiddenComments ? ` (${hiddenComments}+)` : ""}`}
+                                </button>
+                              </div>
+                            ) : null}
+                            <form onSubmit={(e) => handleCommentSubmit(e, reviewId)} className="space-y-2">
+                              <div className="flex items-start gap-2">
+                                <div className="pt-1">
+                                  {renderAvatar(user?.avatarUrl, currentUserName, "w-10 h-10 text-xs")}
+                                </div>
+                                <div className="flex flex-1 items-center gap-2">
+                                  <input
+                                    type="text"
+                                    value={commentDrafts[reviewId] || ""}
+                                    onChange={(e) => handleCommentChange(reviewId, e.target.value)}
+                                    placeholder="Viết bình luận..."
+                                    className="flex-1 px-3 py-2 text-xs border rounded-full border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                                  />
+                                  <button
+                                    type="submit"
+                                    className="px-3 py-2 text-xs font-semibold text-white rounded-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
+                                    disabled={commentSubmitting[reviewId] || !(commentDrafts[reviewId] || "").trim()}
+                                  >
+                                    {commentSubmitting[reviewId] ? "Đang gửi..." : "Gửi"}
+                                  </button>
                                 </div>
                               </div>
-                            </div>
-                          );
-                        })}
-                        <form onSubmit={(e) => handleCommentSubmit(e, review.review_id)} className="space-y-2">
-                          <div className="flex items-start gap-2">
-                            <div className="pt-1">
-                              {renderAvatar(user?.avatarUrl, currentUserName, "w-10 h-10 text-xs")}
-                            </div>
-                            <div className="flex-1 flex items-center gap-2">
-                              <input
-                                type="text"
-                                value={commentDrafts[review.review_id] || ""}
-                                onChange={(e) => handleCommentChange(review.review_id, e.target.value)}
-                                placeholder="Viết bình luận..."
-                                className="flex-1 px-3 py-2 text-xs border rounded-full border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-100"
-                              />
-                              <button
-                                type="submit"
-                                className="px-3 py-2 text-xs font-semibold text-white rounded-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
-                                disabled={
-                                  commentSubmitting[review.review_id] ||
-                                  !(commentDrafts[review.review_id] || "").trim()
-                                }
-                              >
-                                {commentSubmitting[review.review_id] ? "Đang gửi..." : "Gửi"}
-                              </button>
+                              <div className="flex flex-wrap items-center gap-2">
+                                <label className="text-[11px] font-semibold text-blue-600 cursor-pointer">
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    multiple
+                                    className="hidden"
+                                    onChange={(e) => handleCommentFilesChange(reviewId, e.target.files)}
+                                  />
+                                  + Thêm ảnh
+                                </label>
+                                {commentPreviews[reviewId]?.length ? (
+                                  <div className="flex flex-wrap gap-2">
+                                    {commentPreviews[reviewId].map((preview) => (
+                                      <div
+                                        key={preview.url}
+                                        className="w-14 h-14 rounded-lg overflow-hidden border border-slate-200"
+                                      >
+                                        <img src={preview.url} alt={preview.name} className="object-cover w-full h-full" />
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : null}
+                              </div>
+                            </form>
+                          </div>
+                        </div>
+                      );
+                    })();
+
+                    return (
+                      <article
+                        key={reviewId}
+                        className="p-7 transition border-2 rounded-3xl border-slate-200 hover:border-blue-400 hover:shadow-lg bg-white"
+                      >
+                        <div className="flex flex-wrap items-start justify-between gap-4">
+                          <div className="flex items-center gap-3">
+                            {renderAvatar(review.avatar_url, review.display_name, "w-14 h-14 text-lg")}
+                            <div>
+                              <p className="text-base font-semibold text-slate-900">{review.display_name}</p>
+                              <p className="text-xs text-slate-500">{review.program}</p>
                             </div>
                           </div>
-                          <div className="flex flex-wrap items-center gap-2">
-                            <label className="text-[11px] font-semibold text-blue-600 cursor-pointer">
-                              <input
-                                type="file"
-                                accept="image/*"
-                                multiple
-                                className="hidden"
-                                onChange={(e) => handleCommentFilesChange(review.review_id, e.target.files)}
-                              />
-                              + Thêm ảnh
-                            </label>
-                            {commentPreviews[review.review_id]?.length ? (
-                              <div className="flex flex-wrap gap-2">
-                                {commentPreviews[review.review_id].map((preview) => (
-                                  <div
-                                    key={preview.url}
-                                    className="w-14 h-14 rounded-lg overflow-hidden border border-slate-200"
-                                  >
-                                    <img src={preview.url} alt={preview.name} className="object-cover w-full h-full" />
+                          <div className="flex items-center gap-2 text-xs text-slate-500">
+                            <div>{reviewDateFormatter.format(new Date(review.created_at))}</div>
+                            {user && (user.user_id === review.user_id || isCurrentUserAdmin) ? (
+                              <div className="relative">
+                                <button
+                                  type="button"
+                                  className="px-2 py-1 text-slate-500 hover:text-slate-700"
+                                  onClick={() =>
+                                    setReviewMenus((prev) => (prev === review.review_id ? null : review.review_id))
+                                  }
+                                >
+                                  ...
+                                </button>
+                                {reviewMenus === review.review_id ? (
+                                  <div className="absolute right-0 z-10 w-32 mt-1 text-xs bg-white border rounded-lg shadow border-slate-200">
+                                    <button
+                                      type="button"
+                                      className="w-full px-3 py-2 text-left hover:bg-slate-50"
+                                      onClick={() => handleStartEditReview(review)}
+                                    >
+                                      Sửa
+                                    </button>
+                                    <button
+                                      type="button"
+                                      className="w-full px-3 py-2 text-left text-rose-600 hover:bg-rose-50"
+                                      onClick={() => handleDeleteReview(review.review_id)}
+                                    >
+                                      Xoá
+                                    </button>
                                   </div>
-                                ))}
+                                ) : null}
                               </div>
                             ) : null}
                           </div>
-                        </form>
-                      </div>
-                    </div>
-                  </article>
-                  ))}
+                        </div>
+
+                        <div className="flex items-center gap-2 mt-3">
+                          {renderStars(review.rating)}
+                          <span className="text-sm font-semibold text-slate-700">{review.rating}.0</span>
+                        </div>
+
+                        {review.headline ? (
+                          <h3 className="mt-2 text-base font-semibold text-slate-900">{review.headline}</h3>
+                        ) : null}
+                        <p className="mt-1 text-base leading-relaxed text-slate-600">
+                          {reviewDisplayText}
+                          {reviewShouldTruncate ? (
+                            <button
+                              type="button"
+                              className="ml-2 text-sm font-semibold text-blue-600 hover:underline"
+                              onClick={() =>
+                                setExpandedReviewContent((prev) => ({
+                                  ...prev,
+                                  [reviewId]: !reviewExpanded,
+                                }))
+                              }
+                            >
+                              {reviewExpanded ? "Thu gọn" : "Xem chi tiết"}
+                            </button>
+                          ) : null}
+                        </p>
+                        {review.media_urls?.length ? (
+                          <div className="flex flex-wrap gap-2 mt-3">
+                            {review.media_urls.map((url) => (
+                              <a
+                                key={url}
+                                href={url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="block w-24 h-24 overflow-hidden rounded-xl border border-slate-200"
+                              >
+                                <img src={url} alt="media" className="object-cover w-full h-full" />
+                              </a>
+                            ))}
+                          </div>
+                        ) : null}
+
+                        {review.tags?.length ? (
+                          <div className="flex flex-wrap gap-2 mt-3">
+                            {review.tags.map((tag) => (
+                              <span
+                                key={`${review.review_id}-${tag}`}
+                                className="px-3 py-1 text-xs font-semibold text-slate-600 bg-slate-100 rounded-full"
+                              >
+                                #{tag}
+                              </span>
+                            ))}
+                          </div>
+                        ) : null}
+
+                        <div className="flex flex-wrap items-center justify-between gap-3 mt-4 text-xs text-slate-500">
+                          <div className="flex flex-wrap items-center gap-4">
+                            <button
+                              type="button"
+                              onClick={() => handleToggleHelpful(review)}
+                              disabled={helpfulLoading[review.review_id]}
+                              className={`flex items-center gap-1 text-sm px-3 py-1.5 border rounded-full transition ${
+                                review.userVote
+                                  ? "text-blue-600 border-blue-200 bg-blue-50"
+                                  : "text-slate-600 border-slate-200 hover:border-blue-200"
+                              } ${helpfulLoading[review.review_id] ? "opacity-60" : ""}`}
+                            >
+                              <ThumbsUp className={`w-4 h-4 ${review.userVote ? "text-blue-600" : "text-slate-500"}`} />
+                              {review.userVote ? "Đã hữu ích" : "Hữu ích"}
+                              <span className="ml-1">{numberFormatter.format(review.helpful_count || 0)}</span>
+                            </button>
+                          </div>
+                        </div>
+
+                        {commentSection}
+                      </article>
+                    );
+                  })}
+                {!reviewsLoading && !reviewsError && hiddenReviewCount > 0 ? (
+                  <div className="pt-2 text-center">
+                    <button
+                      type="button"
+                      className="px-5 py-2 text-sm font-semibold text-blue-600 border rounded-full border-blue-200 hover:bg-blue-50"
+                      onClick={() => vxpGo("community", navigate)}
+                    >
+                      Xem thêm bài viết
+                    </button>
+                  </div>
+                ) : null}
               </div>
             </div>
           </div>
