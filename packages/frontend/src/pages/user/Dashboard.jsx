@@ -18,6 +18,8 @@ import ImgAI from "../../assets/dashboard/AITrainer.png";
 import ImgExercise from "../../assets/dashboard/Exercise.png";
 import ImgModel from "../../assets/dashboard/Model.png";
 import ImgNutrition from "../../assets/dashboard/Nutrition.png";
+import { normalize } from "three/src/math/MathUtils.js";
+import { raw } from "body-parser";
 
 // Simple route map to trigger navbar or navigate
 const VXP_ROUTE_MAP = {
@@ -46,7 +48,8 @@ function vxpGo(key, navigate) {
 export default function Dashboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const premiumByType = user?.user_type && String(user.user_type).toLowerCase() === "premium";
+  const premiumByType =
+    user?.user_type && String(user.user_type).toLowerCase() === "premium";
   const premiumByPlan = String(user?.plan || "").toUpperCase() === "PREMIUM";
   const isAdmin = String(user?.role || "").toUpperCase() === "ADMIN";
   const isPremiumOrAdmin = premiumByType || premiumByPlan || isAdmin;
@@ -61,12 +64,72 @@ export default function Dashboard() {
   const [continueLoading, setContinueLoading] = useState(true);
 
   // Streak state
-  const [streakState, setStreakState] = useState({ loading: true, data: null, error: null });
+  const [streakState, setStreakState] = useState({
+    loading: true,
+    data: null,
+    error: null,
+  });
   const [showStreakModal, setShowStreakModal] = useState(false);
-  const weekdayFormatter = useMemo(() => new Intl.DateTimeFormat("vi-VN", { weekday: "short" }), []);
-  const dateFormatter = useMemo(() => new Intl.DateTimeFormat("vi-VN", { day: "2-digit", month: "2-digit" }), []);
-  const timelineFallback = useMemo(() => Array.from({ length: 10 }, () => ({ date: null, active: false })), []);
+  const weekdayFormatter = useMemo(
+    () => new Intl.DateTimeFormat("vi-VN", { weekday: "short" }),
+    []
+  );
+  const dateFormatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat("vi-VN", { day: "2-digit", month: "2-digit" }),
+    []
+  );
+  const timelineFallback = useMemo(
+    () => Array.from({ length: 10 }, () => ({ date: null, active: false })),
+    []
+  );
   const closeStreakModal = () => setShowStreakModal(false);
+
+  const [weeklyChart, setWeeklyChart] = useState([]);
+
+  const weeklySummary = useMemo(() => {
+    if (!weeklyChart || weeklyChart.length === 0) return null;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+
+    const todayKey = today.toISOString().slice(0, 10);
+    const yesterdayKey = yesterday.toISOString().slice(0, 10);
+
+    const byKey = new Map(weeklyChart.map((d) => [d.key, d]));
+    const todayCount = byKey.get(todayKey)?.count ?? 0;
+    const yesterdayCount = byKey.get(yesterdayKey)?.count ?? 0;
+    const diff = todayCount - yesterdayCount;
+
+    const totalWeek = weeklyChart.reduce((sum, d) => sum + d.count, 0);
+    const maxCount =
+      weeklyChart.reduce((max, d) => (d.count > max ? d.count : max), 0) || 0;
+
+    const weeklyGoal = 6;
+    const progress =
+      weeklyGoal > 0
+        ? Math.min(100, Math.round((totalWeek / weeklyGoal) * 100))
+        : 0;
+    const n = weeklyChart.length;
+    const points = weeklyChart
+      .map((d, idx) => {
+        const x = n > 1 ? (idx / (n - 1)) * 100 : 50;
+        const y = maxCount > 0 ? 100 - (d.count / maxCount) * 100 : 100;
+        return `${x}, ${y}`;
+      })
+      .join(" ");
+
+    return {
+      todayCount,
+      yesterdayCount,
+      diff,
+      totalWeek,
+      maxCount,
+      progress,
+      points,
+    };
+  }, [weeklyChart]);
 
   // Load plans and completed sessions
   useEffect(() => {
@@ -79,13 +142,71 @@ export default function Dashboard() {
         setPlans(Array.isArray(list) ? list : []);
       } catch (e) {
         setPlans([]);
-        setPlansError({ message: e?.response?.data?.message || e?.message || "Không tải được kế hoạch" });
+        setPlansError({
+          message:
+            e?.response?.data?.message ||
+            e?.message ||
+            "Không tải được kế hoạch",
+        });
       }
       try {
-        const sess = await listWorkoutSessionsApi({ status: "completed", limit: 100, offset: 0 });
+        const sess = await listWorkoutSessionsApi({
+          status: "completed",
+          limit: 100,
+          offset: 0,
+        });
         const itemsSess = sess?.data?.items ?? sess?.data ?? [];
-        const setIds = new Set((Array.isArray(itemsSess) ? itemsSess : []).map((s) => s.plan_id).filter((v) => Number.isFinite(v)));
+        const normalizedSessions = Array.isArray(itemsSess) ? itemsSess : [];
+        const setIds = new Set(
+          normalizedSessions
+            .map((s) => s.plan_id)
+            .filter((v) => Number.isFinite(v))
+        );
         setCompletedPlanIds(setIds);
+
+        const now = new Date();
+        const start = new Date();
+
+        start.setHours(0, 0, 0, 0);
+        now.setHours(0, 0, 0, 0);
+
+        start.setDate(now.getDate() - 6);
+
+        const dayBuckets = [];
+        const bucketMap = new Map();
+
+        for (let i = 0; i < 7; i++) {
+          const d = new Date(start);
+          d.setDate(start.getDate() + i);
+          const key = d.toISOString().slice(0, 10);
+          const bucket = { key, date: d, count: 0 };
+          dayBuckets.push(bucket);
+          bucketMap.set(key, bucket);
+        }
+
+        normalizedSessions.forEach((s) => {
+          const rawDate =
+            s.completed_at ||
+            s.end_time ||
+            s.ended_at ||
+            s.updated_at ||
+            s.created_at ||
+            s.createdAt ||
+            s.updatedAt;
+          if (!rawDate) return;
+
+          const d = new Date(rawDate);
+          if (Number.isNaN(d.getTime())) return;
+
+          d.setHours(0, 0, 0, 0);
+          const key = d.toISOString().slice(0, 10);
+          const bucket = bucketMap.get(key);
+          if (bucket) {
+            bucket.count += 1;
+          }
+        });
+
+        setWeeklyChart(dayBuckets);
       } catch {}
       setPlansLoading(false);
     };
@@ -115,7 +236,8 @@ export default function Dashboard() {
       try {
         const raw = sessionStorage.getItem("current_plan_context");
         const ctx = raw ? JSON.parse(raw) : null;
-        if (ctx?.plan_id) suggested = { plan_id: ctx.plan_id, name: ctx.name || "Kế hoạch" };
+        if (ctx?.plan_id)
+          suggested = { plan_id: ctx.plan_id, name: ctx.name || "Kế hoạch" };
       } catch {}
       if (!suggested && Array.isArray(plans) && plans.length > 0) {
         const p = plans[0];
@@ -124,7 +246,9 @@ export default function Dashboard() {
       if (mounted) setSuggestedPlan(suggested);
       if (mounted) setContinueLoading(false);
     })();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, [plans]);
 
   // Load streak
@@ -156,7 +280,9 @@ export default function Dashboard() {
                 shouldShow = true;
               }
             } else {
-              try { localStorage.setItem(STREAK_MODAL_KEY, latest.date); } catch {}
+              try {
+                localStorage.setItem(STREAK_MODAL_KEY, latest.date);
+              } catch {}
             }
             if (shouldShow) setShowStreakModal(true);
           }
@@ -166,12 +292,17 @@ export default function Dashboard() {
         setStreakState({
           loading: false,
           data: null,
-          error: error?.response?.data?.message || error?.message || "Không tải được dữ liệu streak",
+          error:
+            error?.response?.data?.message ||
+            error?.message ||
+            "Không tải được dữ liệu streak",
         });
       }
     };
     loadStreak();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const handleContinueWorkout = async () => {
@@ -182,8 +313,12 @@ export default function Dashboard() {
         return;
       }
       if (suggestedPlan?.plan_id) {
-        const res = await createWorkoutSessionApi({ plan_id: suggestedPlan.plan_id, notes: "" });
-        const sid = res?.data?.session_id || res?.session_id || res?.data?.id || null;
+        const res = await createWorkoutSessionApi({
+          plan_id: suggestedPlan.plan_id,
+          notes: "",
+        });
+        const sid =
+          res?.data?.session_id || res?.session_id || res?.data?.id || null;
         if (sid) {
           navigate(`/workout-run/${sid}`);
           return;
@@ -258,25 +393,107 @@ export default function Dashboard() {
           {/* Left 30%: Thành tựu / Kế hoạch / Streak */}
           <aside className="space-y-5 md:col-span-3">
             {/* Hero metric */}
+            {/* Hero metric: Thành tựu hôm nay + biểu đồ 7 ngày */}
             <div className="p-5 border rounded-xl border-slate-200 bg-slate-50">
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold text-slate-900">
                   Thành tựu hôm nay
                 </h3>
-                <span className="text-[11px] text-slate-500">Placeholder</span>
+                <span className="text-[11px] text-slate-500">
+                  7 ngày gần đây
+                </span>
               </div>
+
               <div className="mt-4">
                 <div className="text-4xl font-extrabold tracking-tight text-slate-900">
-                  —
+                  {weeklySummary ? weeklySummary.todayCount : "—"}
                 </div>
+
                 <div className="mt-2 text-xs text-slate-500">
-                  So với hôm qua: —
+                  {weeklySummary ? (
+                    weeklySummary.diff === 0 ? (
+                      <>Tương đương hôm qua</>
+                    ) : weeklySummary.diff > 0 ? (
+                      <>Cao hơn hôm qua {weeklySummary.diff} buổi</>
+                    ) : (
+                      <>Thấp hơn hôm qua {Math.abs(weeklySummary.diff)} buổi</>
+                    )
+                  ) : (
+                    <>So với hôm qua: —</>
+                  )}
                 </div>
-                <div className="mt-4 h-1.5 w-full rounded-full bg-slate-200">
-                  <div className="h-1.5 w-0 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500"></div>
+
+                {/* Biểu đồ cột + đường line */}
+                <div className="relative mt-4">
+                  {weeklyChart && weeklyChart.length > 0 ? (
+                    <>
+                      <div className="flex items-end h-24 gap-1.5">
+                        {weeklyChart.map((d) => {
+                          const max = weeklySummary?.maxCount || 0;
+                          const ratio = max > 0 ? d.count / max : 0;
+                          const barHeight = ratio > 0 ? ratio * 100 : 4; // tối thiểu 4% để còn thấy cột
+
+                          const dayLabel = weekdayFormatter.format(d.date); // T2, T3,...
+                          return (
+                            <div
+                              key={d.key}
+                              className="flex flex-col items-center justify-end flex-1"
+                            >
+                              <div
+                                className="w-full rounded-t-md bg-gradient-to-t from-blue-500 to-indigo-400"
+                                style={{ height: `${barHeight}%` }}
+                              ></div>
+                              <span className="mt-1 text-[10px] text-slate-500">
+                                {dayLabel}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Line chart overlay */}
+                      {weeklySummary?.points && (
+                        <svg
+                          viewBox="0 0 100 100"
+                          preserveAspectRatio="none"
+                          className="absolute inset-x-0 w-full h-16 pointer-events-none bottom-7"
+                        >
+                          <polyline
+                            fill="none"
+                            stroke="rgba(59,130,246,0.9)"
+                            strokeWidth="1.5"
+                            points={weeklySummary.points}
+                          />
+                        </svg>
+                      )}
+                    </>
+                  ) : (
+                    <div className="flex items-center justify-center h-24 text-xs text-slate-500">
+                      Chưa có buổi tập hoàn thành trong 7 ngày gần đây.
+                    </div>
+                  )}
+                </div>
+
+                {/* Progress bar theo tổng tuần / mục tiêu 5 buổi */}
+                <div className="mt-4 h-1.5 w-full rounded-full bg-slate-200 overflow-hidden">
+                  <div
+                    className="h-1.5 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all"
+                    style={{
+                      width: weeklySummary
+                        ? `${weeklySummary.progress}%`
+                        : "0%",
+                    }}
+                  ></div>
                 </div>
                 <div className="mt-2 text-[11px] text-slate-500">
-                  Tiến độ đạt mục tiêu: —%
+                  {weeklySummary ? (
+                    <>
+                      Tuần này: {weeklySummary.totalWeek} buổi · Mục tiêu 5 buổi
+                      /tuần
+                    </>
+                  ) : (
+                    <>Tiến độ đạt mục tiêu: —%</>
+                  )}
                 </div>
               </div>
             </div>
