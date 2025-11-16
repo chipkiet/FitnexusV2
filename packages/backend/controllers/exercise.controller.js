@@ -211,6 +211,9 @@ export const getExercisesByMuscleGroup = async (req, res) => {
     const guessed = guessSlugOrParent(muscleGroup);
     const { limit, offset, page, pageSize } = parsePaging(req.query);
 
+    const { q, difficulty, equipment, type } = req.query;
+    const qLike = q ? `%${q.trim()}%` : null;
+
     let rows = [];
     let total = 0;
     if (guessed.childSlug) {
@@ -232,9 +235,23 @@ export const getExercisesByMuscleGroup = async (req, res) => {
          SELECT e.*, c.impact_level
          FROM classified c
          JOIN exercises e ON e.exercise_id = c.exercise_id
+         WHERE (:difficulty IS NULL OR e.difficulty_level = :difficulty)
+           AND (:equipment IS NULL OR e.equipment_needed = :equipment)
+           AND (:type IS NULL OR e.exercise_type = :type)
+           AND (:qLike IS NULL OR (e.name ILIKE :qLike OR e.name_en ILIKE :qLike))
          ORDER BY e.popularity_score DESC NULLS LAST, e.name ASC
          LIMIT :limit OFFSET :offset`,
-        { replacements: { slug: guessed.childSlug, limit, offset } }
+        {
+          replacements: {
+            slug: guessed.childSlug,
+            limit,
+            offset,
+            difficulty: difficulty || null,
+            equipment: equipment || null,
+            type: type || null,
+            qLike,
+          },
+        }
       );
       rows = result;
       const [countRows] = await sequelize.query(
@@ -246,8 +263,22 @@ export const getExercisesByMuscleGroup = async (req, res) => {
            WHERE mg.slug = :slug
            GROUP BY e.exercise_id
          )
-         SELECT COUNT(*)::int AS total FROM classified`,
-        { replacements: { slug: guessed.childSlug } }
+         SELECT COUNT(*)::int AS total
+         FROM classified c
+         JOIN exercises e ON e.exercise_id = c.exercise_id
+         WHERE (:difficulty IS NULL OR e.difficulty_level = :difficulty)
+           AND (:equipment IS NULL OR e.equipment_needed = :equipment)
+           AND (:type IS NULL OR e.exercise_type = :type)
+           AND (:qLike IS NULL OR (e.name ILIKE :qLike OR e.name_en ILIKE :qLike))`,
+        {
+          replacements: {
+            slug: guessed.childSlug,
+            difficulty: difficulty || null,
+            equipment: equipment || null,
+            type: type || null,
+            qLike,
+          },
+        }
       );
       total = countRows?.[0]?.total || 0;
     } else if (guessed.parentSlug) {
@@ -270,9 +301,23 @@ export const getExercisesByMuscleGroup = async (req, res) => {
         SELECT e.*, c.impact_level
         FROM classified c
         JOIN exercises e ON e.exercise_id = c.exercise_id
-         ORDER BY e.popularity_score DESC NULLS LAST, e.name ASC
-         LIMIT :limit OFFSET :offset`,
-        { replacements: { parent: guessed.parentSlug, limit, offset } }
+        WHERE (:difficulty IS NULL OR e.difficulty_level = :difficulty)
+          AND (:equipment IS NULL OR e.equipment_needed = :equipment)
+          AND (:type IS NULL OR e.exercise_type = :type)
+          AND (:qLike IS NULL OR (e.name ILIKE :qLike OR e.name_en ILIKE :qLike))
+        ORDER BY e.popularity_score DESC NULLS LAST, e.name ASC
+        LIMIT :limit OFFSET :offset`,
+        {
+          replacements: {
+            parent: guessed.parentSlug,
+            limit,
+            offset,
+            difficulty: difficulty || null,
+            equipment: equipment || null,
+            type: type || null,
+            qLike,
+          },
+        }
       );
       rows = result;
       const [countRows] = await sequelize.query(
@@ -285,8 +330,22 @@ export const getExercisesByMuscleGroup = async (req, res) => {
            WHERE parent.slug = :parent
            GROUP BY e.exercise_id
          )
-         SELECT COUNT(*)::int AS total FROM classified`,
-        { replacements: { parent: guessed.parentSlug } }
+         SELECT COUNT(*)::int AS total
+         FROM classified c
+         JOIN exercises e ON e.exercise_id = c.exercise_id
+         WHERE (:difficulty IS NULL OR e.difficulty_level = :difficulty)
+           AND (:equipment IS NULL OR e.equipment_needed = :equipment)
+           AND (:type IS NULL OR e.exercise_type = :type)
+           AND (:qLike IS NULL OR (e.name ILIKE :qLike OR e.name_en ILIKE :qLike))`,
+        {
+          replacements: {
+            parent: guessed.parentSlug,
+            difficulty: difficulty || null,
+            equipment: equipment || null,
+            type: type || null,
+            qLike,
+          },
+        }
       );
       total = countRows?.[0]?.total || 0;
     } else {
@@ -309,6 +368,10 @@ export const getExercisesByMuscleGroup = async (req, res) => {
          SELECT e.*, c.impact_level
          FROM classified c
          JOIN exercises e ON e.exercise_id = c.exercise_id
+         WHERE (:difficulty IS NULL OR e.difficulty_level = :difficulty)
+           AND (:equipment IS NULL OR e.equipment_needed = :equipment)
+           AND (:type IS NULL OR e.exercise_type = :type)
+           AND (:qLike IS NULL OR (e.name ILIKE :qLike OR e.name_en ILIKE :qLike))
          ORDER BY e.popularity_score DESC NULLS LAST, e.name ASC
          LIMIT :limit OFFSET :offset`,
         {
@@ -316,6 +379,10 @@ export const getExercisesByMuscleGroup = async (req, res) => {
             slug: muscleGroup.toLowerCase().replace(/\s+/g, "-"),
             limit,
             offset,
+            difficulty: difficulty || null,
+            equipment: equipment || null,
+            type: type || null,
+            qLike,
           },
         }
       );
@@ -330,10 +397,20 @@ export const getExercisesByMuscleGroup = async (req, res) => {
              WHERE mg.slug = :slug
              GROUP BY e.exercise_id
            )
-           SELECT COUNT(*)::int AS total FROM classified`,
+           SELECT COUNT(*)::int AS total
+           FROM classified c
+           JOIN exercises e ON e.exercise_id = c.exercise_id
+           WHERE (:difficulty IS NULL OR e.difficulty_level = :difficulty)
+             AND (:equipment IS NULL OR e.equipment_needed = :equipment)
+             AND (:type IS NULL OR e.exercise_type = :type)
+             AND (:qLike IS NULL OR (e.name ILIKE :qLike OR e.name_en ILIKE :qLike))`,
           {
             replacements: {
               slug: muscleGroup.toLowerCase().replace(/\s+/g, "-"),
+              difficulty: difficulty || null,
+              equipment: equipment || null,
+              type: type || null,
+              qLike,
             },
           }
         );
@@ -357,9 +434,23 @@ export const getExercisesByMuscleGroup = async (req, res) => {
           SELECT e.*, c.impact_level
           FROM classified c
           JOIN exercises e ON e.exercise_id = c.exercise_id
+          WHERE (:difficulty IS NULL OR e.difficulty_level = :difficulty)
+            AND (:equipment IS NULL OR e.equipment_needed = :equipment)
+            AND (:type IS NULL OR e.exercise_type = :type)
+            AND (:qLike IS NULL OR (e.name ILIKE :qLike OR e.name_en ILIKE :qLike))
           ORDER BY e.popularity_score DESC NULLS LAST, e.name ASC
           LIMIT :limit OFFSET :offset`,
-          { replacements: { q: `%${muscleGroup}%`, limit, offset } }
+          {
+            replacements: {
+              q: `%${muscleGroup}%`,
+              limit,
+              offset,
+              difficulty: difficulty || null,
+              equipment: equipment || null,
+              type: type || null,
+              qLike,
+            },
+          }
         );
         rows = byName;
         const [countRows] = await sequelize.query(
@@ -371,8 +462,22 @@ export const getExercisesByMuscleGroup = async (req, res) => {
              WHERE mg.name ILIKE :q OR mg.name_en ILIKE :q
              GROUP BY e.exercise_id
            )
-           SELECT COUNT(*)::int AS total FROM classified`,
-          { replacements: { q: `%${muscleGroup}%` } }
+           SELECT COUNT(*)::int AS total
+           FROM classified c
+           JOIN exercises e ON e.exercise_id = c.exercise_id
+           WHERE (:difficulty IS NULL OR e.difficulty_level = :difficulty)
+             AND (:equipment IS NULL OR e.equipment_needed = :equipment)
+             AND (:type IS NULL OR e.exercise_type = :type)
+             AND (:qLike IS NULL OR (e.name ILIKE :qLike OR e.name_en ILIKE :qLike))`,
+          {
+            replacements: {
+              q: `%${muscleGroup}%`,
+              difficulty: difficulty || null,
+              equipment: equipment || null,
+              type: type || null,
+              qLike,
+            },
+          }
         );
         total = countRows?.[0]?.total || 0;
       }
