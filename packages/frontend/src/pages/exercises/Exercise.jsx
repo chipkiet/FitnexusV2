@@ -72,11 +72,17 @@ export default function Exercise() {
       return {
         message: st.toast,
         addedExerciseName: st.addedExerciseName || "",
-        planItemCount: typeof st.planItemCount === 'number' ? st.planItemCount : undefined,
+        planItemCount:
+          typeof st.planItemCount === "number" ? st.planItemCount : undefined,
         visible: true,
       };
     }
-    return { message: "", addedExerciseName: "", planItemCount: undefined, visible: false };
+    return {
+      message: "",
+      addedExerciseName: "",
+      planItemCount: undefined,
+      visible: false,
+    };
   });
   useEffect(() => {
     const st = location.state;
@@ -84,15 +90,18 @@ export default function Exercise() {
       setSidebarNotice({
         message: st.toast,
         addedExerciseName: st.addedExerciseName || "",
-        planItemCount: typeof st.planItemCount === 'number' ? st.planItemCount : undefined,
+        planItemCount:
+          typeof st.planItemCount === "number" ? st.planItemCount : undefined,
         visible: true,
       });
-      const t = setTimeout(() => setSidebarNotice((v) => ({ ...v, visible: false })), 10000);
+      const t = setTimeout(
+        () => setSidebarNotice((v) => ({ ...v, visible: false })),
+        10000
+      );
       return () => clearTimeout(t);
     }
   }, [location.state]);
 
-  // Filters state
   const muscleGroups = [
     { id: "abs", label: "Abs", icon: absIcon },
     { id: "back", label: "Back", icon: backIcon },
@@ -114,7 +123,6 @@ export default function Exercise() {
   const [equipment, setEquipment] = useState("");
   const [type, setType] = useState("");
 
-  // API state
   const [rawExercises, setRawExercises] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -123,26 +131,58 @@ export default function Exercise() {
   const [total, setTotal] = useState(0);
   const [clientPaging, setClientPaging] = useState(false);
 
-  // Dock: "Buổi tập hôm nay" (client-only)
   const [todayList, setTodayList] = useState(() => []);
+
+  const [filterOptions, setFilterOptions] = useState({
+    levels: [],
+    equipments: [],
+    types: [],
+  });
+
+  // filter metadata
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await axios.get("/api/exercises/filter/meta");
+        if (res.data?.success) {
+          const data = res.data.data || {};
+          setFilterOptions({
+            levels: Array.isArray(data.levels) ? data.levels : [],
+            equipments: Array.isArray(data.equipments) ? data.equipments : [],
+            types: Array.isArray(data.types) ? data.types : [],
+          });
+        }
+      } catch (e) {
+        console.warn("load filter meta failed", e);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   useEffect(() => {
     try {
-      const saved = JSON.parse(sessionStorage.getItem("today_workout") || "null");
+      const saved = JSON.parse(
+        sessionStorage.getItem("today_workout") || "null"
+      );
       if (Array.isArray(saved)) setTodayList(saved);
-    } catch { }
+    } catch {}
   }, []);
   useEffect(() => {
-    try { sessionStorage.setItem("today_workout", JSON.stringify(todayList)); } catch { }
+    try {
+      sessionStorage.setItem("today_workout", JSON.stringify(todayList));
+    } catch {}
   }, [todayList]);
 
-  // ========== Current Plan Context (from Plan Detail) ==========
   const [currentPlan, setCurrentPlan] = useState(() => {
     try {
       const raw = sessionStorage.getItem("current_plan_context");
       if (!raw) return null;
       const obj = JSON.parse(raw);
       if (obj && obj.plan_id) return obj;
-    } catch { }
+    } catch {}
     return null;
   });
   const [planItemsSet, setPlanItemsSet] = useState(new Set());
@@ -156,7 +196,9 @@ export default function Exercise() {
         const res = await getPlanByIdApi(pid);
         // Expect res.success and res.data.items
         const list = res?.data?.items || [];
-        const ids = new Set(list.map((it) => String(it.exercise?.id ?? it.exercise_id)));
+        const ids = new Set(
+          list.map((it) => String(it.exercise?.id ?? it.exercise_id))
+        );
         if (!alive) return;
         setPlanItemsSet(ids);
         setPlanItemsCount(list.length);
@@ -172,11 +214,15 @@ export default function Exercise() {
       setPlanItemsSet(new Set());
       setPlanItemsCount(undefined);
     }
-    return () => { alive = false; };
+    return () => {
+      alive = false;
+    };
   }, [currentPlan?.plan_id]);
 
   const clearCurrentPlan = () => {
-    try { sessionStorage.removeItem("current_plan_context"); } catch { }
+    try {
+      sessionStorage.removeItem("current_plan_context");
+    } catch {}
     setCurrentPlan(null);
     setPlanItemsSet(new Set());
     setPlanItemsCount(undefined);
@@ -197,52 +243,72 @@ export default function Exercise() {
       setClientPaging(false);
       try {
         let res = null;
-        const onlyGroup = selectedGroups.length === 1 ? selectedGroups[0] : null;
+        const onlyGroup =
+          selectedGroups.length === 1 ? selectedGroups[0] : null;
+        const baseParams = {
+          page,
+          pageSize,
+        };
+        if (q) baseParams.q = q;
+        if (level) baseParams.difficulty = level;
+        if (equipment) baseParams.equipment = equipment;
+        if (type) baseParams.type = type;
         if (selectedGroups.length === 0) {
-          res = await axios.get('/api/exercises', { params: { page, pageSize } });
+          res = await axios.get("/api/exercises", {
+            params: baseParams,
+          });
           if (alive) {
             if (res.data?.success) {
               setRawExercises(res.data.data || []);
               setTotal(res.data.total ?? (res.data.data || []).length ?? 0);
-            } else setError({ message: 'Không thể tải danh sách bài tập' });
+            } else setError({ message: "Không thể tải danh sách bài tập" });
           }
-        } else if (onlyGroup === 'cardio') {
-          res = await axios.get('/api/exercises/type/cardio', { params: { page, pageSize } });
+        } else if (onlyGroup === "cardio") {
+          res = await axios.get("/api/exercises/type/cardio", {
+            params: baseParams,
+          });
           if (alive) {
             if (res.data?.success) {
               setRawExercises(res.data.data || []);
               setTotal(res.data.total ?? (res.data.data || []).length ?? 0);
-            } else setError({ message: 'Không thể tải danh sách bài tập' });
+            } else setError({ message: "Không thể tải danh sách bài tập" });
           }
         } else if (onlyGroup) {
-          res = await axios.get(`/api/exercises/muscle/${onlyGroup}`, { params: { page, pageSize } });
+          res = await axios.get(`/api/exercises/muscle/${onlyGroup}`, {
+            params: baseParams,
+          });
           if (alive) {
             if (res.data?.success) {
               setRawExercises(res.data.data || []);
               setTotal(res.data.total ?? (res.data.data || []).length ?? 0);
-            } else setError({ message: 'Không thể tải danh sách bài tập' });
+            } else setError({ message: "Không thể tải danh sách bài tập" });
           }
         } else {
           // Multi-group: fetch by first group big page, then filter FE by the rest based on synonyms
           const base = selectedGroups[0];
-          res = await axios.get(`/api/exercises/muscle/${base}`, { params: { page: 1, pageSize: 1000 } });
+          res = await axios.get(`/api/exercises/muscle/${base}`, {
+            params: { ...baseParams, page: 1, pageSize: 1000 },
+          });
           if (alive) {
             if (res.data?.success) {
               setClientPaging(true);
               setRawExercises(res.data.data || []);
               // total set later after FE filters
-            } else setError({ message: 'Không thể tải danh sách bài tập' });
+            } else setError({ message: "Không thể tải danh sách bài tập" });
           }
         }
       } catch (e) {
-        if (alive) setError({ message: e?.message || 'Lỗi kết nối đến server' });
+        if (alive)
+          setError({ message: e?.message || "Lỗi kết nối đến server" });
       } finally {
         if (alive) setLoading(false);
       }
     }
     load();
-    return () => { alive = false; };
-  }, [selectedGroups.join(','), page, pageSize]);
+    return () => {
+      alive = false;
+    };
+  }, [selectedGroups.join(","), page, pageSize, q, level, equipment, type]);
 
   // Normalize exercises from BE shape
   const normalized = useMemo(() => {
@@ -250,17 +316,19 @@ export default function Exercise() {
     return list.map((ex) => {
       const id = ex.id ?? ex.exercise_id;
       // Prefer GIF from DB when available; otherwise use whatever BE provided
-      const mediaUrl = ex.gif_demo_url || ex.imageUrl || ex.thumbnail_url || '';
-      const fallback = `https://picsum.photos/seed/exercise-${encodeURIComponent(id ?? Math.random().toString(36).slice(2))}/800/450`;
+      const mediaUrl = ex.gif_demo_url || ex.imageUrl || ex.thumbnail_url || "";
+      const fallback = `https://picsum.photos/seed/exercise-${encodeURIComponent(
+        id ?? Math.random().toString(36).slice(2)
+      )}/800/450`;
       return {
         id,
-        name: ex.name || '',
+        name: ex.name || "",
         imageUrl: mediaUrl || fallback,
-        description: ex.description || '',
-        difficulty: ex.difficulty || ex.difficulty_level || '',
-        impact: ex.impact_level || '',
-        population: ex.population || '',
-        equipment: ex.equipment || ex.equipment_needed || '',
+        description: ex.description || "",
+        difficulty: ex.difficulty || ex.difficulty_level || "",
+        impact: ex.impact_level || "",
+        population: ex.population || "",
+        equipment: ex.equipment || ex.equipment_needed || "",
         // For group-based FE filtering
         parts: [],
         __raw: ex,
@@ -290,16 +358,21 @@ export default function Exercise() {
     // text/level/equipment/type filters
     let arr = normalized.filter((ex) => {
       if (q && !normalizeStr(ex.name).includes(normalizeStr(q))) return false;
-      if (level && normalizeStr(ex.difficulty) !== normalizeStr(level)) return false;
-      if (equipment && normalizeStr(ex.equipment) !== normalizeStr(equipment)) return false;
-      if (type && normalizeStr(ex.__raw?.exercise_type) !== normalizeStr(type)) return false;
+      if (level && normalizeStr(ex.difficulty) !== normalizeStr(level))
+        return false;
+      if (equipment && normalizeStr(ex.equipment) !== normalizeStr(equipment))
+        return false;
+      if (type && normalizeStr(ex.__raw?.exercise_type) !== normalizeStr(type))
+        return false;
       return true;
     });
     // multi-group FE filtering (for >1 selection)
     if (selectedGroups.length > 1) {
       const matchesOne = (ex, g) => {
         const nameNorm = normalizeStr(ex.name);
-        const syns = (groupSynonyms[g] || [g]).map((s) => normalizeStr(String(s)).replace(/-/g, ' '));
+        const syns = (groupSynonyms[g] || [g]).map((s) =>
+          normalizeStr(String(s)).replace(/-/g, " ")
+        );
         for (const s of syns) if (nameNorm.includes(s)) return true;
         return false;
       };
@@ -326,7 +399,9 @@ export default function Exercise() {
   }, [filtered, clientPaging, selectedGroups.length]);
 
   const addToToday = (ex) => {
-    setTodayList((prev) => (prev.find((x) => x.id === ex.id) ? prev : [...prev, ex]));
+    setTodayList((prev) =>
+      prev.find((x) => x.id === ex.id) ? prev : [...prev, ex]
+    );
   };
   const removeFromToday = (id) => {
     setTodayList((prev) => prev.filter((x) => x.id !== id));
@@ -335,7 +410,9 @@ export default function Exercise() {
   const addToPlan = async (ex) => {
     // If a current plan is active, add directly to that plan; otherwise go pick a plan
     if (!currentPlan?.plan_id) {
-      navigate(`/plans/select?exerciseId=${encodeURIComponent(ex.id)}`, { state: { exerciseName: ex.name } });
+      navigate(`/plans/select?exerciseId=${encodeURIComponent(ex.id)}`, {
+        state: { exerciseName: ex.name },
+      });
       return;
     }
     try {
@@ -350,16 +427,16 @@ export default function Exercise() {
       setPlanItemsSet((prev) => new Set([...prev, String(ex.id)]));
       // Try to get new count from response; otherwise reload plan
       const fromRes = (() => {
-        if (!res || typeof res !== 'object') return undefined;
-        if (typeof res.plan_item_count === 'number') return res.plan_item_count;
-        if (typeof res.items_count === 'number') return res.items_count;
-        if (typeof res.total_items === 'number') return res.total_items;
-        if (typeof res.total === 'number') return res.total;
-        if (typeof res.count === 'number') return res.count;
+        if (!res || typeof res !== "object") return undefined;
+        if (typeof res.plan_item_count === "number") return res.plan_item_count;
+        if (typeof res.items_count === "number") return res.items_count;
+        if (typeof res.total_items === "number") return res.total_items;
+        if (typeof res.total === "number") return res.total;
+        if (typeof res.count === "number") return res.count;
         return undefined;
       })();
       let newCount = fromRes;
-      if (typeof fromRes === 'number') setPlanItemsCount(fromRes);
+      if (typeof fromRes === "number") setPlanItemsCount(fromRes);
       else {
         // Fallback: reload plan to count items
         try {
@@ -367,19 +444,31 @@ export default function Exercise() {
           const list = r?.data?.items || [];
           newCount = list.length;
           setPlanItemsCount(newCount);
-        } catch { }
+        } catch {}
       }
       // Show notice in sidebar
       setSidebarNotice({
         message: "Thêm bài tập thành công",
-        addedExerciseName: ex.name || '',
-        planItemCount: typeof newCount === 'number' ? newCount : (typeof planItemsCount === 'number' ? planItemsCount + 1 : undefined),
+        addedExerciseName: ex.name || "",
+        planItemCount:
+          typeof newCount === "number"
+            ? newCount
+            : typeof planItemsCount === "number"
+            ? planItemsCount + 1
+            : undefined,
         visible: true,
       });
       // Auto-hide after 10s
-      setTimeout(() => setSidebarNotice((v) => ({ ...v, visible: false })), 10000);
+      setTimeout(
+        () => setSidebarNotice((v) => ({ ...v, visible: false })),
+        10000
+      );
     } catch (e) {
-      alert(e?.response?.data?.message || e?.message || 'Không thể thêm vào kế hoạch');
+      alert(
+        e?.response?.data?.message ||
+          e?.message ||
+          "Không thể thêm vào kế hoạch"
+      );
     }
   };
 
@@ -395,9 +484,16 @@ export default function Exercise() {
             <div className="p-4 bg-white border rounded-xl">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold">Tiếp tục gần đây</h2>
-                <button className="text-sm text-blue-600 hover:underline" onClick={() => navigate('/dashboard')}>Xem thêm</button>
+                <button
+                  className="text-sm text-blue-600 hover:underline"
+                  onClick={() => navigate("/dashboard")}
+                >
+                  Xem thêm
+                </button>
               </div>
-              <p className="mt-1 text-sm text-gray-500">Gợi ý nhanh dựa trên hoạt động gần đây của bạn.</p>
+              <p className="mt-1 text-sm text-gray-500">
+                Gợi ý nhanh dựa trên hoạt động gần đây của bạn.
+              </p>
             </div>
 
             {/* Filters */}
@@ -406,24 +502,48 @@ export default function Exercise() {
                 <div className="md:col-span-2">
                   <input
                     value={q}
-                    onChange={(e) => setQ(e.target.value)}
+                    onChange={(e) => {
+                      setQ(e.target.value);
+                      setPage(1);
+                    }}
                     placeholder="Tìm kiếm bài tập..."
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg"
                   />
                 </div>
                 <div>
-                  <select value={level} onChange={(e) => setLevel(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                  <select
+                    value={level}
+                    onChange={(e) => {
+                      setLevel(e.target.value);
+                      setPage(1);
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  >
                     <option value="">Độ khó: Tất cả</option>
                     {optionSets.levels.map((lv) => (
-                      <option key={lv} value={lv}>{lv}</option>
+                      <option key={lv} value={lv}>
+                        {lv}
+                      </option>
                     ))}
                   </select>
                 </div>
                 <div>
-                  <select value={equipment} onChange={(e) => setEquipment(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                  <select
+                    value={equipment}
+                    onChange={(e) => {
+                      setEquipment(e.target.value);
+                      setPage(1);
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  >
                     <option value="">Dụng cụ: Tất cả</option>
-                    {optionSets.equipments.map((eq) => (
-                      <option key={eq} value={eq}>{eq}</option>
+                    {(filterOptions.equipments.length
+                      ? filterOptions.equipments
+                      : optionSets.equipments
+                    ).map((eq) => (
+                      <option key={eq} value={eq}>
+                        {eq}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -438,8 +558,11 @@ export default function Exercise() {
                     <button
                       key={g.id}
                       onClick={() => toggleGroup(g.id)}
-                      className={`px-3 py-1.5 rounded-full border text-sm ${active ? "border-blue-600 text-blue-700 bg-blue-50" : "border-gray-300 hover:bg-gray-50"
-                        }`}
+                      className={`px-3 py-1.5 rounded-full border text-sm ${
+                        active
+                          ? "border-blue-600 text-blue-700 bg-blue-50"
+                          : "border-gray-300 hover:bg-gray-50"
+                      }`}
                     >
                       {g.label}
                     </button>
@@ -448,13 +571,21 @@ export default function Exercise() {
                 <div className="flex items-center gap-2 ml-auto text-sm">
                   <span className="text-gray-600">Chế độ:</span>
                   <button
-                    className={`px-2 py-1 rounded border ${modeAll ? "bg-blue-50 border-blue-600 text-blue-700" : "border-gray-300"}`}
+                    className={`px-2 py-1 rounded border ${
+                      modeAll
+                        ? "bg-blue-50 border-blue-600 text-blue-700"
+                        : "border-gray-300"
+                    }`}
                     onClick={() => setModeAll(true)}
                   >
                     All
                   </button>
                   <button
-                    className={`px-2 py-1 rounded border ${!modeAll ? "bg-blue-50 border-blue-600 text-blue-700" : "border-gray-300"}`}
+                    className={`px-2 py-1 rounded border ${
+                      !modeAll
+                        ? "bg-blue-50 border-blue-600 text-blue-700"
+                        : "border-gray-300"
+                    }`}
                     onClick={() => setModeAll(false)}
                   >
                     Any
@@ -465,43 +596,78 @@ export default function Exercise() {
 
             {/* Results */}
             <div>
-              <div className="mb-3 text-sm text-gray-600">Tìm thấy {total} bài tập</div>
+              <div className="mb-3 text-sm text-gray-600">
+                Tìm thấy {total} bài tập
+              </div>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {loading ? (
-                  <div className="p-6 text-sm text-gray-600">Đang tải danh sách bài tập...</div>
+                  <div className="p-6 text-sm text-gray-600">
+                    Đang tải danh sách bài tập...
+                  </div>
                 ) : error ? (
-                  <div className="p-6 text-sm text-red-600">{error.message}</div>
+                  <div className="p-6 text-sm text-red-600">
+                    {error.message}
+                  </div>
                 ) : paged.length === 0 ? (
-                  <div className="p-6 text-sm text-gray-600">Không tìm thấy bài tập phù hợp</div>
-                ) :
+                  <div className="p-6 text-sm text-gray-600">
+                    Không tìm thấy bài tập phù hợp
+                  </div>
+                ) : (
                   paged.map((ex) => (
-                    <div key={ex.id} className="overflow-hidden bg-white border rounded-xl">
+                    <div
+                      key={ex.id}
+                      className="overflow-hidden bg-white border rounded-xl"
+                    >
                       {ex.imageUrl ? (
-                        <div className="relative w-full bg-gray-100" style={{ paddingBottom: "56%" }}>
-                          <img src={ex.imageUrl} alt={ex.name} className="absolute inset-0 object-cover w-full h-full" />
+                        <div
+                          className="relative w-full bg-gray-100"
+                          style={{ paddingBottom: "56%" }}
+                        >
+                          <img
+                            src={ex.imageUrl}
+                            alt={ex.name}
+                            className="absolute inset-0 object-cover w-full h-full"
+                          />
                         </div>
                       ) : (
-                        <div className="relative w-full bg-gray-100" style={{ paddingBottom: "56%" }} />
+                        <div
+                          className="relative w-full bg-gray-100"
+                          style={{ paddingBottom: "56%" }}
+                        />
                       )}
                       <div className="p-4">
                         <div className="flex items-start justify-between gap-3">
-                          <h3 className="text-base font-semibold text-gray-900 line-clamp-2">{ex.name}</h3>
+                          <h3 className="text-base font-semibold text-gray-900 line-clamp-2">
+                            {ex.name}
+                          </h3>
                           <button
                             className="text-sm text-blue-600 hover:underline"
-                            onClick={() => navigate(`/exercises/${ex.id}`, { state: ex })}
+                            onClick={() =>
+                              navigate(`/exercises/${ex.id}`, { state: ex })
+                            }
                           >
                             Chi tiết
                           </button>
                         </div>
                         <div className="flex flex-wrap gap-2 mt-2">
-                          {ex.difficulty && <Badge tone="amber">{ex.difficulty}</Badge>}
-                          {ex.__raw?.exercise_type && <Badge tone="purple">{ex.__raw.exercise_type}</Badge>}
-                          {ex.equipment && <Badge tone="blue">{ex.equipment}</Badge>}
-                          {currentPlan?.plan_id && planItemsSet.has(String(ex.id)) && (
-                            <span className="inline-flex items-center px-2 py-1 text-xs text-green-700 bg-green-50 border border-green-200 rounded">
-                              Thuộc plan {currentPlan.plan_id} - {currentPlan.name || '(Không có tên)'}
-                            </span>
+                          {ex.difficulty && (
+                            <Badge tone="amber">{ex.difficulty}</Badge>
                           )}
+                          {ex.__raw?.exercise_type && (
+                            <Badge tone="purple">
+                              {ex.__raw.exercise_type}
+                            </Badge>
+                          )}
+                          {ex.equipment && (
+                            <Badge tone="blue">{ex.equipment}</Badge>
+                          )}
+                          {currentPlan?.plan_id &&
+                            planItemsSet.has(String(ex.id)) && (
+                              <span className="inline-flex items-center px-2 py-1 text-xs text-green-700 border border-green-200 rounded bg-green-50">
+                                Thuộc plan {currentPlan.plan_id} -{" "}
+                                {currentPlan.name || "(Không có tên)"}
+                              </span>
+                            )}
                         </div>
                         <div className="flex items-center gap-2 mt-4">
                           <button
@@ -519,25 +685,40 @@ export default function Exercise() {
                         </div>
                       </div>
                     </div>
-                  ))}
+                  ))
+                )}
               </div>
               {/* Pagination */}
               <div className="flex items-center justify-between mt-4">
-                <div className="text-sm text-gray-600">Trang {page} / {Math.max(1, Math.ceil(total / pageSize))}</div>
+                <div className="text-sm text-gray-600">
+                  Trang {page} / {Math.max(1, Math.ceil(total / pageSize))}
+                </div>
                 <div className="flex gap-2">
                   <button
                     type="button"
                     disabled={page <= 1 || loading}
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
-                    className={`px-3 py-2 text-sm border rounded-lg ${page <= 1 || loading ? 'text-gray-400 border-gray-200' : 'border-gray-300 hover:bg-gray-50'}`}
+                    className={`px-3 py-2 text-sm border rounded-lg ${
+                      page <= 1 || loading
+                        ? "text-gray-400 border-gray-200"
+                        : "border-gray-300 hover:bg-gray-50"
+                    }`}
                   >
                     Trang trước
                   </button>
                   <button
                     type="button"
-                    disabled={loading || page >= Math.max(1, Math.ceil(total / pageSize))}
+                    disabled={
+                      loading ||
+                      page >= Math.max(1, Math.ceil(total / pageSize))
+                    }
                     onClick={() => setPage((p) => p + 1)}
-                    className={`px-3 py-2 text-sm border rounded-lg ${loading || page >= Math.max(1, Math.ceil(total / pageSize)) ? 'text-gray-400 border-gray-200' : 'border-gray-300 hover:bg-gray-50'}`}
+                    className={`px-3 py-2 text-sm border rounded-lg ${
+                      loading ||
+                      page >= Math.max(1, Math.ceil(total / pageSize))
+                        ? "text-gray-400 border-gray-200"
+                        : "border-gray-300 hover:bg-gray-50"
+                    }`}
                   >
                     Trang sau
                   </button>
@@ -551,19 +732,25 @@ export default function Exercise() {
             <div className="sticky top-20">
               {/* Current plan context box */}
               {currentPlan?.plan_id && (
-                <div className="p-3 mb-4 text-sm text-blue-900 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="p-3 mb-4 text-sm text-blue-900 border border-blue-200 rounded-lg bg-blue-50">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1">
-                      <div className="font-semibold">Plan hiện tại: {currentPlan.plan_id} - {currentPlan.name || '(Không có tên)'}
+                      <div className="font-semibold">
+                        Plan hiện tại: {currentPlan.plan_id} -{" "}
+                        {currentPlan.name || "(Không có tên)"}
                       </div>
-                      {typeof planItemsCount === 'number' && (
-                        <div className="mt-1 text-xs">Hiện có {planItemsCount} bài tập trong kế hoạch này.</div>
+                      {typeof planItemsCount === "number" && (
+                        <div className="mt-1 text-xs">
+                          Hiện có {planItemsCount} bài tập trong kế hoạch này.
+                        </div>
                       )}
                     </div>
                     <div className="flex items-center gap-2">
                       <button
                         className="text-xs text-blue-700 hover:underline"
-                        onClick={() => navigate(`/plans/${currentPlan.plan_id}`)}
+                        onClick={() =>
+                          navigate(`/plans/${currentPlan.plan_id}`)
+                        }
                       >
                         Xem
                       </button>
@@ -587,20 +774,30 @@ export default function Exercise() {
                 <div className="p-3 mb-4 text-sm text-white bg-green-600 rounded-lg shadow">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1">
-                      <div className="font-semibold">{sidebarNotice.message}</div>
+                      <div className="font-semibold">
+                        {sidebarNotice.message}
+                      </div>
                       <div className="mt-1 text-xs opacity-90">
                         {sidebarNotice.addedExerciseName ? (
-                          <span>Đã thêm: <b>{sidebarNotice.addedExerciseName}</b>.</span>
+                          <span>
+                            Đã thêm: <b>{sidebarNotice.addedExerciseName}</b>.
+                          </span>
                         ) : null}
-                        {typeof sidebarNotice.planItemCount === 'number' ? (
-                          <span> Hiện tại kế hoạch có <b>{sidebarNotice.planItemCount}</b> bài tập.</span>
+                        {typeof sidebarNotice.planItemCount === "number" ? (
+                          <span>
+                            {" "}
+                            Hiện tại kế hoạch có{" "}
+                            <b>{sidebarNotice.planItemCount}</b> bài tập.
+                          </span>
                         ) : null}
                       </div>
                     </div>
                     <button
                       className="text-white/90 hover:text-white"
                       aria-label="Đóng thông báo"
-                      onClick={() => setSidebarNotice((v) => ({ ...v, visible: false }))}
+                      onClick={() =>
+                        setSidebarNotice((v) => ({ ...v, visible: false }))
+                      }
                     >
                       ×
                     </button>
@@ -618,14 +815,23 @@ export default function Exercise() {
                   </button>
                 </div>
                 {!todayList.length ? (
-                  <p className="text-sm text-gray-500">Chưa có bài tập nào. Thêm từ danh sách bên trái.</p>
+                  <p className="text-sm text-gray-500">
+                    Chưa có bài tập nào. Thêm từ danh sách bên trái.
+                  </p>
                 ) : (
                   <div className="space-y-2 max-h-[50vh] overflow-auto pr-1">
                     {todayList.map((ex) => (
-                      <div key={ex.id} className="flex items-center justify-between gap-2 p-2 border rounded-lg">
+                      <div
+                        key={ex.id}
+                        className="flex items-center justify-between gap-2 p-2 border rounded-lg"
+                      >
                         <div className="min-w-0">
-                          <div className="text-sm font-medium text-gray-800 truncate">{ex.name}</div>
-                          <div className="text-xs text-gray-500">{ex.equipment} • {ex.difficulty}</div>
+                          <div className="text-sm font-medium text-gray-800 truncate">
+                            {ex.name}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {ex.equipment} • {ex.difficulty}
+                          </div>
                         </div>
                         <button
                           className="px-2 py-1 text-xs text-red-600 border border-red-200 rounded hover:bg-red-50"
@@ -649,7 +855,6 @@ export default function Exercise() {
                     <StartWorkoutButton exercises={todayList} />
                   )}
                 </div>
-
               </div>
             </div>
           </aside>

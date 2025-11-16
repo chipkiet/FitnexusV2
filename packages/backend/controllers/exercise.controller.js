@@ -2,6 +2,7 @@ import Exercise from "../models/exercise.model.js";
 import { sequelize } from "../config/database.js";
 import ExerciseFavorite from "../models/exercise.favorite.model.js";
 import { Op, fn, col } from 'sequelize';
+import { data } from "@tensorflow/tfjs";
 
 function normalize(str = "") {
   return String(str)
@@ -401,11 +402,36 @@ export const getExercisesByMuscleGroup = async (req, res) => {
     });
   }
 };
-
-export const getAllExercises = async (_req, res) => {
+export const getAllExercises = async (req, res) => {
   try {
-    const { limit, offset, page, pageSize } = parsePaging(_req.query);
+    const { limit, offset, page, pageSize } = parsePaging(req.query);
+
+    const { q, difficulty, equipment, type } = req.query;
+
+    const where = {};
+
+    if (q) {
+      const like = `%${q.trim()}%`;
+      where[Op.or] = [
+        { name: { [Op.iLike]: like } },
+        { name_en: { [Op.iLike]: like } },
+      ];
+    }
+
+    if (difficulty) {
+      where.difficulty_level = difficulty;
+    }
+
+    if (equipment) {
+      where.equipment_needed = equipment;
+    }
+
+    if (type) {
+      where.exercise_type = type;
+    }
+
     const { count, rows } = await Exercise.findAndCountAll({
+      where,
       limit,
       offset,
       order: [
@@ -413,6 +439,7 @@ export const getAllExercises = async (_req, res) => {
         ["name", "ASC"],
       ],
     });
+
     const imgMap = await fetchBestImagesForIds(rows.map((r) => r.exercise_id));
     const data = rows.map((r) => ({
       id: r.exercise_id,
@@ -425,6 +452,7 @@ export const getAllExercises = async (_req, res) => {
       instructions: null,
       impact_level: r.impact_level || null,
     }));
+
     res.status(200).json({ success: true, data, page, pageSize, total: count });
   } catch (error) {
     console.error("Error fetching all exercises:", error);
@@ -435,37 +463,49 @@ export const getAllExercises = async (_req, res) => {
     });
   }
 };
-
-// Filter by exercise type (compound | isolation | cardio | flexibility)
 export const getExercisesByType = async (req, res) => {
   try {
     const { type } = req.params;
     const t = normalize(type).replace(/\s+/g, "-");
     const allowed = new Set(["compound", "isolation", "cardio", "flexibility"]);
     if (!allowed.has(t)) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "Invalid exercise type",
-          allowed: Array.from(allowed),
-        });
+      return res.status(400).json({
+        success: false,
+        message: "Invalid exercise type",
+        allowed: Array.from(allowed),
+      });
     }
 
     const { limit, offset, page, pageSize } = parsePaging(req.query);
+    const { q, difficulty, equipment } = req.query;
 
-    const [countRows] = await sequelize.query(
-      `SELECT COUNT(*)::int AS total FROM exercises WHERE exercise_type = $1`,
-      { bind: [t] }
-    );
-    const total = countRows?.[0]?.total || 0;
+    const where = { exercise_type: t };
 
-    const [rows] = await sequelize.query(
-      `SELECT * FROM exercises WHERE exercise_type = $1
-       ORDER BY popularity_score DESC NULLS LAST, name ASC
-       LIMIT $2 OFFSET $3`,
-      { bind: [t, limit, offset] }
-    );
+    if (q) {
+      const like = `%${q.trim()}%`;
+      where[Op.or] = [
+        { name: { [Op.iLike]: like } },
+        { name_en: { [Op.iLike]: like } },
+      ];
+    }
+
+    if (difficulty) {
+      where.difficulty_level = difficulty;
+    }
+
+    if (equipment) {
+      where.equipment_needed = equipment;
+    }
+
+    const { count, rows } = await Exercise.findAndCountAll({
+      where,
+      limit,
+      offset,
+      order: [
+        ["popularity_score", "DESC"],
+        ["name", "ASC"],
+      ],
+    });
 
     const imgMap = await fetchBestImagesForIds(rows.map((r) => r.exercise_id));
     const data = rows.map((r) => ({
@@ -480,16 +520,16 @@ export const getExercisesByType = async (req, res) => {
       impact_level: null,
     }));
 
-    return res.status(200).json({ success: true, data, page, pageSize, total });
+    return res
+      .status(200)
+      .json({ success: true, data, page, pageSize, total: count });
   } catch (error) {
     console.error("Error fetching exercises by type:", error);
-    return res
-      .status(500)
-      .json({
-        success: false,
-        message: "Error fetching exercises by type",
-        error: error.message,
-      });
+    return res.status(500).json({
+      success: false,
+      message: "Error fetching exercises by type",
+      error: error.message,
+    });
   }
 };
 
@@ -521,13 +561,11 @@ export const getExerciseStepsById = async (req, res) => {
     return res.status(200).json({ success: true, data: steps });
   } catch (error) {
     console.error("Error fetching steps by id:", error);
-    return res
-      .status(500)
-      .json({
-        success: false,
-        message: "Error fetching steps",
-        error: error.message,
-      });
+    return res.status(500).json({
+      success: false,
+      message: "Error fetching steps",
+      error: error.message,
+    });
   }
 };
 
@@ -566,13 +604,11 @@ export const getExerciseStepsBySlug = async (req, res) => {
     return res.status(200).json({ success: true, data: steps });
   } catch (error) {
     console.error("Error fetching steps by slug:", error);
-    return res
-      .status(500)
-      .json({
-        success: false,
-        message: "Error fetching steps",
-        error: error.message,
-      });
+    return res.status(500).json({
+      success: false,
+      message: "Error fetching steps",
+      error: error.message,
+    });
   }
 };
 
@@ -667,13 +703,11 @@ export const getExerciseMusclesById = async (req, res) => {
     });
   } catch (error) {
     console.error("getExerciseMusclesById error:", error);
-    return res
-      .status(500)
-      .json({
-        success: false,
-        message: "Error fetching muscles",
-        error: error.message,
-      });
+    return res.status(500).json({
+      success: false,
+      message: "Error fetching muscles",
+      error: error.message,
+    });
   }
 };
 // Related exercises by overlap of muscle groups + tie-breakers
@@ -817,13 +851,11 @@ export const getRelatedExercisesById = async (req, res) => {
     return res.status(200).json({ success: true, data, total: data.length });
   } catch (error) {
     console.error("getRelatedExercisesById error:", error);
-    return res
-      .status(500)
-      .json({
-        success: false,
-        message: "Error fetching related exercises",
-        error: error.message,
-      });
+    return res.status(500).json({
+      success: false,
+      message: "Error fetching related exercises",
+      error: error.message,
+    });
   }
 };
 
@@ -832,30 +864,49 @@ export const postFavorite = async (req, res) => {
   try {
     const userId = req.userId;
     const exerciseId = Number(req.params.exerciseId);
-    if (!userId) return res.status(401).json({ success: false, message: 'Unauthorized' });
-    if (!exerciseId) return res.status(400).json({ success: false, message: 'Invalid exercise id' });
+    if (!userId)
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    if (!exerciseId)
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid exercise id" });
 
     // Ensure exercise exists
     const ex = await Exercise.findByPk(exerciseId);
-    if (!ex) return res.status(404).json({ success: false, message: 'Exercise not found' });
+    if (!ex)
+      return res
+        .status(404)
+        .json({ success: false, message: "Exercise not found" });
 
     // Idempotent: if already favorited, do nothing
-    const existed = await ExerciseFavorite.findOne({ where: { user_id: userId, exercise_id: exerciseId } });
+    const existed = await ExerciseFavorite.findOne({
+      where: { user_id: userId, exercise_id: exerciseId },
+    });
     if (!existed) {
       try {
-        await ExerciseFavorite.create({ user_id: userId, exercise_id: exerciseId });
+        await ExerciseFavorite.create({
+          user_id: userId,
+          exercise_id: exerciseId,
+        });
       } catch (err) {
         // ignore unique constraint (already favorited)
-        if (err.name !== 'SequelizeUniqueConstraintError') throw err;
+        if (err.name !== "SequelizeUniqueConstraintError") throw err;
       }
     }
 
     // return new favorite count
-    const favCount = await ExerciseFavorite.count({ where: { exercise_id: exerciseId } });
-    return res.json({ success: true, data: { exercise_id: exerciseId, favorite_count: favCount } });
+    const favCount = await ExerciseFavorite.count({
+      where: { exercise_id: exerciseId },
+    });
+    return res.json({
+      success: true,
+      data: { exercise_id: exerciseId, favorite_count: favCount },
+    });
   } catch (err) {
-    console.error('postFavorite error:', err);
-    return res.status(500).json({ success: false, message: 'Internal server error' });
+    console.error("postFavorite error:", err);
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error" });
   }
 };
 
@@ -864,16 +915,29 @@ export const deleteFavorite = async (req, res) => {
   try {
     const userId = req.userId;
     const exerciseId = Number(req.params.exerciseId);
-    if (!userId) return res.status(401).json({ success: false, message: 'Unauthorized' });
-    if (!exerciseId) return res.status(400).json({ success: false, message: 'Invalid exercise id' });
+    if (!userId)
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    if (!exerciseId)
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid exercise id" });
 
-    await ExerciseFavorite.destroy({ where: { user_id: userId, exercise_id: exerciseId } });
+    await ExerciseFavorite.destroy({
+      where: { user_id: userId, exercise_id: exerciseId },
+    });
 
-    const favCount = await ExerciseFavorite.count({ where: { exercise_id: exerciseId } });
-    return res.json({ success: true, data: { exercise_id: exerciseId, favorite_count: favCount } });
+    const favCount = await ExerciseFavorite.count({
+      where: { exercise_id: exerciseId },
+    });
+    return res.json({
+      success: true,
+      data: { exercise_id: exerciseId, favorite_count: favCount },
+    });
   } catch (err) {
-    console.error('deleteFavorite error:', err);
-    return res.status(500).json({ success: false, message: 'Internal server error' });
+    console.error("deleteFavorite error:", err);
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error" });
   }
 };
 
@@ -881,34 +945,47 @@ export const deleteFavorite = async (req, res) => {
 export const getFavoriteStatus = async (req, res) => {
   try {
     const exerciseId = Number(req.params.exerciseId);
-    if (!exerciseId) return res.status(400).json({ success: false, message: 'Invalid exercise id' });
+    if (!exerciseId)
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid exercise id" });
 
-    const favCount = await ExerciseFavorite.count({ where: { exercise_id: exerciseId } });
+    const favCount = await ExerciseFavorite.count({
+      where: { exercise_id: exerciseId },
+    });
     let favorited = false;
     // Try detect user via Passport session or Authorization header (JWT)
     try {
       let userId = req.userId || req.user?.user_id || null;
       if (!userId) {
-        const authHeader = req.get('authorization') || req.get('Authorization') || '';
-        if (authHeader.startsWith('Bearer ')) {
-          const token = authHeader.split(' ')[1];
-          const jwt = await import('jsonwebtoken');
+        const authHeader =
+          req.get("authorization") || req.get("Authorization") || "";
+        if (authHeader.startsWith("Bearer ")) {
+          const token = authHeader.split(" ")[1];
+          const jwt = await import("jsonwebtoken");
           const payload = jwt.verify(token, process.env.JWT_SECRET);
           userId = payload.sub || payload.userId || payload.id || null;
         }
       }
       if (userId) {
-        const row = await ExerciseFavorite.findOne({ where: { user_id: userId, exercise_id: exerciseId } });
+        const row = await ExerciseFavorite.findOne({
+          where: { user_id: userId, exercise_id: exerciseId },
+        });
         favorited = !!row;
       }
     } catch (e) {
       // ignore token/session errors; treat as anonymous
     }
 
-    return res.json({ success: true, data: { exercise_id: exerciseId, favorite_count: favCount, favorited } });
+    return res.json({
+      success: true,
+      data: { exercise_id: exerciseId, favorite_count: favCount, favorited },
+    });
   } catch (err) {
-    console.error('getFavoriteStatus error:', err);
-    return res.status(500).json({ success: false, message: 'Internal server error' });
+    console.error("getFavoriteStatus error:", err);
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error" });
   }
 };
 
@@ -916,7 +993,8 @@ export const getFavoriteStatus = async (req, res) => {
 export const listMyFavorites = async (req, res) => {
   try {
     const userId = req.userId;
-    if (!userId) return res.status(401).json({ success: false, message: 'Unauthorized' });
+    if (!userId)
+      return res.status(401).json({ success: false, message: "Unauthorized" });
 
     // Fetch distinct favorites by exercise (avoid duplicates if any historical data remains)
     const [rows] = await sequelize.query(
@@ -941,12 +1019,63 @@ export const listMyFavorites = async (req, res) => {
       name: ex.name,
       difficulty: ex.difficulty_level,
       equipment: ex.equipment_needed,
-      imageUrl: imgMap.get(ex.exercise_id) || ex.thumbnail_url || ex.gif_demo_url || null,
+      imageUrl:
+        imgMap.get(ex.exercise_id) ||
+        ex.thumbnail_url ||
+        ex.gif_demo_url ||
+        null,
     }));
 
     return res.json({ success: true, data: { items, total: items.length } });
   } catch (err) {
-    console.error('listMyFavorites error:', err);
-    return res.status(500).json({ success: false, message: 'Internal server error' });
+    console.error("listMyFavorites error:", err);
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error" });
+  }
+};
+
+export const getExerciseFilterMeta = async (req, res) => {
+  try {
+    const levelsRaw = await Exercise.findAll({
+      attributes: [
+        [fn("DISTINCT", col("difficulty_level")), "difficulty_level"],
+      ],
+      where: { difficulty_level: { [Op.ne]: null } },
+      raw: true,
+    });
+
+    const equipmentsRaw = await Exercise.findAll({
+      attributes: [
+        [fn("DISTINCT", col("equipment_needed")), "equipment_needed"],
+      ],
+      where: { equipment_needed: { [Op.ne]: null } },
+      raw: true,
+    });
+    const typesRaw = await Exercise.findAll({
+      attributes: [[fn("DISTINCT", col("exercise_type")), "exercise_type"]],
+      where: { exercise_type: { [Op.ne]: null } },
+      raw: true,
+    });
+
+    const levels = levelsRaw
+      .map((r) => r.difficulty_level)
+      .filter((v) => v != null && String(v).trim() !== "");
+    const equipments = equipmentsRaw
+      .map((r) => r.equipment_needed)
+      .filter((v) => v != null && String(v).trim() !== "");
+    const types = typesRaw
+      .map((r) => r.exercise_type)
+      .filter((v) => v != null && String(v).trim() !== "");
+
+    return res.json({
+      success: true,
+      data: { levels, equipments, types },
+    });
+  } catch (err) {
+    console.error("getExerciseFiltersMeta error:", err);
+    return res
+      .status(500)
+      .json({ success: false, message: "Không tải được bộ lọc" });
   }
 };

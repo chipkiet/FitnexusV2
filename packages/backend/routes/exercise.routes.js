@@ -12,6 +12,7 @@ import {
   getRelatedExercisesById,
   getExerciseMusclesById,
   listMyFavorites,
+  getExerciseFilterMeta,
 } from "../controllers/exercise.controller.js";
 
 const router = Router();
@@ -39,5 +40,8 @@ router.get("/id/:exerciseId/related", getRelatedExercisesById);
 
 // Lấy thông tin chi tiết nhóm cơ của bài tập
 router.get("/id/:exerciseId/muscles", getExerciseMusclesById);
+
+// Trả về thuần metadata
+router.get("/filter/meta", getExerciseFilterMeta);
 
 export default router;
