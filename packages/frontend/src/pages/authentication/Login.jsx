@@ -297,10 +297,6 @@ export default function Login() {
               <FcGoogle size={20} />
               {oauthLoading ? "Đang chuyển hướng…" : "Google"}
             </button>
-
-            <button className="flex items-center justify-center flex-1 gap-2 py-2 border rounded-lg hover:bg-gray-50">
-              <FaApple size={20} /> Apple
-            </button>
           </div>
 
           <p className="mt-4 text-sm text-center text-gray-500">
