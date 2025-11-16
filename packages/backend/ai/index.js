@@ -3,6 +3,7 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import http from "http";
+import net from "net";
 import rateLimit from "express-rate-limit";
 import { fileURLToPath } from "url";
 import path from "path";
@@ -363,18 +364,44 @@ export function ensureAiApp() {
   return createAiExpressApp();
 }
 
-export function startAiServer() {
+function isPortFree(port) {
+  return new Promise((resolve) => {
+    const tester = net.createServer()
+      .once("error", () => resolve(false))
+      .once("listening", () => {
+        tester.close(() => resolve(true));
+      })
+      .listen(port);
+  });
+}
+
+async function findAvailablePort(startPort, attempt = 0, maxAttempts = 20) {
+  const port = Number(startPort) || 0;
+  if (port <= 0) throw new Error(`[AI] Invalid start port: ${startPort}`);
+  if (attempt >= maxAttempts) {
+    throw new Error(`[AI] Could not find free port near ${startPort}`);
+  }
+  const free = await isPortFree(port);
+  if (free) return port;
+  return findAvailablePort(port + 1, attempt + 1, maxAttempts);
+}
+
+export async function startAiServer() {
   const app = ensureAiApp();
   if (aiServer) return aiServer;
-  const aiPort = parseInt(process.env.AI_PORT || "3002", 10);
+  const requested = parseInt(process.env.AI_PORT || "3002", 10);
+  const aiPort = await findAvailablePort(requested);
+  process.env.AI_PORT = String(aiPort);
   aiServer = http.createServer(app);
-  aiServer.listen(aiPort, () => {
-    // eslint-disable-next-line no-console
-    console.log(`AI server is running on http://localhost:${aiPort}`);
-  });
-  aiServer.on("error", (err) => {
-    // eslint-disable-next-line no-console
-    console.error("[AI] server error:", err);
+  await new Promise((resolve, reject) => {
+    aiServer.listen(aiPort, () => {
+      console.log(`AI server is running on http://localhost:${aiPort}`);
+      resolve();
+    });
+    aiServer.on("error", (err) => {
+      console.error("[AI] server error:", err);
+      reject(err);
+    });
   });
   return aiServer;
 }

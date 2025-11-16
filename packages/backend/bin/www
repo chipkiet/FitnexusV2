@@ -6,6 +6,7 @@
 import app from '../app.js'; // <-- Dùng import
 import debugLib from 'debug'; // <-- Dùng import
 import http from 'http';
+import net from 'net';
 import { connectDB } from '../config/database.js';
 import { initModels } from '../models/initModels.js';
 import { scheduleSubscriptionExpiryJob } from '../jobs/subscription.cron.js';
@@ -16,13 +17,8 @@ const debug = debugLib('backend:server');
 /**
  * Get port from environment and store in Express.
  */
-const port = normalizePort(process.env.PORT || '3000');
-app.set('port', port);
-
-/**
- * Create HTTP server.
- */
-const server = http.createServer(app);
+let port = normalizePort(process.env.PORT || '3000');
+let server = null;
 
 
 (async () => {
@@ -33,10 +29,20 @@ const server = http.createServer(app);
     scheduleSubscriptionExpiryJob();
     // Start AI server on separate port and keep mounted under /api/ai
     try {
-      startAiServer();
+      await startAiServer();
     } catch (e) {
       console.warn('[WARN] Failed to start AI server:', e?.message || e);
     }
+    if (typeof port === 'number') {
+      const freePort = await findAvailablePort(port);
+      if (freePort !== port) {
+        console.warn(`[PORT] ${port} is busy. Switching backend server to ${freePort}.`);
+        port = freePort;
+      }
+      process.env.PORT = String(port);
+    }
+    app.set('port', port);
+    server = http.createServer(app);
     server.listen(port);
     server.on('error', onError);
     server.on('listening', onListening);
@@ -95,4 +101,27 @@ function onListening() {
         : 'port ' + addr.port;
     debug('Listening on ' + bind);
     console.log('Backend server is running on http://localhost:' + addr.port);
+}
+
+function isPortFree(testPort) {
+  return new Promise((resolve) => {
+    const tester = net.createServer()
+      .once('error', () => resolve(false))
+      .once('listening', () => {
+        tester.close(() => resolve(true));
+      })
+      .listen(testPort);
+  });
+}
+
+async function findAvailablePort(startPort, maxAttempts = 20) {
+  if (typeof startPort !== 'number') return startPort;
+  let current = startPort;
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+    // eslint-disable-next-line no-await-in-loop
+    const free = await isPortFree(current);
+    if (free) return current;
+    current += 1;
+  }
+  throw new Error(`No available port found starting from ${startPort}`);
 }

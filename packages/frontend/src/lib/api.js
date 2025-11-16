@@ -697,6 +697,53 @@ export const mockUpgradePremiumApi = async () => {
   return res.data;
 };
 
+// ===== Reviews APIs =====
+export const fetchDashboardReviewsApi = async ({ limit = 10, offset = 0, rating, sort } = {}) => {
+  const params = { limit, offset };
+  if (rating) params.rating = rating;
+  if (sort) params.sort = sort;
+  const res = await api.get("/api/reviews", { params });
+  return res.data;
+};
+
+export const createDashboardReviewApi = async (payload = {}) => {
+  const config =
+    payload instanceof FormData
+      ? { headers: { "Content-Type": "multipart/form-data" } }
+      : undefined;
+  const res = await api.post("/api/reviews", payload, config);
+  return res.data;
+};
+
+export const createDashboardReviewCommentApi = async (reviewId, formData) => {
+  const res = await api.post(`/api/reviews/${reviewId}/comments`, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return res.data;
+};
+
+export const toggleDashboardReviewHelpfulApi = async (reviewId, helpful = true) => {
+  const res = await api.post(`/api/reviews/${reviewId}/helpful`, { helpful });
+  return res.data;
+};
+
+export const deleteDashboardReviewApi = async (reviewId) => {
+  const res = await api.delete(`/api/reviews/${reviewId}`);
+  return res.data;
+};
+
+export const updateDashboardReviewCommentApi = async (reviewId, commentId, formData) => {
+  const res = await api.patch(`/api/reviews/${reviewId}/comments/${commentId}`, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return res.data;
+};
+
+export const deleteDashboardReviewCommentApi = async (reviewId, commentId) => {
+  const res = await api.delete(`/api/reviews/${reviewId}/comments/${commentId}`);
+  return res.data;
+};
+
 // ===== Screenshots APIs =====
 export const listUserScreenshotsApi = async ({
   feature,

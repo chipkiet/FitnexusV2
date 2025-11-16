@@ -27,6 +27,7 @@ import adminMetricsRoutes from "./routes/admin.metrics.routes.js";
 import adminRevenueRoutes from "./routes/admin.revenue.routes.js";
 import supportRouter from "./routes/support.routes.js";
 import notificationRouter from "./routes/notification.routes.js";
+import reviewRouter from "./routes/review.routes.js";
 import {
   FRONTEND_URL,
   ADDITIONAL_CORS_ORIGINS,
@@ -170,6 +171,7 @@ app.use("/api/billing", billingRouter);
 app.use("/api/payment", paymentRouter);
 app.use("/api/support", supportRouter);
 app.use("/api/notifications", notificationRouter);
+app.use("/api/reviews", reviewRouter);
 // Mount AI app under main backend as a sub-route for easy FE access
 app.use("/api/ai", ensureAiApp());
 

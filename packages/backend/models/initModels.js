@@ -20,6 +20,9 @@ import SubscriptionPlan from "./subscription.plan.model.js";
 import Transaction from "./transaction.model.js";
 import BugReport from "./bugReport.model.js";
 import Notification from "./notification.model.js";
+import DashboardReview from "./dashboard.review.model.js";
+import DashboardReviewComment from "./dashboard.review.comment.model.js";
+import DashboardReviewVote from "./dashboard.review.vote.model.js";
 
 // ✅ Giữ 1 biến toàn cục
 let initialized = false;
@@ -133,6 +136,52 @@ export function initModels() {
   SubscriptionPlan.hasMany(Transaction, { foreignKey: "plan_id", sourceKey: "plan_id", as: "transactions" });
   Transaction.belongsTo(SubscriptionPlan, { foreignKey: "plan_id", targetKey: "plan_id", as: "planTransaction" });
 
+  /* -------------------- REVIEWS -------------------- */
+  User.hasMany(DashboardReview, { foreignKey: "user_id", sourceKey: "user_id", as: "dashboardReviews" });
+  DashboardReview.belongsTo(User, { foreignKey: "user_id", targetKey: "user_id", as: "author" });
+
+  DashboardReview.hasMany(DashboardReviewComment, {
+    foreignKey: "review_id",
+    sourceKey: "review_id",
+    as: "comments",
+  });
+  DashboardReviewComment.belongsTo(DashboardReview, {
+    foreignKey: "review_id",
+    targetKey: "review_id",
+    as: "review",
+  });
+  User.hasMany(DashboardReviewComment, {
+    foreignKey: "user_id",
+    sourceKey: "user_id",
+    as: "reviewComments",
+  });
+  DashboardReviewComment.belongsTo(User, {
+    foreignKey: "user_id",
+    targetKey: "user_id",
+    as: "commentAuthor",
+  });
+
+  DashboardReview.hasMany(DashboardReviewVote, {
+    foreignKey: "review_id",
+    sourceKey: "review_id",
+    as: "votes",
+  });
+  DashboardReviewVote.belongsTo(DashboardReview, {
+    foreignKey: "review_id",
+    targetKey: "review_id",
+    as: "reviewVote",
+  });
+  User.hasMany(DashboardReviewVote, {
+    foreignKey: "user_id",
+    sourceKey: "user_id",
+    as: "reviewVotes",
+  });
+  DashboardReviewVote.belongsTo(User, {
+    foreignKey: "user_id",
+    targetKey: "user_id",
+    as: "voter",
+  });
+
   /* -------------------- SUPPORT -------------------- */
   User.hasMany(BugReport, { foreignKey: "user_id", sourceKey: "user_id", as: "bugReports" });
   BugReport.belongsTo(User, { foreignKey: "user_id", targetKey: "user_id", as: "reporter" });
@@ -164,6 +213,9 @@ export function initModels() {
     Transaction,
     BugReport,
     Notification,
+    DashboardReview,
+    DashboardReviewComment,
+    DashboardReviewVote,
   };
 
   initialized = true;
