@@ -252,8 +252,9 @@ export default function LockUnlock() {
       </div>
 
       {/* Table */}
-      <div className="overflow-hidden rounded-xl bg-white shadow-sm">
-        <table className="min-w-full border-separate border-spacing-0 text-sm">
+      <div className="rounded-xl bg-white shadow-sm">
+        <div className="w-full overflow-x-auto">
+          <table className="min-w-[900px] border-separate border-spacing-0 text-sm">
           <thead>
             <tr className="bg-gray-50 text-left text-xs uppercase text-gray-500">
               <th className="px-4 py-3">User</th>
@@ -313,7 +314,7 @@ export default function LockUnlock() {
 
                   <td className="px-4 py-3">{u.plan}</td>
 
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-4 py-3 text-right whitespace-nowrap">
                     {u.isLocked ? (
                       <button
                         onClick={() => doUnlock(u)}
@@ -338,6 +339,7 @@ export default function LockUnlock() {
               ))}
           </tbody>
         </table>
+        </div>
       </div>
 
       {err && (

@@ -15,6 +15,8 @@ export default function AdminUserPlans() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const totalPages = Math.ceil(totalUsers / PAGE_SIZE) || 1;
+
   const fetchUsers = async (page = 1, search = searchTerm) => {
     try {
       setLoading(true);
@@ -179,8 +181,8 @@ export default function AdminUserPlans() {
               Previous
             </button>
             <button
-              onClick={() => setCurrentPage(p => Math.min(Math.ceil(totalPlans / PAGE_SIZE), p + 1))}
-              disabled={currentPage >= Math.ceil(totalUsers / PAGE_SIZE)}
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage >= totalPages}
               className="relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
             >
               Next
@@ -214,10 +216,10 @@ export default function AdminUserPlans() {
                   Previous
                 </button>
                 <button
-                  onClick={() => setCurrentPage(p => Math.min(Math.ceil(totalPlans / PAGE_SIZE), p + 1))}
-                  disabled={currentPage === Math.ceil(totalPlans / PAGE_SIZE)}
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
                   className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
-                    currentPage === Math.ceil(totalPlans / PAGE_SIZE)
+                    currentPage === totalPages
                       ? 'text-gray-400 cursor-not-allowed'
                       : 'text-gray-900 hover:bg-gray-50'
                   } ring-1 ring-inset ring-gray-300`}

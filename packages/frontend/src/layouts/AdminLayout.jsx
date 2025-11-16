@@ -64,43 +64,44 @@ export default function AdminLayout() {
         children: [
           { icon: UserRound, label: "All Users", to: "/admin/users" },
           { icon: IdCard, label: "Admin", to: "/admin/user-detail" },
-                              { icon: FolderKanban, label: "Quản lý Plans", to: "/admin/user-plans" },
+          {
+            icon: FolderKanban,
+            label: "Quản lý Plans",
+            to: "/admin/user-plans",
+          },
           { icon: Unlock, label: "Lock & Unlock", to: "/admin/lock-unlock" },
-          { icon: KeyRound, label: "Reset password", to: "/admin/reset-password" },
+          {
+            icon: KeyRound,
+            label: "Reset password",
+            to: "/admin/reset-password",
+          },
         ],
       },
       {
         key: "content",
         icon: FolderKanban,
         label: "Content Manage",
-        children: [
-          { label: "Overview", to: "/admin/content" },
-          { icon: Star, label: "Bài tập được ưa thích", to: "/admin/popular-exercises" },
-        ],
+        children: [{ label: "Overview", to: "/admin/content" }],
       },
-      {
-        key: "trainer",
-        icon: Dumbbell,
-        label: "Trainer Manage",
-        children: [{ label: "Overview", to: "/admin/trainers" }],
-      },
+
       {
         key: "financial",
         icon: Wallet,
         label: "Financial Manage",
         children: [{ label: "Overview", to: "/admin/finance" }],
       },
-      {
-        key: "social",
-        icon: MessageSquare,
-        label: "Social",
-        children: [{ label: "Overview", to: "/admin/social" }],
-      },
+
       {
         key: "support",
         icon: LifeBuoy,
         label: "Support Desk",
-        children: [{ icon: MessageSquare, label: "Báo lỗi người dùng", to: "/admin/support" }],
+        children: [
+          {
+            icon: MessageSquare,
+            label: "Báo lỗi người dùng",
+            to: "/admin/support",
+          },
+        ],
       },
     ],
     []
