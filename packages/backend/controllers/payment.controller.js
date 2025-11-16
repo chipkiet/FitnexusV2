@@ -261,12 +261,12 @@ export async function returnUrl(req, res) {
         }
       }
     }
-    // Luôn redirect về trang chủ frontend
-    return res.redirect(`${frontendUrl}/`);
+    // Sau khi thanh toán xong, đưa user về dashboard
+    return res.redirect(`${frontendUrl}/dashboard`);
   } catch (err) {
     console.error("returnUrl error:", err);
-    // Chuyển hướng về trang chủ ngay cả khi có lỗi
-    return res.redirect(`${frontendUrl}/`);
+    // Nếu có lỗi, vẫn cố gắng đưa về dashboard
+    return res.redirect(`${frontendUrl}/dashboard`);
   }
 }
 
