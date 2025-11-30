@@ -13,6 +13,7 @@ import {
   getExerciseMusclesById,
   listMyFavorites,
   getExerciseFilterMeta,
+  getExerciseDetail,
 } from "../controllers/exercise.controller.js";
 
 const router = Router();
@@ -28,13 +29,12 @@ router.delete("/:exerciseId/favorite", authGuard, deleteFavorite);
 router.get("/:exerciseId/favorite", getFavoriteStatus);
 router.get("/favorites", authGuard, listMyFavorites);
 
-// Lấy danh sách bài tập liên quan
 router.get("/id/:exerciseId/related", getRelatedExercisesById);
 
-// Lấy thông tin chi tiết nhóm cơ của bài tập
 router.get("/id/:exerciseId/muscles", getExerciseMusclesById);
 
-// Trả về thuần metadata
 router.get("/filter/meta", getExerciseFilterMeta);
+
+router.get("/detail/:slug", getExerciseDetail);
 
 export default router;

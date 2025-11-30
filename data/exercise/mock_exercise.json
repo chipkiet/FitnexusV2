@@ -1,0 +1,66 @@
+[
+  {
+    "slug": "barbell-bench-press",
+    "name": "Đẩy Ngực Ngang Thanh Đòn",
+    "name_en": "Barbell Bench Press",
+    "description": "Bài tập vua để phát triển sức mạnh và kích thước cho phần thân trên. Tập trung chủ yếu vào cơ ngực, vai trước và tay sau.",
+    "difficulty_level": "intermediate",
+    "exercise_type": "compound",
+    "equipment_needed": "barbell, bench",
+    "primary_video_url": "https://www.youtube.com/watch?v=rT7DgCr-3pg",
+    "thumbnail_url": "https://www.inspireusafoundation.org/wp-content/uploads/2022/06/barbell-bench-press-benefits-1024x576.jpg",
+    "gif_demo_url": "https://static.exercisedb.dev/media/EIeI8Vf.gif",
+    "duration_minutes": null,
+    "calories_per_rep": 0.5,
+    "popularity_score": 100,
+    "is_public": true,
+    "is_featured": true,
+    "is_verified": true,
+    "source_name": "FitNexus Team",
+    "instructions": [
+      {
+        "step_number": 1,
+        "instruction_text": "Nằm ngửa trên ghế phẳng. Nắm thanh đòn với độ rộng tay hơn vai một chút, mắt nằm dưới thanh đòn."
+      },
+      {
+        "step_number": 2,
+        "instruction_text": "Nhấc thanh đòn ra khỏi giá đỡ và giữ thẳng tay trên ngực (khóa khớp khuỷu tay)."
+      },
+      {
+        "step_number": 3,
+        "instruction_text": "Hít sâu, gồng cơ bụng và từ từ hạ thanh đòn xuống cho đến khi chạm nhẹ vào giữa ngực."
+      },
+      {
+        "step_number": 4,
+        "instruction_text": "Giữ khuỷu tay tạo góc khoảng 45-75 độ so với thân người (không mở quá rộng)."
+      },
+      {
+        "step_number": 5,
+        "instruction_text": "Đẩy mạnh thanh đòn lên vị trí bắt đầu và thở ra dứt khoát ở điểm cao nhất."
+      }
+    ],
+    "muscles": [
+      {
+        "muscle_group_id": 8,
+        "slug_hint": "mid-chest",
+        "impact_level": "primary",
+        "intensity_percentage": 60,
+        "activation_note": "Tác động chính vào phần lớn cơ ngực"
+      },
+      {
+        "muscle_group_id": 15,
+        "slug_hint": "anterior-deltoid",
+        "impact_level": "secondary",
+        "intensity_percentage": 25,
+        "activation_note": "Hỗ trợ đẩy tạ lên"
+      },
+      {
+        "muscle_group_id": 23,
+        "slug_hint": "triceps-brachii",
+        "impact_level": "secondary",
+        "intensity_percentage": 15,
+        "activation_note": "Hỗ trợ duỗi thẳng tay ở điểm cao nhất"
+      }
+    ]
+  }
+]

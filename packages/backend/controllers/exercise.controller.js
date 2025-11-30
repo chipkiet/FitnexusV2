@@ -12,24 +12,6 @@ function normalize(str = "") {
     .trim();
 }
 
-async function fetchBestImagesForIds(ids) {
-  const list = Array.from(
-    new Set((ids || []).filter((x) => Number.isFinite(Number(x))))
-  );
-  if (!list.length) return new Map();
-  const [rows] = await sequelize.query(
-    `SELECT exercise_id, image_url
-     FROM (
-       SELECT exercise_id, image_url,
-              ROW_NUMBER() OVER (PARTITION BY exercise_id ORDER BY is_primary DESC, display_order ASC, image_id ASC) AS rn
-       FROM image_exercise
-       WHERE exercise_id = ANY($1)
-     ) s
-     WHERE rn = 1`,
-    { bind: [list] }
-  );
-  return new Map(rows.map((r) => [r.exercise_id, r.image_url]));
-}
 
 const CANONICAL_CHILD = new Set([
   "upper-chest",
@@ -484,15 +466,13 @@ export const getExercisesByMuscleGroup = async (req, res) => {
     }
 
     // Prefer image from image_exercise if available
-    const imgMap = await fetchBestImagesForIds(rows.map((r) => r.exercise_id));
     const data = rows.map((r) => ({
       id: r.exercise_id,
       name: r.name || r.name_en,
       description: r.description,
       difficulty: r.difficulty_level,
       equipment: r.equipment_needed,
-      imageUrl:
-        imgMap.get(r.exercise_id) || r.thumbnail_url || r.gif_demo_url || null,
+      imageUrl: r.thumbnail_url,
       instructions: null,
       impact_level: r.impact_level || null,
     }));
@@ -545,15 +525,13 @@ export const getAllExercises = async (req, res) => {
       ],
     });
 
-    const imgMap = await fetchBestImagesForIds(rows.map((r) => r.exercise_id));
     const data = rows.map((r) => ({
       id: r.exercise_id,
       name: r.name || r.name_en,
       description: r.description,
       difficulty: r.difficulty_level,
       equipment: r.equipment_needed,
-      imageUrl:
-        imgMap.get(r.exercise_id) || r.thumbnail_url || r.gif_demo_url || null,
+      imageUrl: r.thumbnail_url || r.gif_demo_url || null,
       instructions: null,
       impact_level: r.impact_level || null,
     }));
@@ -612,15 +590,13 @@ export const getExercisesByType = async (req, res) => {
       ],
     });
 
-    const imgMap = await fetchBestImagesForIds(rows.map((r) => r.exercise_id));
     const data = rows.map((r) => ({
       id: r.exercise_id,
       name: r.name || r.name_en,
       description: r.description,
       difficulty: r.difficulty_level,
       equipment: r.equipment_needed,
-      imageUrl:
-        imgMap.get(r.exercise_id) || r.thumbnail_url || r.gif_demo_url || null,
+      imageUrl: r.thumbnail_url || r.gif_demo_url || null,
       instructions: null,
       impact_level: null,
     }));
@@ -638,32 +614,25 @@ export const getExercisesByType = async (req, res) => {
   }
 };
 
-// Return steps (JSON preferred) by exercise id
 export const getExerciseStepsById = async (req, res) => {
   try {
     const { exerciseId } = req.params;
-    // Prefer JSON table
-    const [jsonRows] = await sequelize.query(
-      `SELECT steps FROM exercise_steps_json WHERE exercise_id = $1 LIMIT 1`,
-      { bind: [exerciseId] }
-    );
-    if (jsonRows.length) {
-      return res.status(200).json({ success: true, data: jsonRows[0].steps });
+
+    const exercise = await Exercise.findByPk(exerciseId, {
+      attributes: ["instructions"],
+    });
+
+    if (!exercise) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Exercise not found" });
     }
-    // Fallback to row-level steps
-    const [rows] = await sequelize.query(
-      `SELECT step_number, title, instruction_text, media_url, media_type
-       FROM exercise_steps WHERE exercise_id = $1 ORDER BY step_number ASC`,
-      { bind: [exerciseId] }
-    );
-    const steps = rows.map((r) => ({
-      step_number: r.step_number,
-      instruction_text: r.instruction_text,
-      title: r.title,
-      media_url: r.media_url,
-      media_type: r.media_type,
-    }));
-    return res.status(200).json({ success: true, data: steps });
+
+    // Trả về mảng JSON instructions (hoặc mảng rỗng nếu null)
+    return res.status(200).json({
+      success: true,
+      data: exercise.instructions || [],
+    });
   } catch (error) {
     console.error("Error fetching steps by id:", error);
     return res.status(500).json({
@@ -674,39 +643,25 @@ export const getExerciseStepsById = async (req, res) => {
   }
 };
 
-// Return steps by slug
 export const getExerciseStepsBySlug = async (req, res) => {
   try {
     const { slug } = req.params;
-    const [exRows] = await sequelize.query(
-      `SELECT exercise_id FROM exercises WHERE slug = $1 LIMIT 1`,
-      { bind: [slug] }
-    );
-    if (!exRows.length)
+
+    const exercise = await Exercise.findOne({
+      where: { slug },
+      attributes: ["instructions"],
+    });
+
+    if (!exercise) {
       return res
         .status(404)
         .json({ success: false, message: "Exercise not found" });
-    const exerciseId = exRows[0].exercise_id;
-    const [jsonRows] = await sequelize.query(
-      `SELECT steps FROM exercise_steps_json WHERE exercise_id = $1 LIMIT 1`,
-      { bind: [exerciseId] }
-    );
-    if (jsonRows.length) {
-      return res.status(200).json({ success: true, data: jsonRows[0].steps });
     }
-    const [rows] = await sequelize.query(
-      `SELECT step_number, title, instruction_text, media_url, media_type
-       FROM exercise_steps WHERE exercise_id = $1 ORDER BY step_number ASC`,
-      { bind: [exerciseId] }
-    );
-    const steps = rows.map((r) => ({
-      step_number: r.step_number,
-      instruction_text: r.instruction_text,
-      title: r.title,
-      media_url: r.media_url,
-      media_type: r.media_type,
-    }));
-    return res.status(200).json({ success: true, data: steps });
+
+    return res.status(200).json({
+      success: true,
+      data: exercise.instructions || [],
+    });
   } catch (error) {
     console.error("Error fetching steps by slug:", error);
     return res.status(500).json({
@@ -915,19 +870,14 @@ export const getRelatedExercisesById = async (req, res) => {
       return String(a.name || "").localeCompare(String(b.name || ""));
     });
 
-    // Require at least one shared child group
     const withChildOverlap = rows.filter(
       (r) => (r.w_overlap || 0) > 0 && (r.shared_children_count || 1) >= 1
     );
 
-    // Resolve best images (do not filter out when missing images)
     const ids = withChildOverlap.map((r) => r.exercise_id);
-    const imgMap = await fetchBestImagesForIds(ids);
 
     function bestImage(r) {
-      return (
-        imgMap.get(r.exercise_id) || r.thumbnail_url || r.gif_demo_url || null
-      );
+      return r.thumbnail_url || r.gif_demo_url || null;
     }
 
     let chosen = [];
@@ -1116,7 +1066,6 @@ export const listMyFavorites = async (req, res) => {
     );
 
     const ids = rows.map((r) => r.exercise_id);
-    const imgMap = await fetchBestImagesForIds(ids);
 
     const items = rows.map((ex) => ({
       id: ex.exercise_id,
@@ -1124,11 +1073,7 @@ export const listMyFavorites = async (req, res) => {
       name: ex.name,
       difficulty: ex.difficulty_level,
       equipment: ex.equipment_needed,
-      imageUrl:
-        imgMap.get(ex.exercise_id) ||
-        ex.thumbnail_url ||
-        ex.gif_demo_url ||
-        null,
+      imageUrl: ex.thumbnail_url || ex.gif_demo_url || null,
     }));
 
     return res.json({ success: true, data: { items, total: items.length } });
@@ -1182,5 +1127,76 @@ export const getExerciseFilterMeta = async (req, res) => {
     return res
       .status(500)
       .json({ success: false, message: "Không tải được bộ lọc" });
+  }
+};
+// packages/backend/controllers/exercise.controller.js
+
+export const getExerciseDetail = async (req, res) => {
+  try {
+    const { slug } = req.params;
+
+    let whereClause = "e.slug = :slug";
+    const replacements = { slug };
+
+    if (/^\d+$/.test(slug)) {
+      whereClause = "(e.slug = :slug OR e.exercise_id = :id)";
+      replacements.id = parseInt(slug, 10);
+    }
+
+    const [rows] = await sequelize.query(
+      `
+      SELECT 
+        e.exercise_id, e.slug, e.name, e.name_en, e.description,
+        e.difficulty_level, e.exercise_type, e.equipment_needed,
+        e.thumbnail_url, e.gif_demo_url, e.primary_video_url,
+        e.popularity_score,
+        e.instructions,
+        -- SỬA LẠI ĐOẠN NÀY ĐỂ AN TOÀN HƠN VỚI NULL
+        COALESCE(
+          (
+            SELECT json_agg(mg.name)
+            FROM exercise_muscle_group emg
+            JOIN muscle_groups mg ON mg.muscle_group_id = emg.muscle_group_id
+            WHERE emg.exercise_id = e.exercise_id AND emg.impact_level = 'primary'
+          ), 
+          '[]'::json
+        ) AS primary_muscles,
+        COALESCE(
+          (
+            SELECT json_agg(mg.name)
+            FROM exercise_muscle_group emg
+            JOIN muscle_groups mg ON mg.muscle_group_id = emg.muscle_group_id
+            WHERE emg.exercise_id = e.exercise_id AND emg.impact_level = 'secondary'
+          ), 
+          '[]'::json
+        ) AS secondary_muscles
+      FROM exercises e
+      WHERE ${whereClause}
+      LIMIT 1
+      `,
+      { replacements }
+    );
+
+    if (!rows.length) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Exercise not found" });
+    }
+
+    const ex = rows[0];
+
+    // Log để debug xem SQL trả về gì
+    console.log("DB Result:", ex);
+
+    const data = {
+      ...ex,
+      imageUrl: ex.thumbnail_url || ex.gif_demo_url || null,
+      primaryMuscles: ex.primary_muscles || [],
+      secondaryMuscles: ex.secondary_muscles || [],
+    };
+    return res.status(200).json({ success: true, data });
+  } catch (error) {
+    console.error("getExerciseDetail error:", error); // <-- QUAN TRỌNG: Xem log này báo gì
+    return res.status(500).json({ success: false, message: error.message });
   }
 };

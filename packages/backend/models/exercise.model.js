@@ -44,16 +44,35 @@ const Exercise = sequelize.define(
     gif_demo_url: { type: DataTypes.STRING(255), allowNull: true },
     duration_minutes: { type: DataTypes.INTEGER, allowNull: true },
     calories_per_rep: { type: DataTypes.DECIMAL(4, 2), allowNull: true },
-    popularity_score: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
-    is_public: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
-    is_featured: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+    popularity_score: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+    },
+    is_public: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: true,
+    },
+    is_featured: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
+
+    instructions: {
+      type: DataTypes.JSONB,
+      allowNull: true,
+      defaultValue: [],
+    },
   },
   {
     tableName: "exercises",
     timestamps: true,
-    createdAt: 'created_at',
-    updatedAt: 'updated_at',
+    createdAt: "created_at",
+    updatedAt: "updated_at",
   }
 );
 
 export default Exercise;
+  
