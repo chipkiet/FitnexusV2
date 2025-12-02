@@ -1130,6 +1130,7 @@ export const getExerciseFilterMeta = async (req, res) => {
   }
 };
 // packages/backend/controllers/exercise.controller.js
+// packages/backend/controllers/exercise.controller.js
 
 export const getExerciseDetail = async (req, res) => {
   try {
@@ -1149,9 +1150,24 @@ export const getExerciseDetail = async (req, res) => {
         e.exercise_id, e.slug, e.name, e.name_en, e.description,
         e.difficulty_level, e.exercise_type, e.equipment_needed,
         e.thumbnail_url, e.gif_demo_url, e.primary_video_url,
+        
+        e.video_url, -- <--- QUAN TRỌNG: THÊM DÒNG NÀY VÀO
+        
         e.popularity_score,
         e.instructions,
-        -- SỬA LẠI ĐOẠN NÀY ĐỂ AN TOÀN HƠN VỚI NULL
+
+        COALESCE(
+          (
+            SELECT json_agg(json_build_object(
+              'url', ev.video_url,
+              'title', ev.title
+            ) ORDER BY ev.display_order ASC)
+            FROM exercise_videos ev
+            WHERE ev.exercise_id = e.exercise_id
+          ),
+          '[]'::json
+        ) AS gallery_videos,
+
         COALESCE(
           (
             SELECT json_agg(mg.name)
@@ -1161,6 +1177,7 @@ export const getExerciseDetail = async (req, res) => {
           ), 
           '[]'::json
         ) AS primary_muscles,
+
         COALESCE(
           (
             SELECT json_agg(mg.name)
@@ -1185,18 +1202,16 @@ export const getExerciseDetail = async (req, res) => {
 
     const ex = rows[0];
 
-    // Log để debug xem SQL trả về gì
-    console.log("DB Result:", ex);
-
     const data = {
       ...ex,
       imageUrl: ex.thumbnail_url || ex.gif_demo_url || null,
       primaryMuscles: ex.primary_muscles || [],
       secondaryMuscles: ex.secondary_muscles || [],
+      galleryVideos: ex.gallery_videos || [],
     };
     return res.status(200).json({ success: true, data });
   } catch (error) {
-    console.error("getExerciseDetail error:", error); // <-- QUAN TRỌNG: Xem log này báo gì
+    console.error("getExerciseDetail error:", error);
     return res.status(500).json({ success: false, message: error.message });
   }
 };

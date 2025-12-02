@@ -65,6 +65,11 @@ const Exercise = sequelize.define(
       allowNull: true,
       defaultValue: [],
     },
+
+    video_url: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
   },
   {
     tableName: "exercises",

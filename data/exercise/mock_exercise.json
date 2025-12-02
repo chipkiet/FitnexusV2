@@ -8,8 +8,19 @@
     "exercise_type": "compound",
     "equipment_needed": "barbell, bench",
     "primary_video_url": "https://www.youtube.com/watch?v=rT7DgCr-3pg",
-    "thumbnail_url": "https://www.inspireusafoundation.org/wp-content/uploads/2022/06/barbell-bench-press-benefits-1024x576.jpg",
-    "gif_demo_url": "https://static.exercisedb.dev/media/EIeI8Vf.gif",
+    "thumbnail_url": "./assets/bench_press.jpeg",
+    "gif_demo_url": "./assets/bench_press.gif",
+    "video_url": "./assets/barbell_bench_press_front.mp4",
+    "extra_videos": [
+      {
+        "file": "./assets/barbell_bench_press_side.mp4",
+        "title": "Góc nhìn ngang"
+      },
+      {
+        "file": "./assets/bench-press-mistake.mp4",
+        "title": "Lỗi sai thường gặp"
+      }
+    ],
     "duration_minutes": null,
     "calories_per_rep": 0.5,
     "popularity_score": 100,
