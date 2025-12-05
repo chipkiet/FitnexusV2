@@ -1371,3 +1371,144 @@ export const createExercise = async (req, res) => {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
+
+
+
+
+// PUT /api/exercises/:id
+export const updateExercise = async (req, res) => {
+  const t = await sequelize.transaction();
+  try {
+    const { id } = req.params;
+
+    // 1. Tìm bài tập
+    const exercise = await Exercise.findByPk(id);
+    if (!exercise) {
+      await t.rollback();
+      return res.status(404).json({ success: false, message: "Exercise not found" });
+    }
+
+    // 2. Lấy dữ liệu Text & Update bảng chính
+    const {
+      name, name_en, slug, description, difficulty_level,
+      exercise_type, equipment_needed, popularity_score,
+      primary_video_url, source_name, source_url
+    } = req.body;
+
+    const updates = {
+      name, name_en, slug, description, difficulty_level,
+      exercise_type, equipment_needed,
+      primary_video_url, source_name, source_url,
+      popularity_score: parseInt(popularity_score || 0),
+    };
+
+    // 3. Xử lý Single Files (Ghi đè - Overwrite logic)
+    // Logic này OK vì là 1-1: Có mới thì thay thế
+    const files = req.files || {};
+    if (files.thumbnail?.[0]) {
+      updates.thumbnail_url = await uploadBufferToSupabase(files.thumbnail[0].buffer, files.thumbnail[0].originalname, "images");
+    }
+    if (files.gif?.[0]) {
+      updates.gif_demo_url = await uploadBufferToSupabase(files.gif[0].buffer, files.gif[0].originalname, "images");
+    }
+    if (files.video?.[0]) {
+      updates.video_url = await uploadBufferToSupabase(files.video[0].buffer, files.video[0].originalname, "videos");
+    }
+
+    // Cập nhật Instructions
+    if (req.body.instructions) updates.instructions = JSON.parse(req.body.instructions);
+
+    await exercise.update(updates, { transaction: t });
+
+    // 4. Xử lý Muscles (Ghi đè toàn bộ - Overwrite logic)
+    // Vì data chỉ là ID (text), ta có thể xóa hết cũ thêm mới -> Đơn giản
+    if (req.body.muscles) {
+      const muscles = JSON.parse(req.body.muscles);
+      await sequelize.query(`DELETE FROM exercise_muscle_group WHERE exercise_id = :id`, { replacements: { id }, transaction: t });
+      for (const m of muscles) {
+        await sequelize.query(
+          `INSERT INTO exercise_muscle_group (exercise_id, muscle_group_id, impact_level, created_at)
+           VALUES (:eid, :mid, :impact, NOW())`,
+          {
+            replacements: { eid: id, mid: m.id, impact: m.impact || 'primary' },
+            transaction: t
+          }
+        );
+      }
+    }
+
+    // ============================================================
+    // 5. XỬ LÝ GALLERY (SMART SYNC LOGIC)
+    // ============================================================
+    
+    // A. Xử lý danh sách CŨ (Cần giữ lại hoặc update title)
+    // Frontend cần gửi lên mảng: gallery_items_keep = [{id: 1, title: 'abc'}, {id: 5, title: 'xyz'}]
+    let keepIds = [];
+    if (req.body.gallery_items_keep) {
+      const itemsKeep = JSON.parse(req.body.gallery_items_keep);
+      keepIds = itemsKeep.map(i => i.id);
+
+      // Cập nhật title cho các video cũ
+      for (const item of itemsKeep) {
+        await sequelize.query(
+          `UPDATE exercise_videos SET title = :title, updated_at = NOW() WHERE id = :vid`,
+          {
+            replacements: { title: item.title, vid: item.id },
+            transaction: t
+          }
+        );
+      }
+    }
+
+    // B. Xóa những video KHÔNG nằm trong danh sách giữ lại
+    // (Tức là Admin đã bấm nút xóa ở Frontend)
+    if (keepIds.length > 0) {
+      await sequelize.query(
+        `DELETE FROM exercise_videos WHERE exercise_id = :eid AND id NOT IN (:ids)`,
+        { replacements: { eid: id, ids: keepIds }, transaction: t }
+      );
+    } else {
+      // Nếu keepIds rỗng, có nghĩa là Admin xóa hết video cũ?
+      // Cần cẩn thận: Nếu Frontend quên gửi gallery_items_keep thì sao?
+      // Nên check kỹ logic này. Nếu chắc chắn Admin muốn xóa hết thì chạy lệnh dưới:
+      // await sequelize.query(`DELETE FROM exercise_videos WHERE exercise_id = :eid`, { replacements: { eid: id }, transaction: t });
+    }
+
+    // C. Thêm mới Video (Upload file mới)
+    if (files.gallery_videos?.length) {
+      // Lấy max order để nối tiếp
+      const [maxRes] = await sequelize.query(`SELECT MAX(display_order) as mo FROM exercise_videos WHERE exercise_id = :id`, { replacements: { id }, transaction: t });
+      let nextOrder = (maxRes[0]?.mo || 0) + 1;
+
+      // Xử lý title cho file mới
+      let newTitles = req.body.gallery_titles_new || [];
+      if (!Array.isArray(newTitles)) newTitles = [newTitles];
+
+      for (let i = 0; i < files.gallery_videos.length; i++) {
+        const file = files.gallery_videos[i];
+        const title = newTitles[i] || file.originalname;
+        
+        // Upload lên Supabase
+        const url = await uploadBufferToSupabase(file.buffer, file.originalname, "videos");
+        
+        // Insert vào DB
+        await sequelize.query(
+          `INSERT INTO exercise_videos (exercise_id, video_url, title, display_order, created_at, updated_at)
+           VALUES (:eid, :url, :title, :order, NOW(), NOW())`,
+          {
+            replacements: { eid: id, url, title, order: nextOrder++ },
+            transaction: t
+          }
+        );
+      }
+    }
+
+    await t.commit();
+    return res.status(200).json({ success: true, message: "Cập nhật thành công!" });
+
+  } catch (error) {
+    await t.rollback();
+    console.error("Update Error:", error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};

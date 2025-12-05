@@ -368,6 +368,11 @@ function App() {
                 path="content/exercises/new"
                 element={<AdminExerciseRight />}
               />
+
+              <Route
+                path="content/exercises/edit/:id"
+                element={<AdminExerciseRight />}
+              />
             </Route>
 
             {/* Catch all: redirect based on auth status */}

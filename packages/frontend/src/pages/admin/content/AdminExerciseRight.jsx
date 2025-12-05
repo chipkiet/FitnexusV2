@@ -233,17 +233,23 @@ export default function AdminExerciseRight() {
       if (files.gif) data.append("gif", files.gif);
       if (files.video) data.append("video", files.video);
 
+      const itemsToKeep = galleryItems
+        .filter((item) => item.id && !item.file) // Lọc item đã có trên database
+        .map((item) => ({ id: item.id, title: item.title }));
+
+      data.append("gallery_items_keep", JSON.stringify(itemsToKeep));
+
       galleryItems.forEach((item) => {
-        data.append("gallery_videos", item.file);
-        data.append("gallery_titles", item.title);
+        if (item.file) {
+          data.append("gallery_videos", item.file); // Key này khớp với multer ở backend
+          data.append("gallery_titles_new", item.title || "Video phụ");
+        }
       });
 
       const url = isEditMode ? `/api/exercises/${id}` : "/api/exercises";
       const token = getToken();
 
-      // Chú ý: Nếu là Edit mode (PUT/PATCH), có thể backend bạn dùng method khác POST
-      // Ở đây tôi giữ nguyên POST theo code cũ của bạn, nhưng thường Edit là PUT.
-      const method = isEditMode ? "post" : "post"; // Hoặc check lại API route của bạn
+      const method = isEditMode ? "put" : "post";
 
       const res = await axios({
         method: method,
@@ -451,6 +457,7 @@ export default function AdminExerciseRight() {
                 hiện
               </h3>
               <button
+                type="button"
                 onClick={addStep}
                 className="flex items-center text-sm text-blue-600 hover:underline"
               >
@@ -467,11 +474,11 @@ export default function AdminExerciseRight() {
                     value={step.instruction_text}
                     onChange={(e) => handleStepChange(idx, e.target.value)}
                     rows={3}
-                    // [OK] Đã tăng kích thước khung nhập liệu
                     className="flex-1 px-4 py-3 text-sm border rounded-lg outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px] leading-relaxed"
                     placeholder={`Mô tả chi tiết bước ${idx + 1}...`}
                   />
                   <button
+                    type="button"
                     onClick={() => removeStep(idx)}
                     className="p-2 text-gray-400 hover:text-red-500"
                   >
@@ -505,6 +512,7 @@ export default function AdminExerciseRight() {
                 ))}
               </select>
               <button
+                type="button"
                 onClick={addMuscle}
                 disabled={!muscleInput}
                 className="px-4 py-2 text-sm font-medium bg-gray-100 rounded-lg hover:bg-gray-200"
@@ -521,6 +529,7 @@ export default function AdminExerciseRight() {
                   <span className="font-medium text-gray-700">{m.name}</span>
                   <div className="flex items-center gap-3">
                     <button
+                      type="button"
                       onClick={() => toggleImpact(m.id)}
                       className={`text-xs px-2 py-1 rounded border capitalize w-24 text-center ${
                         m.impact === "primary"
@@ -531,6 +540,7 @@ export default function AdminExerciseRight() {
                       {m.impact}
                     </button>
                     <button
+                      type="button"
                       onClick={() => removeMuscle(m.id)}
                       className="text-gray-400 hover:text-red-500"
                     >
@@ -713,6 +723,7 @@ export default function AdminExerciseRight() {
                     </p>
                   </div>
                   <button
+                    type="button"
                     onClick={() => removeGalleryItem(idx)}
                     className="p-1 text-gray-400 hover:text-red-500"
                   >

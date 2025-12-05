@@ -60,6 +60,17 @@ const Exercise = sequelize.define(
       defaultValue: false,
     },
 
+    source_name: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      comment: "Tên nguồn tham khảo (VD: GymShark, MuscleWiki)",
+    },
+    source_url: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      comment: "Link gốc của bài viết/video tham khảo",
+    },
+
     instructions: {
       type: DataTypes.JSONB,
       allowNull: true,
