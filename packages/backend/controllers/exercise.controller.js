@@ -1143,8 +1143,7 @@ export const getExerciseFilterMeta = async (req, res) => {
       .json({ success: false, message: "Không tải được bộ lọc" });
   }
 };
-// packages/backend/controllers/exercise.controller.js
-// packages/backend/controllers/exercise.controller.js
+
 
 export const getExerciseDetail = async (req, res) => {
   try {
@@ -1165,7 +1164,10 @@ export const getExerciseDetail = async (req, res) => {
         e.difficulty_level, e.exercise_type, e.equipment_needed,
         e.thumbnail_url, e.gif_demo_url, e.primary_video_url,
         
-        e.video_url, -- <--- QUAN TRỌNG: THÊM DÒNG NÀY VÀO
+        e.video_url, 
+
+        e.source_name,
+        e.source_url,
         
         e.popularity_score,
         e.instructions,
@@ -1246,6 +1248,8 @@ export const createExercise = async (req, res) => {
       equipment_needed,
       popularity_score,
       primary_video_url,
+      source_name,
+      source_url,
     } = req.body;
 
     let instructions = [];
@@ -1303,7 +1307,10 @@ export const createExercise = async (req, res) => {
 
         thumbnail_url,
         gif_demo_url,
-        video_url, // Link cloud video
+        video_url,
+
+        source_name,
+        source_url,
 
         instructions: instructions, // Lưu JSONB
         is_public: true,

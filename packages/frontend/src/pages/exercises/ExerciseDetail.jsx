@@ -8,13 +8,15 @@ import {
 } from "../../lib/api.js";
 import {
   Heart,
-  Share2,
   Play,
   ChevronRight,
-  Home,
   ExternalLink,
   Youtube,
-  Info,
+  ListPlus,
+  Activity,
+  Dumbbell,
+  Link as LinkIcon,
+  Copyright,
 } from "lucide-react";
 import { useAuth } from "../../context/auth.context.jsx";
 
@@ -30,7 +32,7 @@ function Badge({ children, tone = "gray" }) {
   };
   return (
     <span
-      className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium border ${
+      className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide border ${
         tones[tone] || tones.gray
       }`}
     >
@@ -39,10 +41,10 @@ function Badge({ children, tone = "gray" }) {
   );
 }
 
-function SectionTitle({ children }) {
+function SectionTitle({ icon: Icon, children }) {
   return (
-    <h3 className="flex items-center pb-2 mb-3 text-sm font-bold text-gray-900 uppercase border-b border-gray-200">
-      <span className="w-1 h-4 mr-2 bg-blue-600 rounded-full"></span>
+    <h3 className="flex items-center pb-2 mb-2 text-xs font-bold text-gray-800 uppercase border-b border-gray-200">
+      {Icon && <Icon className="w-3.5 h-3.5 mr-1.5 text-blue-600" />}
       {children}
     </h3>
   );
@@ -64,7 +66,6 @@ export default function ExerciseDetail() {
 
   // Video Player State
   const [currentVideo, setCurrentVideo] = useState(null);
-
   const [favorited, setFavorited] = useState(false);
   const [favoriteCount, setFavoriteCount] = useState(0);
 
@@ -75,7 +76,7 @@ export default function ExerciseDetail() {
     } catch {}
   }, [idOrSlug]);
 
-  // --- 1. Fetch Detail ---
+  // --- Fetch Detail ---
   useEffect(() => {
     let alive = true;
     async function fetchDetail() {
@@ -112,7 +113,7 @@ export default function ExerciseDetail() {
     };
   }, [idOrSlug]);
 
-  // --- 2. Memo Data ---
+  // --- Memo Data ---
   const exercise = useMemo(() => {
     if (!exerciseRaw) return null;
     const e = exerciseRaw;
@@ -125,14 +126,15 @@ export default function ExerciseDetail() {
       difficulty: e.difficulty_level ?? e.difficulty,
       equipment: e.equipment_needed ?? e.equipment,
       type: e.exercise_type ?? e.type,
-
       thumb: e.thumbnail_url ?? e.imageUrl,
       gif: e.gif_demo_url ?? e.gifUrl,
-
-      // Video logic
       cloud_video: e.video_url,
-      gallery_videos: e.gallery_videos || [], // Mảng các video phụ
-      ref_video: e.primary_video_url,
+      gallery_videos: e.gallery_videos || [],
+
+      // Map đúng trường dữ liệu từ backend
+      ref_video: e.primary_video_url, // Link Youtube
+      source_name: e.source_name, // [NEW] Tên nguồn
+      source_url: e.source_url, // [NEW] Link nguồn
 
       primaryMuscles: e.primaryMuscles || [],
       secondaryMuscles: e.secondaryMuscles || [],
@@ -140,28 +142,23 @@ export default function ExerciseDetail() {
     };
   }, [exerciseRaw]);
 
-  // --- 3. Prepare Video Playlist ---
-  // Gom video chính và gallery thành 1 danh sách để dễ chọn
+  // --- Video Playlist ---
   const videoPlaylist = useMemo(() => {
     if (!exercise) return [];
     const list = [];
-
-    // Video chính (ưu tiên 1)
     if (exercise.cloud_video) {
       list.push({
         url: exercise.cloud_video,
-        title: "Góc quay chính",
+        title: "Video chính",
         isMain: true,
       });
     }
-
-    // Video phụ
     if (exercise.gallery_videos.length) {
       exercise.gallery_videos.forEach((v, idx) => {
         if (v.url !== exercise.cloud_video) {
           list.push({
             url: v.url,
-            title: v.title || `Góc tập #${idx + 1}`,
+            title: v.title || `Biến thể ${idx + 1}`,
             isMain: false,
           });
         }
@@ -170,16 +167,13 @@ export default function ExerciseDetail() {
     return list;
   }, [exercise]);
 
-  // --- 4. Init Video ---
+  // --- Init Video ---
   useEffect(() => {
-    if (videoPlaylist.length > 0) {
-      setCurrentVideo(videoPlaylist[0]);
-    } else {
-      setCurrentVideo(null);
-    }
+    if (videoPlaylist.length > 0) setCurrentVideo(videoPlaylist[0]);
+    else setCurrentVideo(null);
   }, [videoPlaylist]);
 
-  // --- 5. Fetch Extra Data ---
+  // --- Fetch Extra Data ---
   useEffect(() => {
     if (!exercise?.exercise_id) return;
     let alive = true;
@@ -195,7 +189,7 @@ export default function ExerciseDetail() {
 
     axios
       .get(`/api/exercises/id/${exercise.exercise_id}/related`, {
-        params: { limit: 8 },
+        params: { limit: 6 },
       })
       .then((res) => {
         if (alive && res.data?.success) setRelated(res.data.data || []);
@@ -214,7 +208,6 @@ export default function ExerciseDetail() {
         if (alive) setMusclesLoading(false);
       }
     })();
-
     return () => {
       alive = false;
     };
@@ -248,351 +241,343 @@ export default function ExerciseDetail() {
         );
       }
     } catch (e) {
-      alert(e?.response?.data?.message || "Lỗi xử lý yêu thích");
+      alert(e?.response?.data?.message || "Lỗi xử lý");
     }
   };
 
   if (loading)
     return (
-      <div className="py-20 text-sm text-center text-gray-500">
-        Đang tải dữ liệu...
-      </div>
+      <div className="py-20 text-xs text-center text-gray-500">Đang tải...</div>
     );
   if (error || !exercise)
     return (
-      <div className="py-20 text-sm text-center text-red-500">
-        {error || "Không tìm thấy bài tập"}
-      </div>
+      <div className="py-20 text-xs text-center text-red-500">{error}</div>
     );
 
   return (
-    <div className="min-h-screen pb-10 bg-gray-50">
-      {/* --- Breadcrumb (Compact) --- */}
-      <div className="sticky top-0 z-20 text-xs bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center text-gray-500">
-          <button
-            onClick={() => navigate("/dashboard")}
-            className="flex items-center hover:text-blue-600"
-          >
-            <Home className="w-3.5 h-3.5 mr-1" /> Home
-          </button>
-          <ChevronRight className="w-3.5 h-3.5 mx-1" />
-          <button
-            onClick={() => navigate("/exercises")}
-            className="hover:text-blue-600"
-          >
-            Exercises
-          </button>
-          <ChevronRight className="w-3.5 h-3.5 mx-1" />
-          <span className="font-medium text-gray-900 truncate max-w-[200px]">
-            {exercise.name}
-          </span>
+    <div className="min-h-screen pb-10 bg-gray-50/50">
+      {/* 1. COMPACT HEADER */}
+      <div className="sticky top-0 z-30 bg-white border-b border-gray-200 shadow-sm">
+        <div className="px-4 py-3 mx-auto max-w-7xl">
+          <div className="flex items-center text-[11px] text-gray-400 mb-2">
+            <button
+              onClick={() => navigate("/exercises")}
+              className="transition hover:text-blue-600"
+            >
+              Exercises
+            </button>
+            <ChevronRight className="w-3 h-3 mx-1" />
+            <span className="font-medium text-gray-600 truncate">
+              {exercise.name}
+            </span>
+          </div>
+
+          <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
+            <div>
+              <h1 className="text-xl font-bold leading-none text-gray-900 md:text-2xl">
+                {exercise.name}
+              </h1>
+              <div className="flex items-center gap-2 mt-1.5">
+                {exercise.name_en && (
+                  <span className="mr-2 text-xs italic text-gray-500">
+                    {exercise.name_en}
+                  </span>
+                )}
+                <Badge tone="blue">{exercise.equipment || "Basic"}</Badge>
+                {exercise.difficulty && (
+                  <Badge tone="amber">{exercise.difficulty}</Badge>
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleToggleFavorite}
+                className={`flex items-center justify-center px-3 py-2 text-xs font-semibold border rounded-md transition-colors ${
+                  favorited
+                    ? "border-red-200 bg-red-50 text-red-600"
+                    : "border-gray-200 text-gray-600 hover:bg-gray-100"
+                }`}
+              >
+                <Heart
+                  className={`w-4 h-4 mr-1.5 ${
+                    favorited ? "fill-current" : ""
+                  }`}
+                />
+                {favoriteCount > 0 ? favoriteCount : "Lưu"}
+              </button>
+
+              <button
+                onClick={handleAddToPlan}
+                className="flex items-center justify-center px-4 py-2 text-xs font-bold text-white uppercase transition-all bg-blue-600 rounded-md shadow-sm hover:bg-blue-700 active:scale-95"
+              >
+                <ListPlus className="w-4 h-4 mr-1.5" />
+                Thêm vào Plan
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="px-4 py-4 mx-auto space-y-4 max-w-7xl">
-        {/* === TOP AREA: VIDEO (LEFT) - GIF/INFO (RIGHT) === */}
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-          {/* --- LEFT: VIDEO PLAYER (7/12) --- */}
-          <div className="flex flex-col gap-2 lg:col-span-7">
-            <div className="relative w-full overflow-hidden bg-black border border-gray-300 rounded-lg shadow-md aspect-video">
+      <div className="px-4 pt-5 mx-auto max-w-7xl">
+        <div className="grid items-start grid-cols-1 gap-5 lg:grid-cols-12">
+          {/* --- LEFT COLUMN: VIDEO (HERO) --- */}
+          <div className="flex flex-col gap-4 lg:col-span-8">
+            <div className="relative overflow-hidden bg-black border border-gray-900 shadow-lg rounded-xl aspect-video group">
               {currentVideo ? (
                 <video
-                  key={currentVideo.url} // Force reload when url changes
+                  key={currentVideo.url}
                   src={currentVideo.url}
                   className="object-contain w-full h-full"
                   controls
                   autoPlay
-                  muted // Muted by default for UX
+                  muted
                   loop
                   playsInline
                   poster={exercise.thumb}
                 />
               ) : (
-                <div className="flex flex-col items-center justify-center w-full h-full text-gray-500 bg-gray-100">
-                  <Play className="w-10 h-10 mb-2 opacity-50" />
-                  <span className="text-xs">Chưa có video hướng dẫn</span>
+                <div className="flex flex-col items-center justify-center w-full h-full text-gray-500">
+                  <Play className="w-12 h-12 mb-2 opacity-50" />
+                  <span className="text-xs">Chưa có video</span>
                 </div>
               )}
             </div>
 
-            {/* Video Selector List */}
-            {videoPlaylist.length > 0 && (
-              <div className="p-3 bg-white border border-gray-200 rounded-lg shadow-sm">
-                <p className="text-[11px] font-bold text-gray-400 uppercase mb-2">
-                  Chọn góc quay / Biến thể:
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {videoPlaylist.map((vid, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => setCurrentVideo(vid)}
-                      className={`flex items-center px-3 py-2 rounded text-xs font-medium transition-all border 
-                        ${
-                          currentVideo?.url === vid.url
-                            ? "bg-blue-600 text-white border-blue-600 shadow-md"
-                            : "bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100 hover:border-gray-300"
-                        }`}
+            {videoPlaylist.length > 1 && (
+              <div className="flex items-center gap-2 pb-2 overflow-x-auto scrollbar-hide">
+                {videoPlaylist.map((vid, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setCurrentVideo(vid)}
+                    className={`flex-shrink-0 flex items-center px-3 py-2 rounded-lg text-xs font-medium border transition-all ${
+                      currentVideo?.url === vid.url
+                        ? "bg-gray-900 text-white border-gray-900"
+                        : "bg-white text-gray-700 border-gray-200 hover:border-gray-400"
+                    }`}
+                  >
+                    <Play className="w-3 h-3 mr-1.5" />
+                    {vid.title}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <div className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
+              <SectionTitle icon={ListPlus}>Hướng dẫn thực hiện</SectionTitle>
+              <div className="mt-3 space-y-3">
+                {exercise.instructions?.length > 0 ? (
+                  exercise.instructions.map((step, idx) => (
+                    <div key={idx} className="flex items-start gap-3">
+                      <span className="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded bg-blue-100 text-blue-700 text-[10px] font-bold mt-0.5">
+                        {idx + 1}
+                      </span>
+                      <p className="text-sm leading-snug text-gray-700">
+                        {step.instruction_text || step.text}
+                      </p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm italic text-gray-400">
+                    Chưa có hướng dẫn.
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Related Exercises */}
+            {related.length > 0 && (
+              <div className="mt-2">
+                <h3 className="mb-2 text-xs font-bold text-gray-500 uppercase">
+                  Có thể bạn quan tâm
+                </h3>
+                <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+                  {related.slice(0, 4).map((ex) => (
+                    <div
+                      key={ex.id}
+                      onClick={() =>
+                        navigate(`/exercises/${ex.id}`, { state: ex })
+                      }
+                      className="p-2 transition bg-white border border-gray-200 rounded-lg cursor-pointer group hover:border-blue-400"
                     >
-                      <Play
-                        className={`w-3 h-3 mr-1.5 ${
-                          currentVideo?.url === vid.url ? "fill-current" : ""
-                        }`}
-                      />
-                      {vid.title}
-                    </button>
+                      <div className="mb-2 overflow-hidden bg-gray-100 rounded-md aspect-square">
+                        <img
+                          src={ex.imageUrl}
+                          alt=""
+                          className="object-cover w-full h-full transition group-hover:scale-105"
+                        />
+                      </div>
+                      <div className="text-[11px] font-semibold text-gray-700 line-clamp-1 group-hover:text-blue-600">
+                        {ex.name}
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
             )}
           </div>
 
-          {/* --- RIGHT: GIF & INFO (5/12) --- */}
-          <div className="flex flex-col gap-3 lg:col-span-5">
-            {/* 1. GIF Card (Always Visible) */}
-            <div className="flex flex-col overflow-hidden bg-white border border-gray-200 rounded-lg shadow-sm">
-              <div className="relative aspect-[4/3] bg-gray-100 border-b border-gray-100">
+          {/* --- RIGHT COLUMN: SIDEBAR (INFO) --- */}
+          <div className="flex flex-col gap-4 lg:col-span-4">
+            {/* 1. GIF PREVIEW (Đã xóa link Reference Youtube ở đây) */}
+            <div className="p-3 bg-white border border-gray-200 rounded-lg shadow-sm">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                  Mô phỏng (GIF)
+                </span>
+              </div>
+              <div className="aspect-[4/3] bg-gray-100 rounded border border-gray-100 overflow-hidden relative">
                 {exercise.gif ? (
                   <img
                     src={exercise.gif}
-                    alt="Animation"
+                    alt="Demo"
                     className="object-contain w-full h-full mix-blend-multiply"
                   />
                 ) : (
-                  <div className="flex items-center justify-center w-full h-full text-gray-400">
+                  <div className="flex items-center justify-center w-full h-full text-xs text-gray-400">
                     No GIF
                   </div>
                 )}
-                <div className="absolute top-2 right-2 bg-black/60 text-white text-[10px] font-bold px-2 py-0.5 rounded backdrop-blur-sm">
-                  DEMO GIF
-                </div>
-              </div>
-
-              {/* Header Info */}
-              <div className="p-4">
-                <h1 className="mb-1 text-xl font-bold leading-tight text-gray-900">
-                  {exercise.name}
-                </h1>
-                {exercise.name_en && (
-                  <p className="mb-3 text-sm italic text-gray-500">
-                    {exercise.name_en}
-                  </p>
-                )}
-
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {exercise.difficulty && (
-                    <Badge tone="amber">{exercise.difficulty}</Badge>
-                  )}
-                  {exercise.type && (
-                    <Badge tone="purple">{exercise.type}</Badge>
-                  )}
-                  <Badge tone="blue">
-                    {exercise.equipment || "Bodyweight"}
-                  </Badge>
-                </div>
-
-                <div className="flex gap-2">
-                  <button
-                    onClick={handleAddToPlan}
-                    className="flex-1 py-2 text-sm font-semibold text-white transition bg-blue-600 rounded-md shadow-sm hover:bg-blue-700"
-                  >
-                    + Thêm vào Plan
-                  </button>
-                  <button
-                    onClick={handleToggleFavorite}
-                    className={`px-3 py-2 border rounded-md transition hover:bg-gray-50 flex items-center ${
-                      favorited
-                        ? "text-red-500 border-red-200 bg-red-50"
-                        : "text-gray-600 border-gray-200"
-                    }`}
-                  >
-                    <Heart
-                      className={`w-4 h-4 ${favorited ? "fill-current" : ""}`}
-                    />
-                    {favoriteCount > 0 && (
-                      <span className="ml-1.5 text-xs font-medium">
-                        {favoriteCount}
-                      </span>
-                    )}
-                  </button>
-                </div>
               </div>
             </div>
 
-            {/* 2. Recommendation (Compact) */}
-            <div className="flex items-center justify-between p-3 text-xs border border-blue-100 rounded-lg bg-blue-50/50">
-              <div className="flex-1 text-center border-r border-blue-200 last:border-0">
-                <span className="block text-gray-500 mb-0.5">Sets</span>
-                <span className="font-bold text-blue-800">3 - 4</span>
+            {/* 2. QUICK STATS */}
+            <div className="grid grid-cols-3 gap-2 p-3 text-center border border-blue-100 rounded-lg bg-blue-50/50">
+              <div>
+                <span className="block text-[10px] text-gray-500 uppercase">
+                  Sets
+                </span>
+                <span className="block text-sm font-bold text-blue-800">
+                  3-4
+                </span>
               </div>
-              <div className="flex-1 text-center border-r border-blue-200 last:border-0">
-                <span className="block text-gray-500 mb-0.5">Reps</span>
-                <span className="font-bold text-blue-800">8 - 12</span>
+              <div className="border-l border-blue-200">
+                <span className="block text-[10px] text-gray-500 uppercase">
+                  Reps
+                </span>
+                <span className="block text-sm font-bold text-blue-800">
+                  8-12
+                </span>
               </div>
-              <div className="flex-1 text-center">
-                <span className="block text-gray-500 mb-0.5">Rest</span>
-                <span className="font-bold text-blue-800">60s</span>
+              <div className="border-l border-blue-200">
+                <span className="block text-[10px] text-gray-500 uppercase">
+                  Rest
+                </span>
+                <span className="block text-sm font-bold text-blue-800">
+                  60s
+                </span>
               </div>
             </div>
 
-            {/* 3. Reference Link */}
-            {exercise.ref_video && (
-              <a
-                href={exercise.ref_video}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-between p-3 transition bg-white border border-gray-200 rounded-lg hover:border-blue-300 group"
-              >
-                <div className="flex items-center text-xs text-gray-600">
-                  <Youtube className="w-4 h-4 mr-2 text-red-600" />
-                  Xem video gốc trên Youtube
-                </div>
-                <ExternalLink className="w-3 h-3 text-gray-400 group-hover:text-blue-600" />
-              </a>
-            )}
-          </div>
-        </div>
-
-        {/* === BOTTOM AREA: DETAILS (Dense Layout) === */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          {/* Col 1: Muscle & Description */}
-          <div className="space-y-4">
-            {/* Muscles */}
+            {/* 3. MUSCLES */}
             <div className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
-              <SectionTitle>Cơ bắp tác động</SectionTitle>
-              <div className="space-y-4">
-                {/* Primary */}
+              <SectionTitle icon={Dumbbell}>Cơ bắp tác động</SectionTitle>
+              <div className="space-y-3">
+                {/* Chính */}
                 <div>
-                  <div className="flex items-center mb-2 text-xs font-bold text-blue-800">
-                    <div className="w-1.5 h-1.5 rounded-full bg-blue-600 mr-1.5"></div>{" "}
-                    CHÍNH
-                  </div>
-                  <div className="flex flex-wrap gap-2">
+                  <span className="text-[10px] font-bold text-blue-600 mb-1.5 block">
+                    NHÓM CƠ CHÍNH
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
                     {!musclesLoading && muscles?.primary?.items?.length ? (
                       muscles.primary.items.map((m) => (
-                        <div
+                        <span
                           key={m.id}
-                          className="flex items-center px-2 py-1 text-xs text-blue-700 border border-blue-100 rounded bg-blue-50"
+                          className="px-2 py-1 bg-blue-50 text-blue-700 border border-blue-100 text-[10px] font-medium rounded"
                         >
-                          {m.name}{" "}
-                          <span className="ml-1.5 opacity-60 text-[10px]">
-                            ({m.percent}%)
-                          </span>
-                        </div>
+                          {m.name}
+                        </span>
                       ))
                     ) : (
-                      <span className="text-xs text-gray-400">
+                      <span className="text-[10px] text-gray-400">
                         Đang cập nhật...
                       </span>
                     )}
                   </div>
                 </div>
-
-                {/* Secondary */}
-                <div>
-                  <div className="flex items-center mb-2 text-xs font-bold text-green-800">
-                    <div className="w-1.5 h-1.5 rounded-full bg-green-600 mr-1.5"></div>{" "}
-                    PHỤ
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {!musclesLoading && muscles?.secondary?.items?.length ? (
-                      muscles.secondary.items.map((m) => (
-                        <div
+                {/* Phụ */}
+                {muscles?.secondary?.items?.length > 0 && (
+                  <div className="pt-2 border-t border-gray-100">
+                    <span className="text-[10px] font-bold text-gray-500 mb-1.5 block">
+                      NHÓM CƠ PHỤ
+                    </span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {muscles.secondary.items.map((m) => (
+                        <span
                           key={m.id}
-                          className="flex items-center px-2 py-1 text-xs text-green-700 border border-green-100 rounded bg-green-50"
+                          className="px-2 py-1 bg-gray-50 text-gray-600 border border-gray-200 text-[10px] rounded"
                         >
-                          {m.name}{" "}
-                          <span className="ml-1.5 opacity-60 text-[10px]">
-                            ({m.percent}%)
-                          </span>
-                        </div>
-                      ))
-                    ) : (
-                      <span className="text-xs text-gray-400">—</span>
-                    )}
+                          {m.name}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
 
-            {/* Description */}
+            {/* 4. DESCRIPTION */}
             <div className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
-              <SectionTitle>Mô tả</SectionTitle>
-              <p className="text-sm leading-relaxed text-gray-700 whitespace-pre-line">
-                {exercise.description || "Chưa có mô tả chi tiết."}
+              <SectionTitle icon={Activity}>Giới thiệu</SectionTitle>
+              <p className="text-xs leading-relaxed text-justify text-gray-600">
+                {exercise.description ||
+                  "Bài tập này giúp phát triển sức mạnh và độ bền cơ bắp hiệu quả."}
               </p>
             </div>
-          </div>
 
-          {/* Col 2: Instructions */}
-          <div className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm h-fit">
-            <SectionTitle>Hướng dẫn thực hiện</SectionTitle>
-            <div className="space-y-0">
-              {exercise.instructions && exercise.instructions.length > 0 ? (
-                exercise.instructions.map((step, idx) => (
-                  <div
-                    key={idx}
-                    className="flex gap-3 px-2 py-3 -mx-2 transition border-b border-gray-100 rounded last:border-0 hover:bg-gray-50/50"
-                  >
-                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-gray-900 text-white text-xs font-bold flex items-center justify-center mt-0.5 shadow-sm">
-                      {step.step_number || idx + 1}
+            {/* 5. [NEW] REFERENCE & CREDITS SECTION */}
+            {/* Đây là phần bạn đang thiếu, hiển thị link youtube và text nguồn */}
+            {(exercise.ref_video ||
+              exercise.source_name ||
+              exercise.source_url) && (
+              <div className="p-3 bg-gray-100 border border-gray-200 rounded-lg shadow-inner">
+                <SectionTitle icon={LinkIcon}>Nguồn tham khảo</SectionTitle>
+
+                <div className="mt-2 space-y-2">
+                  {/* Link Youtube */}
+                  {exercise.ref_video && (
+                    <a
+                      href={exercise.ref_video}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center p-2 transition bg-white border border-gray-200 rounded hover:border-red-300 hover:text-red-600 group"
+                    >
+                      <Youtube className="w-4 h-4 mr-2 text-red-500 transition group-hover:scale-110" />
+                      <span className="text-xs font-medium text-gray-700 group-hover:text-red-600">
+                        Xem video gốc trên Youtube
+                      </span>
+                      <ExternalLink className="w-3 h-3 ml-auto text-gray-400" />
+                    </a>
+                  )}
+
+                  {/* Text Credits / Source Link */}
+                  {(exercise.source_name || exercise.source_url) && (
+                    <div className="flex items-start pt-2 mt-2 text-xs text-gray-500 border-t border-gray-200">
+                      <Copyright className="w-3.5 h-3.5 mr-1.5 mt-0.5 flex-shrink-0" />
+                      <div className="flex flex-col">
+                        <span className="font-semibold text-gray-600">
+                          Credit nội dung:
+                        </span>
+                        {exercise.source_url ? (
+                          <a
+                            href={exercise.source_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="italic text-blue-600 truncate hover:underline max-w-[200px]"
+                          >
+                            {exercise.source_name || exercise.source_url}
+                          </a>
+                        ) : (
+                          <span className="italic">{exercise.source_name}</span>
+                        )}
+                      </div>
                     </div>
-                    <div className="text-sm leading-relaxed text-gray-700">
-                      {step.instruction_text ||
-                        step.text ||
-                        JSON.stringify(step)}
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="py-4 text-xs italic text-gray-400">
-                  Chưa có hướng dẫn chi tiết.
-                </p>
-              )}
-            </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
-
-        {/* === RELATED (Bottom) === */}
-        {related.length > 0 && (
-          <div className="pt-6 border-t border-gray-200">
-            <h3 className="mb-3 text-sm font-bold text-gray-900 uppercase">
-              Bài tập liên quan
-            </h3>
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-6">
-              {related.map((ex) => (
-                <div
-                  key={ex.id}
-                  onClick={() =>
-                    navigate(`/exercises/${encodeURIComponent(ex.id)}`, {
-                      state: ex,
-                    })
-                  }
-                  className="overflow-hidden transition bg-white border border-gray-200 rounded-lg cursor-pointer group hover:shadow-md hover:border-blue-300"
-                >
-                  <div className="relative overflow-hidden bg-gray-100 aspect-square">
-                    {ex.imageUrl ? (
-                      <img
-                        src={ex.imageUrl}
-                        alt={ex.name}
-                        className="object-cover w-full h-full transition duration-300 group-hover:scale-105"
-                      />
-                    ) : (
-                      <div className="flex items-center justify-center h-full text-gray-300">
-                        <ImageIcon className="w-6 h-6" />
-                      </div>
-                    )}
-                  </div>
-                  <div className="p-2">
-                    <h5 className="text-xs font-medium leading-snug text-gray-900 line-clamp-2 group-hover:text-blue-600">
-                      {ex.name}
-                    </h5>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
