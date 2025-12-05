@@ -1,14 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { getContentOverviewMetrics } from '../../lib/api.js';
+import { getContentOverviewMetrics } from '../../../lib/api.js';
 import { Dumbbell, Eye, EyeOff, Clock } from 'lucide-react';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, BarChart, Bar, PieChart, Pie, Cell, Legend } from 'recharts';
 
 function Card({ title, value, icon: Icon, accent = 'bg-slate-700' }) {
   return (
-    <div className="rounded-lg border bg-white p-4 shadow-sm">
+    <div className="p-4 bg-white border rounded-lg shadow-sm">
       <div className="flex items-center gap-3">
         <div className={`h-10 w-10 ${accent} text-white rounded-md flex items-center justify-center`}>
-          {Icon ? <Icon className="h-5 w-5" /> : null}
+          {Icon ? <Icon className="w-5 h-5" /> : null}
         </div>
         <div>
           <div className="text-sm text-gray-500">{title}</div>
@@ -62,29 +62,29 @@ export default function AdminContentManage() {
 
   return (
     <div className="p-2 sm:p-4">
-      <h1 className="text-xl font-semibold mb-1">Content Overview</h1>
-      <p className="text-gray-600 mb-4">Thống kê tổng quan về bài tập.</p>
+      <h1 className="mb-1 text-xl font-semibold">Content Overview</h1>
+      <p className="mb-4 text-gray-600">Thống kê tổng quan về bài tập.</p>
 
       {loading && (
-        <div className="rounded-md border bg-white p-6 text-center">Đang tải dữ liệu...</div>
+        <div className="p-6 text-center bg-white border rounded-md">Đang tải dữ liệu...</div>
       )}
       {error && !loading && (
-        <div className="rounded-md border border-rose-200 bg-rose-50 text-rose-700 p-4">{error}</div>
+        <div className="p-4 border rounded-md border-rose-200 bg-rose-50 text-rose-700">{error}</div>
       )}
 
       {!loading && !error && (
         <>
           {/* Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-1 gap-4 mb-6 sm:grid-cols-2 lg:grid-cols-4">
             {cards.map((c) => (
               <Card key={c.title} title={c.title} value={c.value} icon={c.icon} accent={c.accent} />
             ))}
           </div>
 
           {/* Charts */}
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
             {/* Additions by month */}
-            <div className="rounded-lg border bg-white p-4 shadow-sm">
+            <div className="p-4 bg-white border rounded-lg shadow-sm">
               <div className="mb-2 font-medium">Bài tập được thêm theo tháng</div>
               <div style={{ width: '100%', height: 260 }}>
                 <ResponsiveContainer>
@@ -100,7 +100,7 @@ export default function AdminContentManage() {
             </div>
 
             {/* Top used */}
-            <div className="rounded-lg border bg-white p-4 shadow-sm">
+            <div className="p-4 bg-white border rounded-lg shadow-sm">
               <div className="mb-2 font-medium">Top 10 bài tập được dùng nhiều</div>
               <div style={{ width: '100%', height: 260 }}>
                 <ResponsiveContainer>
@@ -113,7 +113,7 @@ export default function AdminContentManage() {
                   </BarChart>
                 </ResponsiveContainer>
               </div>
-              <ul className="mt-2 list-decimal list-inside text-sm text-gray-700 space-y-1">
+              <ul className="mt-2 space-y-1 text-sm text-gray-700 list-decimal list-inside">
                 {topUsed.map((x, idx) => (
                   <li key={x.exercise_id || idx}>{x.name} <span className="text-gray-500">({x.used_count})</span></li>
                 ))}
@@ -121,9 +121,9 @@ export default function AdminContentManage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mt-4">
+          <div className="grid grid-cols-1 gap-4 mt-4 xl:grid-cols-2">
             {/* Top rated (popularity_score) */}
-            <div className="rounded-lg border bg-white p-4 shadow-sm">
+            <div className="p-4 bg-white border rounded-lg shadow-sm">
               <div className="mb-2 font-medium">Bài tập có “rating” cao (popularity_score)</div>
               <div style={{ width: '100%', height: 260 }}>
                 <ResponsiveContainer>
@@ -136,7 +136,7 @@ export default function AdminContentManage() {
                   </BarChart>
                 </ResponsiveContainer>
               </div>
-              <ul className="mt-2 list-decimal list-inside text-sm text-gray-700 space-y-1">
+              <ul className="mt-2 space-y-1 text-sm text-gray-700 list-decimal list-inside">
                 {topRated.map((x, idx) => (
                   <li key={x.exercise_id || idx}>{x.name} <span className="text-gray-500">({x.popularity_score})</span></li>
                 ))}
@@ -144,7 +144,7 @@ export default function AdminContentManage() {
             </div>
 
             {/* By muscle group (proxy: exercise_type) */}
-            <div className="rounded-lg border bg-white p-4 shadow-sm">
+            <div className="p-4 bg-white border rounded-lg shadow-sm">
               <div className="mb-2 font-medium">Bài tập theo nhóm (exercise_type)</div>
               <div style={{ width: '100%', height: 260 }}>
                 <ResponsiveContainer>

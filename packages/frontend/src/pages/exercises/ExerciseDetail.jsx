@@ -271,7 +271,7 @@ export default function ExerciseDetail() {
       <div className="sticky top-0 z-20 text-xs bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center text-gray-500">
           <button
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/dashboard")}
             className="flex items-center hover:text-blue-600"
           >
             <Home className="w-3.5 h-3.5 mr-1" /> Home

@@ -2,13 +2,11 @@ import { createClient } from "@supabase/supabase-js";
 import fs from "fs";
 import path from "path";
 import dotenv from "dotenv";
-import { fileURLToPath } from "url"; // 1. Import thêm thư viện này
+import { fileURLToPath } from "url";
 
-// 2. Tạo lại __dirname và __filename cho môi trường ES6
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// 3. Sử dụng __dirname bình thường
 dotenv.config({ path: path.join(__dirname, "../.env") });
 
 const supabaseUrl = process.env.SUPABASE_URL;
@@ -68,6 +66,45 @@ export const uploadLocalFileToSupabase = async (
     return publicData.publicUrl;
   } catch (error) {
     console.error("Supabase Upload Error : ", error.message);
+    return null;
+  }
+};
+
+/**
+ * Upload file từ Buffer (Multer) lên Supabase
+ * @param {Buffer} fileBuffer - Dữ liệu file
+ * @param {string} originalName - Tên file gốc
+ * @param {string} destinationFolder - Thư mục (videos/images)
+ */
+
+export const uploadBufferToSupabase = async (
+  fileBuffer,
+  originalName,
+  destinationFolder = "misc"
+) => {
+  try {
+    const fileExt = path.extname(originalName);
+    const uniqueFileName = `${path.basename(
+      originalName,
+      fileExt
+    )}-${Date.now()}${fileExt}`;
+    const storagePath = `${destinationFolder}/${uniqueFileName}`;
+
+    const { data, error } = await supabase.storage
+      .from(BUCKET_NAME)
+      .upload(storagePath, fileBuffer, {
+        contentType: getContentType(fileExt),
+        upsert: false,
+      });
+
+    if (error) throw error;
+
+    const { data: publicData } = supabase.storage
+      .from(BUCKET_NAME)
+      .getPublicUrl(storagePath);
+    return publicData.publicUrl;
+  } catch (error) {
+    console.error("Supabase Buffer Upload Error:", error.message);
     return null;
   }
 };

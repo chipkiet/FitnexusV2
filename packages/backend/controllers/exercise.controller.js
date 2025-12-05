@@ -2,7 +2,22 @@ import Exercise from "../models/exercise.model.js";
 import { sequelize } from "../config/database.js";
 import ExerciseFavorite from "../models/exercise.favorite.model.js";
 import { Op, fn, col } from 'sequelize';
-import { data } from "@tensorflow/tfjs";
+import { data, mul } from "@tensorflow/tfjs";
+import multer from "multer";
+import { uploadBufferToSupabase } from "../services/upload.service.js";
+
+const storage = multer.memoryStorage();
+const upload = multer({
+  storage,
+  limits: { fileSize: 100 * 1024 * 1024 },
+});
+
+export const exerciseUploadMiddleware = upload.fields([
+  { name: "thumbnail", maxCount: 1 },
+  { name: "gif", maxCount: 1 },
+  { name: "video", maxCount: 1 }, // Video chính
+  { name: "gallery_videos", maxCount: 5 }, // Video phụ (tối đa 5)
+]);
 
 function normalize(str = "") {
   return String(str)
@@ -11,7 +26,6 @@ function normalize(str = "") {
     .toLowerCase()
     .trim();
 }
-
 
 const CANONICAL_CHILD = new Set([
   "upper-chest",
@@ -1212,6 +1226,141 @@ export const getExerciseDetail = async (req, res) => {
     return res.status(200).json({ success: true, data });
   } catch (error) {
     console.error("getExerciseDetail error:", error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// POST /api/exercises
+export const createExercise = async (req, res) => {
+  const t = await sequelize.transaction();
+  try {
+    // 1. Lấy dữ liệu dạng chuỗi từ Form
+    // Lưu ý: Khi gửi multipart/form-data, các object/array sẽ bị chuyển thành chuỗi JSON
+    const {
+      name,
+      name_en,
+      slug,
+      description,
+      difficulty_level,
+      exercise_type,
+      equipment_needed,
+      popularity_score,
+      primary_video_url,
+    } = req.body;
+
+    let instructions = [];
+    let muscles = [];
+
+    try {
+      if (req.body.instructions)
+        instructions = JSON.parse(req.body.instructions);
+      if (req.body.muscles) muscles = JSON.parse(req.body.muscles); // Dạng [{id: 1, type: 'primary'}]
+    } catch (e) {
+      console.error("JSON Parse error:", e);
+    }
+
+    // 2. Xử lý Upload File lên Supabase
+    const files = req.files || {};
+
+    let thumbnail_url = null;
+    let gif_demo_url = null;
+    let video_url = null;
+
+    if (files.thumbnail?.[0]) {
+      thumbnail_url = await uploadBufferToSupabase(
+        files.thumbnail[0].buffer,
+        files.thumbnail[0].originalname,
+        "images"
+      );
+    }
+    if (files.gif?.[0]) {
+      gif_demo_url = await uploadBufferToSupabase(
+        files.gif[0].buffer,
+        files.gif[0].originalname,
+        "images"
+      );
+    }
+    if (files.video?.[0]) {
+      video_url = await uploadBufferToSupabase(
+        files.video[0].buffer,
+        files.video[0].originalname,
+        "videos"
+      );
+    }
+
+    // 3. Tạo bài tập trong DB
+    const newExercise = await Exercise.create(
+      {
+        name,
+        name_en,
+        slug,
+        description,
+        difficulty_level,
+        exercise_type,
+        equipment_needed,
+        primary_video_url, // Link youtube tham khảo
+        popularity_score: parseInt(popularity_score || 0),
+
+        thumbnail_url,
+        gif_demo_url,
+        video_url, // Link cloud video
+
+        instructions: instructions, // Lưu JSONB
+        is_public: true,
+      },
+      { transaction: t }
+    );
+
+    // 4. Lưu liên kết cơ bắp (Muscles)
+    if (muscles.length > 0) {
+      for (const m of muscles) {
+        await sequelize.query(
+          `INSERT INTO exercise_muscle_group (exercise_id, muscle_group_id, impact_level, created_at)
+                 VALUES (:eid, :mid, :impact, NOW())`,
+          {
+            replacements: {
+              eid: newExercise.exercise_id,
+              mid: m.id,
+              impact: m.impact || "primary",
+            },
+            transaction: t,
+          }
+        );
+      }
+    }
+
+    // 5. Lưu Video Phụ (Gallery)
+    if (files.gallery_videos?.length) {
+      let order = 0;
+      for (const file of files.gallery_videos) {
+        const url = await uploadBufferToSupabase(
+          file.buffer,
+          file.originalname,
+          "videos"
+        );
+        if (url) {
+          await sequelize.query(
+            `INSERT INTO exercise_videos (exercise_id, video_url, title, display_order, created_at, updated_at)
+                     VALUES (:eid, :url, :title, :order, NOW(), NOW())`,
+            {
+              replacements: {
+                eid: newExercise.exercise_id,
+                url: url,
+                title: file.originalname, // Tạm dùng tên file làm title
+                order: order++,
+              },
+              transaction: t,
+            }
+          );
+        }
+      }
+    }
+
+    await t.commit();
+    return res.status(201).json({ success: true, data: newExercise });
+  } catch (error) {
+    await t.rollback();
+    console.error("Create Exercise Error:", error);
     return res.status(500).json({ success: false, message: error.message });
   }
 };

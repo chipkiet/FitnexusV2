@@ -50,7 +50,7 @@ import OnboardingEntry from "./pages/boardings/OnboardingEntry.jsx";
 import AdminLayout from "./layouts/AdminLayout.jsx";
 import AdminOverview from "./pages/admin/Overview.jsx";
 import AdminUserDetail from "./pages/admin/UserDetail.jsx";
-import AdminContentManage from "./pages/admin/ContentManage.jsx";
+import AdminContentManage from "./pages/admin/content/ContentManage.jsx";
 import AdminFinancialManage from "./pages/admin/AdminRevenue.jsx";
 import Role from "./pages/admin/Role.jsx";
 import Plan from "./pages/admin/Plan.jsx";
@@ -63,6 +63,8 @@ import AdminRevenue from "./pages/admin/AdminRevenue.jsx";
 import AdminUsers from "./pages/admin/AdminUsers.jsx";
 import AdminPopularExercises from "./pages/admin/PopularExercises.jsx";
 import AdminSupportReports from "./pages/admin/SupportReports.jsx";
+import AdminExerciseList from "./pages/admin/content/AdminExerciseList.jsx";
+import AdminExerciseRight from "./pages/admin/content/AdminExerciseRight.jsx";
 
 // Account pages
 import PersonalInfo from "./pages/account/PersonalInfo.jsx";
@@ -358,9 +360,14 @@ function App() {
                 element={<AdminPlanDetail />}
               />
 
-              {/* ThÃªm route nÃ y náº¿u báº¡n dÃ¹ng trang AdminUsers */}
               <Route path="users" element={<AdminUsers />} />
               <Route path="support" element={<AdminSupportReports />} />
+
+              <Route path="content/exercises" element={<AdminExerciseList />} />
+              <Route
+                path="content/exercises/new"
+                element={<AdminExerciseRight />}
+              />
             </Route>
 
             {/* Catch all: redirect based on auth status */}

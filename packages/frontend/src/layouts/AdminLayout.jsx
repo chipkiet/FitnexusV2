@@ -81,14 +81,23 @@ export default function AdminLayout() {
         key: "content",
         icon: FolderKanban,
         label: "Content Manage",
-        children: [{ label: "Overview", to: "/admin/content" }],
+        children: [
+          { icon: ChevronRight, label: "Overview", to: "/admin/content" },
+          {
+            icon: Dumbbell,
+            label: "Exercises",
+            to: "/admin/content/exercises",
+          },
+        ],
       },
 
       {
         key: "financial",
         icon: Wallet,
         label: "Financial Manage",
-        children: [{ label: "Overview", to: "/admin/finance" }],
+        children: [
+          { icon: ChevronRight, label: "Overview", to: "/admin/finance" },
+        ],
       },
 
       {
