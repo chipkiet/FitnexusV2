@@ -28,10 +28,9 @@ import adminRevenueRoutes from "./routes/admin.revenue.routes.js";
 import supportRouter from "./routes/support.routes.js";
 import notificationRouter from "./routes/notification.routes.js";
 import reviewRouter from "./routes/review.routes.js";
-import {
-  FRONTEND_URL,
-  ADDITIONAL_CORS_ORIGINS,
-} from "./config/env.js";
+import muscleRoutes from "./routes/muscle.router.js";
+
+import { FRONTEND_URL, ADDITIONAL_CORS_ORIGINS } from "./config/env.js";
 import { ensureAiApp } from "./ai/index.js";
 
 import activityTracker from "./middleware/activity.tracker.js";
@@ -186,6 +185,8 @@ app.use("/api/plans", planRouter);
 app.use("/api/workout", workoutRouter);
 
 app.use("/api/user-screenshots", userScreenshotsRouter);
+
+app.use("/api/muscles", muscleRoutes);
 
 /* -------------------- HEALTH CHECK -------------------- */
 app.get("/api/health", (_req, res) => {

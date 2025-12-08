@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react"; // Nhớ import useEffect
-import { useNavigate, useParams } from "react-router-dom";
+import { useFetcher, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { getToken } from "../../../lib/tokenManager.js";
 
@@ -21,28 +21,12 @@ import {
 // --- Constants ---
 const DIFFICULTIES = ["beginner", "intermediate", "advanced"];
 const TYPES = ["compound", "isolation", "cardio", "stretching", "plyometrics"];
-const MUSCLE_LIST = [
-  { id: 1, name: "Ngực (Chest)" },
-  { id: 2, name: "Lưng (Back)" },
-  { id: 3, name: "Vai (Shoulders)" },
-  { id: 4, name: "Tay (Arms)" },
-  { id: 5, name: "Bụng (Core)" },
-  { id: 6, name: "Chân (Legs)" },
-  { id: 7, name: "Ngực trên" },
-  { id: 8, name: "Ngực giữa" },
-  { id: 15, name: "Vai trước" },
-  { id: 23, name: "Tay sau (Triceps)" },
-  { id: 29, name: "Đùi trước (Quads)" },
-  { id: 30, name: "Đùi sau (Hamstrings)" },
-  { id: 31, name: "Mông (Glutes)" },
-];
 
 export default function AdminExerciseRight() {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEditMode = Boolean(id);
 
-  // --- State Form Data ---
   const [formData, setFormData] = useState({
     name: "",
     name_en: "",
@@ -53,8 +37,8 @@ export default function AdminExerciseRight() {
     equipment_needed: "",
     popularity_score: 0,
     primary_video_url: "",
-    source_name: "", // [OK] Đã thêm
-    source_url: "", // [OK] Đã thêm
+    source_name: "",
+    source_url: "",
   });
 
   const [files, setFiles] = useState({
@@ -75,8 +59,22 @@ export default function AdminExerciseRight() {
   const [selectedMuscles, setSelectedMuscles] = useState([]);
   const [muscleInput, setMuscleInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [muscleList, setMuscleList] = useState([]);
 
-  // --- [QUAN TRỌNG] Fetch Data khi ở chế độ Edit ---
+  useEffect(() => {
+    const fetchMuscles = async () => {
+      try {
+        const res = await axios.get("/api/muscles");
+        if (res.data.success) {
+          setMuscleList(res.data.data); // data format: [{id: 1, name: "Ngực..."}, ...]
+        }
+      } catch (err) {
+        console.error("Không tải được danh sách nhóm cơ");
+      }
+    };
+    fetchMuscles();
+  }, []);
+
   useEffect(() => {
     if (!isEditMode) return;
 
@@ -85,9 +83,11 @@ export default function AdminExerciseRight() {
         setLoading(true);
         // Gọi API detail mà bạn đã update ở backend
         const res = await axios.get(`/api/exercises/detail/${id}`);
+        console.log("🔥 Dữ liệu từ API detail:", res.data.data);
         if (res.data.success) {
           const data = res.data.data;
 
+          console.log("Frontend received muscles:", data.muscles);
           // Map dữ liệu từ API vào State Form
           setFormData({
             name: data.name || "",
@@ -110,17 +110,27 @@ export default function AdminExerciseRight() {
             video: data.video_url || null,
           });
 
-          // Map Instructions
           if (data.instructions && Array.isArray(data.instructions)) {
             setInstructions(data.instructions);
           }
 
-          // Map Muscles
-          // Lưu ý: Backend trả về muscles dạng { primary: [], secondary: [] } hay flat list?
-          // Giả sử API trả về mảng flat hoặc bạn phải xử lý lại ở đây cho khớp với state selectedMuscles
-          // Ví dụ đơn giản nếu data.primaryMuscles là mảng tên cơ:
-          // Bạn cần logic map từ tên cơ -> ID nếu muốn hiển thị đúng (hoặc backend trả về ID)
-          // Tạm thời bỏ qua phần map ID cơ bắp nếu API chưa trả về ID.
+          if (data.muscles && Array.isArray(data.muscles)) {
+            setSelectedMuscles(data.muscles);
+          } else {
+            setSelectedMuscles([]);
+          }
+
+          const apiGallery = data.galleryVideos || [];
+
+          if (Array.isArray(apiGallery) && apiGallery.length > 0) {
+            const mappedGallery = apiGallery.map((vid) => ({
+              id: vid.id,
+              preview: vid.url,
+              title: vid.title,
+              file: null,
+            }));
+            setGalleryItems(mappedGallery);
+          }
         }
       } catch (error) {
         console.error("Lỗi tải bài tập:", error);
@@ -198,7 +208,8 @@ export default function AdminExerciseRight() {
   const addMuscle = () => {
     const mId = parseInt(muscleInput);
     if (!mId || selectedMuscles.find((m) => m.id === mId)) return;
-    const mName = MUSCLE_LIST.find((m) => m.id === mId)?.name;
+
+    const mName = muscleList.find((m) => m.id === mId)?.name;
     setSelectedMuscles([
       ...selectedMuscles,
       { id: mId, impact: "primary", name: mName },
@@ -223,10 +234,12 @@ export default function AdminExerciseRight() {
     setLoading(true);
     try {
       const data = new FormData();
-      // Tự động append tất cả key trong formData (bao gồm source_name, source_url)
+
       Object.keys(formData).forEach((key) => data.append(key, formData[key]));
 
       data.append("instructions", JSON.stringify(instructions));
+
+      console.log("Muscles chuẩn bị gửi:", selectedMuscles);
       data.append("muscles", JSON.stringify(selectedMuscles));
 
       if (files.thumbnail) data.append("thumbnail", files.thumbnail);
@@ -274,7 +287,7 @@ export default function AdminExerciseRight() {
   };
 
   return (
-    <div className="max-w-6xl pb-10 mx-auto">
+    <div className="max-w-[1600px] pb-10 mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
@@ -303,9 +316,9 @@ export default function AdminExerciseRight() {
         </button>
       </div>
 
-      <form className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+      <form className="grid grid-cols-1 gap-8 xl:grid-cols-5">
         {/* Left Column */}
-        <div className="space-y-6 lg:col-span-2">
+        <div className="space-y-6 xl:col-span-3">
           {/* INFO CARD */}
           <div className="p-6 bg-white border border-gray-200 shadow-sm rounded-xl">
             <h3 className="flex items-center gap-2 mb-4 text-lg font-semibold text-gray-800">
@@ -501,7 +514,7 @@ export default function AdminExerciseRight() {
                 className="flex-1 px-4 py-2 border rounded-lg"
               >
                 <option value="">-- Chọn nhóm cơ --</option>
-                {MUSCLE_LIST.map((m) => (
+                {muscleList.map((m) => (
                   <option
                     key={m.id}
                     value={m.id}
@@ -554,7 +567,7 @@ export default function AdminExerciseRight() {
         </div>
 
         {/* Right Column: Media */}
-        <div className="space-y-6">
+        <div className="space-y-6 xl:col-span-2">
           {/* Main Video */}
           <div className="p-5 bg-white border border-gray-200 shadow-sm rounded-xl">
             <h4 className="flex items-center gap-2 mb-3 font-semibold text-gray-800">
@@ -686,10 +699,11 @@ export default function AdminExerciseRight() {
           <div className="p-5 bg-white border border-gray-200 shadow-sm rounded-xl">
             <div className="flex items-center justify-between mb-3">
               <h4 className="flex items-center gap-2 font-semibold text-gray-800">
-                <Video className="w-4 h-4 text-orange-500" /> Video Phụ
+                <Video className="w-4 h-4 text-orange-500" /> Video Phụ (Góc
+                quay)
               </h4>
-              <label className="cursor-pointer bg-gray-100 hover:bg-gray-200 p-1.5 rounded-md text-gray-600">
-                <Plus className="w-4 h-4" />
+              <label className="cursor-pointer bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-md text-sm text-gray-700 font-medium flex items-center transition">
+                <Plus className="w-4 h-4 mr-1" /> Thêm video
                 <input
                   type="file"
                   accept="video/*"
@@ -698,37 +712,58 @@ export default function AdminExerciseRight() {
                 />
               </label>
             </div>
+
             <div className="space-y-4">
+              {galleryItems.length === 0 && (
+                <div className="py-8 text-center border border-gray-300 border-dashed rounded-lg bg-gray-50">
+                  <p className="text-sm text-gray-500">
+                    Chưa có video phụ nào.
+                  </p>
+                </div>
+              )}
+
               {galleryItems.map((item, idx) => (
                 <div
                   key={idx}
-                  className="flex items-start gap-3 p-3 border rounded-lg bg-gray-50"
+                  className="p-3 transition border rounded-lg bg-gray-50 hover:border-blue-300"
                 >
-                  <video
-                    src={item.preview}
-                    className="flex-shrink-0 object-cover w-24 h-16 bg-black rounded"
-                  />
-                  <div className="flex-1 min-w-0">
+                  {/* Layout Dọc: Video to ở trên */}
+                  <div className="relative mb-3 group">
+                    <video
+                      src={item.preview}
+                      className="object-cover w-full bg-black border border-gray-200 rounded-lg aspect-video"
+                      controls
+                    />
+                    {/* Nút xóa nằm góc trên video */}
+                    <button
+                      type="button"
+                      onClick={() => removeGalleryItem(idx)}
+                      className="absolute p-1.5 text-white bg-red-600 rounded-full shadow-md top-2 right-2 hover:bg-red-700 opacity-0 group-hover:opacity-100 transition-opacity"
+                      title="Xóa video này"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  {/* Input ở dưới: Rộng rãi hơn */}
+                  <div>
+                    <label className="block mb-1 text-xs font-bold text-gray-500 uppercase">
+                      Tiêu đề hiển thị <span className="text-red-500">*</span>
+                    </label>
                     <input
                       type="text"
                       value={item.title}
                       onChange={(e) =>
                         handleGalleryTitleChange(idx, e.target.value)
                       }
-                      className="w-full px-2 py-1 mb-1 text-sm bg-white border rounded"
-                      placeholder="Tiêu đề (VD: Góc nghiêng)..."
+                      className="w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-md outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="VD: Góc nhìn ngang, Lỗi sai..."
                     />
-                    <p className="text-[10px] text-gray-400 truncate">
-                      {item.file.name}
+                    <p className="mt-1 text-[10px] text-gray-400 truncate">
+                      File:{" "}
+                      {item.file ? item.file.name : "Video đã có trên server"}
                     </p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => removeGalleryItem(idx)}
-                    className="p-1 text-gray-400 hover:text-red-500"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
                 </div>
               ))}
             </div>

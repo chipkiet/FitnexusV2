@@ -15,12 +15,13 @@ import {
   Wallet,
   MessageSquare,
   LifeBuoy,
-  Star,
-  Bell,
+  Bell, // Dùng icon Bell làm nút toggle
   Search,
   Sun,
+  PanelRightClose, // Icon khi mở
+  PanelRightOpen, // Icon khi đóng
 } from "lucide-react";
-import NotificationsDropdown from "../components/common/NotificationsDropdown.jsx";
+import NotificationsDropdown from "../components/common/NotificationsDropdown.jsx"; // Vẫn giữ dropdown nếu muốn, hoặc bỏ
 import { useNotificationsFeed } from "../hooks/useNotificationsFeed.js";
 
 export default function AdminLayout() {
@@ -29,25 +30,32 @@ export default function AdminLayout() {
   const notificationFeed = useNotificationsFeed({ limit: 8, autoLoad: true });
   const adminNotifications = notificationFeed.items;
 
-  // Query params để highlight submenu
-  const currentRole = (new URLSearchParams(location.search).get("role") || "ALL").toUpperCase();
-  const currentPlan = (new URLSearchParams(location.search).get("plan") || "ALL").toUpperCase();
+  // State điều khiển thanh thông báo bên phải
+  const [showNotifications, setShowNotifications] = useState(true);
 
-  // Mở/đóng các section lớn
+  // Query params
+  const currentRole = (
+    new URLSearchParams(location.search).get("role") || "ALL"
+  ).toUpperCase();
+  const currentPlan = (
+    new URLSearchParams(location.search).get("plan") || "ALL"
+  ).toUpperCase();
+
+  // State menu trái
   const [open, setOpen] = useState({
     user: true,
-    content: false,
+    content: true, // Mặc định mở Content cho tiện dev
     trainer: false,
     financial: false,
     social: false,
     support: true,
   });
 
-  // Submenu cho Role và Plan
   const [openRoleSub, setOpenRoleSub] = useState(false);
   const [openPlanSub, setOpenPlanSub] = useState(false);
 
-  const isActivePath = (to) => location.pathname === to || location.pathname.startsWith(to + "/");
+  const isActivePath = (to) =>
+    location.pathname === to || location.pathname.startsWith(to + "/");
   const toggle = (key) => setOpen((s) => ({ ...s, [key]: !s[key] }));
 
   const linkClass = ({ isActive }) =>
@@ -90,7 +98,6 @@ export default function AdminLayout() {
           },
         ],
       },
-
       {
         key: "financial",
         icon: Wallet,
@@ -99,7 +106,6 @@ export default function AdminLayout() {
           { icon: ChevronRight, label: "Overview", to: "/admin/finance" },
         ],
       },
-
       {
         key: "support",
         icon: LifeBuoy,
@@ -117,316 +123,229 @@ export default function AdminLayout() {
   );
 
   return (
-    <div className="min-h-screen text-gray-800 bg-gray-50">
-      {/* Top header bar */}
-      <header className="sticky top-0 z-40 bg-white border-b">
-        <div className="mx-auto flex h-14 max-w-[1400px] items-center justify-between px-4">
-          <div className="flex items-center gap-3">
-            <button className="inline-flex items-center justify-center w-8 h-8 border rounded-md hover:bg-gray-50 lg:hidden">
-              <LayoutDashboard className="w-4 h-4" />
-            </button>
+    <div className="flex flex-col min-h-screen text-gray-800 bg-gray-50">
+      {/* --- TOP HEADER --- */}
+      <header className="sticky top-0 z-40 bg-white border-b h-14 shrink-0">
+        <div className="flex items-center justify-between w-full h-full px-4">
+          {/* Left: Logo & Search */}
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 lg:w-60">
+              <div className="w-8 h-8 bg-black rounded" />
+              <div className="hidden font-semibold lg:block">FITNEXUS</div>
+            </div>
+
             <div className="relative items-center hidden gap-2 sm:flex">
               <Search className="absolute w-4 h-4 text-gray-400 -translate-y-1/2 left-3 top-1/2" />
               <input
-                className="w-72 rounded-md border px-9 py-1.5 text-sm outline-none placeholder:text-gray-400 focus:ring-2 focus:ring-gray-200"
-                placeholder="Search"
+                className="w-64 rounded-md border px-9 py-1.5 text-sm outline-none placeholder:text-gray-400 focus:ring-2 focus:ring-gray-200"
+                placeholder="Search..."
               />
             </div>
           </div>
+
+          {/* Right: Actions */}
           <div className="flex items-center gap-3 text-gray-600">
-            <Sun className="w-4 h-4" />
-            <NotificationsDropdown buttonClassName="border-gray-200" />
-            <div className="w-8 h-8 bg-gray-200 rounded-full" />
+            <Sun className="w-4 h-4 cursor-pointer hover:text-orange-500" />
+
+            {/* Nút Toggle Notification Sidebar */}
+            <button
+              onClick={() => setShowNotifications(!showNotifications)}
+              className={`p-2 rounded-md transition ${
+                showNotifications
+                  ? "bg-blue-50 text-blue-600"
+                  : "hover:bg-gray-100"
+              }`}
+              title={showNotifications ? "Ẩn thông báo" : "Hiện thông báo"}
+            >
+              {showNotifications ? (
+                <PanelRightClose className="w-5 h-5" />
+              ) : (
+                <Bell className="w-5 h-5" />
+              )}
+            </button>
+
+            <div className="w-8 h-8 bg-gray-200 border border-gray-300 rounded-full" />
           </div>
         </div>
       </header>
 
-      <div className="mx-auto flex max-w-[1400px]">
-        {/* Sidebar */}
-        <aside className="sticky top-14 hidden h-[calc(100vh-56px)] w-64 shrink-0 border-r bg-white p-4 lg:block">
-          {/* Brand */}
-          <div className="flex items-center gap-2 mb-6">
-            <div className="w-8 h-8 bg-black rounded" />
-            <div className="font-semibold">FITNEXUS</div>
-          </div>
+      {/* --- MAIN LAYOUT --- */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* 1. SIDEBAR TRÁI (Navigation) */}
+        <aside className="hidden lg:flex flex-col w-80 bg-white border-r overflow-y-auto shrink-0 h-[calc(100vh-56px)] sticky top-14">
+          <div className="p-4">
+            <div className="mb-2 text-xs font-bold tracking-wider text-gray-400 uppercase">
+              Dashboards
+            </div>
+            <nav className="mb-6 space-y-1 text-sm">
+              <NavLink to="/admin" end className={linkClass}>
+                <Home className="w-4 h-4" /> Overview
+              </NavLink>
+            </nav>
 
-          {/* Dashboards */}
-          <div className="mb-2 text-xs text-gray-500 uppercase">Dashboards</div>
-          <nav className="mb-4 space-y-1 text-sm">
-            <NavLink to="/admin" end className={linkClass}>
-              <Home className="w-4 h-4" /> Overview
-            </NavLink>
-          </nav>
-
-          {/* Pages */}
-          <div className="mt-6 mb-2 text-xs text-gray-500 uppercase">Pages</div>
-          <nav className="space-y-1 text-sm">
-            {sections.map((sec) => {
-              const SecIcon = sec.icon;
-              const active = sec.children.some((c) => isActivePath(c.to));
-              return (
-                <div key={sec.key}>
-                  <button
-                    onClick={() => toggle(sec.key)}
-                    className={`flex w-full items-center justify-between rounded-md px-3 py-2 hover:bg-gray-100 ${
-                      active ? "bg-gray-100 font-medium" : ""
-                    }`}
-                  >
-                    <span className="flex items-center gap-2">
-                      {SecIcon && <SecIcon className="w-4 h-4" />}
-                      {sec.label}
-                    </span>
-                    <ChevronRight
-                      className={`h-4 w-4 transition-transform ${
-                        open[sec.key] ? "rotate-90" : ""
+            <div className="mb-2 text-xs font-bold tracking-wider text-gray-400 uppercase">
+              Modules
+            </div>
+            <nav className="space-y-1 text-sm">
+              {sections.map((sec) => {
+                const SecIcon = sec.icon;
+                const active = sec.children.some((c) => isActivePath(c.to));
+                return (
+                  <div key={sec.key}>
+                    <button
+                      onClick={() => toggle(sec.key)}
+                      className={`flex w-full items-center justify-between rounded-md px-3 py-2 transition ${
+                        active
+                          ? "bg-gray-100 font-medium text-gray-900"
+                          : "text-gray-600 hover:bg-gray-50"
                       }`}
-                    />
-                  </button>
+                    >
+                      <span className="flex items-center gap-2">
+                        {SecIcon && <SecIcon className="w-4 h-4" />}
+                        {sec.label}
+                      </span>
+                      <ChevronRight
+                        className={`h-4 w-4 transition-transform duration-200 ${
+                          open[sec.key] ? "rotate-90" : ""
+                        }`}
+                      />
+                    </button>
 
-                  {open[sec.key] && (
-                    <div className="pl-2 mt-1 ml-2 border-l">
-                      {sec.children.map((item) => {
-                        const isRole = item.to === "/admin/role";
-                        const isPlan = item.to === "/admin/plan";
-
-                        // Các item thường (không có submenu)
-                        if (!isRole && !isPlan) {
-                          return (
-                            <NavLink
-                              key={item.to}
-                              to={item.to}
-                              className={linkClass}
-                              end
-                            >
-                              {item.icon && <item.icon className="w-4 h-4" />}{" "}
-                              {item.label}
-                            </NavLink>
-                          );
-                        }
-
-                        // ===== Role submenu (USER / TRAINER / ADMIN) =====
-                        if (isRole) {
-                          return (
-                            <div key={item.to} className="mb-1">
-                              <div className="flex items-center justify-between">
-                                <NavLink
-                                  to="/admin/role"
-                                  end
-                                  className={({ isActive }) =>
-                                    `flex items-center gap-2 px-3 py-2 rounded-md hover:bg-gray-100 transition ${
-                                      isActive && currentRole === "ALL"
-                                        ? "bg-gray-100 font-medium"
-                                        : ""
-                                    }`
-                                  }
-                                >
-                                  {item.icon && (
-                                    <item.icon className="w-4 h-4" />
-                                  )}{" "}
-                                  {item.label}
-                                </NavLink>
-                                <button
-                                  type="button"
-                                  onClick={() => setOpenRoleSub((v) => !v)}
-                                  className="inline-flex items-center justify-center mr-2 rounded hover:bg-gray-100"
-                                  style={{ width: 28, height: 28 }}
-                                  aria-label="Toggle Role submenu"
-                                >
-                                  <ChevronRight
-                                    className={`transition-transform text-gray-600 ${
-                                      openRoleSub ? "rotate-90" : ""
-                                    }`}
-                                    style={{ width: 20, height: 20 }}
-                                  />
-                                </button>
-                              </div>
-
-                              {openRoleSub && (
-                                <div className="mt-1 ml-6 space-y-1">
-                                  <NavLink
-                                    to="/admin/role?role=USER"
-                                    className={({ isActive }) =>
-                                      `flex items-center gap-2 px-3 py-2 rounded-md hover:bg-gray-100 transition ${
-                                        isActive && currentRole === "USER"
-                                          ? "bg-gray-100 font-medium"
-                                          : ""
-                                      }`
-                                    }
-                                  >
-                                    USER
-                                  </NavLink>
-                                  <NavLink
-                                    to="/admin/role?role=TRAINER"
-                                    className={({ isActive }) =>
-                                      `flex items-center gap-2 px-3 py-2 rounded-md hover:bg-gray-100 transition ${
-                                        isActive && currentRole === "TRAINER"
-                                          ? "bg-gray-100 font-medium"
-                                          : ""
-                                      }`
-                                    }
-                                  >
-                                    TRAINER
-                                  </NavLink>
-                                  <NavLink
-                                    to="/admin/role?role=ADMIN"
-                                    className={({ isActive }) =>
-                                      `flex items-center gap-2 px-3 py-2 rounded-md hover:bg-gray-100 transition ${
-                                        isActive && currentRole === "ADMIN"
-                                          ? "bg-gray-100 font-medium"
-                                          : ""
-                                      }`
-                                    }
-                                  >
-                                    ADMIN
-                                  </NavLink>
-                                </div>
-                              )}
-                            </div>
-                          );
-                        }
-
-                        // ===== Plan submenu (FREE / PREMIUM) =====
-                        if (isPlan) {
-                          return (
-                            <div key={item.to} className="mb-1">
-                              <div className="flex items-center justify-between">
-                                <NavLink
-                                  to="/admin/plan"
-                                  end
-                                  className={({ isActive }) =>
-                                    `flex items-center gap-2 px-3 py-2 rounded-md hover:bg-gray-100 transition ${
-                                      isActive && currentPlan === "ALL"
-                                        ? "bg-gray-100 font-medium"
-                                        : ""
-                                    }`
-                                  }
-                                >
-                                  {item.icon && (
-                                    <item.icon className="w-4 h-4" />
-                                  )}{" "}
-                                  {item.label}
-                                </NavLink>
-                                <button
-                                  type="button"
-                                  onClick={() => setOpenPlanSub((v) => !v)}
-                                  className="inline-flex items-center justify-center mr-2 rounded hover:bg-gray-100"
-                                  style={{ width: 28, height: 28 }}
-                                  aria-label="Toggle Plan submenu"
-                                >
-                                  <ChevronRight
-                                    className={`transition-transform text-gray-600 ${
-                                      openPlanSub ? "rotate-90" : ""
-                                    }`}
-                                    style={{ width: 20, height: 20 }}
-                                  />
-                                </button>
-                              </div>
-
-                              {openPlanSub && (
-                                <div className="mt-1 ml-6 space-y-1">
-                                  <NavLink
-                                    to="/admin/plan?plan=FREE"
-                                    className={({ isActive }) =>
-                                      `flex items-center gap-2 px-3 py-2 rounded-md hover:bg-gray-100 transition ${
-                                        isActive && currentPlan === "FREE"
-                                          ? "bg-gray-100 font-medium"
-                                          : ""
-                                      }`
-                                    }
-                                  >
-                                    FREE
-                                  </NavLink>
-                                  <NavLink
-                                    to="/admin/plan?plan=PREMIUM"
-                                    className={({ isActive }) =>
-                                      `flex items-center gap-2 px-3 py-2 rounded-md hover:bg-gray-100 transition ${
-                                        isActive && currentPlan === "PREMIUM"
-                                          ? "bg-gray-100 font-medium"
-                                          : ""
-                                      }`
-                                    }
-                                  >
-                                    PREMIUM
-                                  </NavLink>
-                                </div>
-                              )}
-                            </div>
-                          );
-                        }
-
-                        return null;
-                      })}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </nav>
+                    {open[sec.key] && (
+                      <div className="pl-4 mt-1 ml-4 space-y-1 border-l-2 border-gray-100">
+                        {sec.children.map((item) => (
+                          <NavLink
+                            key={item.to}
+                            to={item.to}
+                            className={({ isActive }) =>
+                              `flex items-center gap-2 px-3 py-2 rounded-md text-sm transition ${
+                                isActive
+                                  ? "bg-blue-50 text-blue-700 font-medium"
+                                  : "text-gray-500 hover:text-gray-900 hover:bg-gray-50"
+                              }`
+                            }
+                            end={
+                              item.to === "/admin" ||
+                              item.to === "/admin/content"
+                            } // Exact match logic
+                          >
+                            {item.icon && <item.icon className="w-3.5 h-3.5" />}
+                            {item.label}
+                          </NavLink>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </nav>
+          </div>
         </aside>
 
-        {/* Main content */}
-        <main className="flex-1 min-w-0">
-          <div className="flex items-center justify-between px-4 bg-white border-b h-14">
+        {/* 2. MAIN CONTENT (Center) */}
+        <main className="flex-1 min-w-0 overflow-y-auto h-[calc(100vh-56px)] bg-gray-50 scroll-smooth">
+          <div className="sticky top-0 z-30 flex items-center justify-between px-6 py-3 border-b bg-white/80 backdrop-blur-md">
             <div className="text-sm text-gray-500">
-              <Link to="/admin" className="hover:underline">
-                Dashboards
+              <Link to="/admin" className="hover:text-blue-600">
+                Admin
               </Link>
-              <span className="mx-2">/</span>
-              <span className="text-gray-700">Default</span>
+              <span className="mx-2 text-gray-300">/</span>
+              <span className="font-medium text-gray-900 capitalize">
+                {location.pathname.split("/").pop().replace(/-/g, " ")}
+              </span>
             </div>
-            <div className="flex items-center gap-3 text-sm text-gray-700">
-              <span>{user?.role}</span>
+            <div className="flex items-center gap-4 text-sm">
+              <span className="font-medium text-gray-600">
+                {user?.username || user?.email}
+              </span>
               <button
                 onClick={logout}
-                className="px-3 py-1 border rounded hover:bg-gray-50"
+                className="px-3 py-1 text-red-600 transition border border-red-100 rounded hover:bg-red-50"
               >
                 Logout
               </button>
             </div>
           </div>
 
-          <div className="p-6">
+          <div className="p-6 lg:p-8 max-w-[1600px] mx-auto">
             <Outlet />
           </div>
         </main>
 
-        {/* Notifications */}
-        <aside className="sticky top-14 hidden h-[calc(100vh-56px)] w-80 shrink-0 border-l bg-white p-4 xl:block">
-          <div className="flex items-center justify-between mb-3 font-medium">
-            <span>Notifications</span>
-            <button
-              type="button"
-              className="text-xs text-blue-600 hover:underline"
-              onClick={notificationFeed.markAll}
-            >
-              Đánh dấu đã đọc
-            </button>
+        {/* 3. SIDEBAR PHẢI (Notifications) - Collapsible */}
+        <aside
+          className={`
+            fixed inset-y-0 right-0 z-50 bg-white border-l shadow-xl transform transition-transform duration-300 ease-in-out
+            lg:relative lg:translate-x-0 lg:shadow-none lg:z-auto
+            ${
+              showNotifications
+                ? "w-80 translate-x-0"
+                : "w-0 translate-x-full lg:w-0 border-none"
+            }
+          `}
+          style={{ overflow: "hidden" }} // Ẩn nội dung khi width = 0
+        >
+          <div className="flex flex-col h-full p-4 overflow-y-auto w-80">
+            {" "}
+            {/* Container cố định w-80 để nội dung không bị méo khi co lại */}
+            <div className="flex items-center justify-between pb-4 mb-4 border-b">
+              <h3 className="flex items-center gap-2 font-bold text-gray-800">
+                <Bell className="w-4 h-4 text-blue-600" /> Notifications
+              </h3>
+              <button
+                type="button"
+                className="text-xs font-medium text-blue-600 hover:underline"
+                onClick={notificationFeed.markAll}
+              >
+                Đánh dấu đã đọc
+              </button>
+            </div>
+            {notificationFeed.loading ? (
+              <div className="flex justify-center py-4">
+                <span className="loader"></span>
+              </div>
+            ) : adminNotifications.length === 0 ? (
+              <p className="py-4 text-sm text-center text-gray-400">
+                Không có thông báo mới.
+              </p>
+            ) : (
+              <ul className="space-y-4">
+                {adminNotifications.map((item) => (
+                  <li key={item.notification_id} className="flex gap-3 group">
+                    <div
+                      className={`mt-1 w-2 h-2 rounded-full shrink-0 ${
+                        item.read_at ? "bg-gray-300" : "bg-red-500"
+                      }`}
+                    />
+                    <div>
+                      <p
+                        className={`text-sm text-gray-800 ${
+                          item.read_at ? "" : "font-semibold"
+                        }`}
+                      >
+                        {item.title}
+                      </p>
+                      {item.body && (
+                        <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">
+                          {item.body}
+                        </p>
+                      )}
+                      <p className="text-[10px] text-gray-400 mt-1">
+                        {new Date(item.created_at).toLocaleString("vi-VN", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          day: "numeric",
+                          month: "numeric",
+                        })}
+                      </p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
-          {notificationFeed.loading ? (
-            <p className="text-sm text-gray-500">Đang tải...</p>
-          ) : adminNotifications.length === 0 ? (
-            <p className="text-sm text-gray-500">Chưa có thông báo.</p>
-          ) : (
-            <ul className="space-y-3 text-sm text-gray-700">
-              {adminNotifications.map((item) => (
-                <li key={item.notification_id} className="flex items-start gap-2">
-                  <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full border text-gray-500">
-                    <Bell className="h-3.5 w-3.5" />
-                  </span>
-                  <div>
-                    <p className="font-semibold text-gray-800">{item.title}</p>
-                    {item.body && <p className="text-xs text-gray-500">{item.body}</p>}
-                    <p className="text-[11px] text-gray-400">
-                      {new Date(item.created_at).toLocaleString("vi-VN")}
-                    </p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
         </aside>
       </div>
     </div>
   );
 }
-

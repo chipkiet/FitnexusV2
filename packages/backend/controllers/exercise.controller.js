@@ -1149,6 +1149,7 @@ export const getExerciseDetail = async (req, res) => {
   try {
     const { slug } = req.params;
 
+    // Logic xác định tìm theo ID hay Slug
     let whereClause = "e.slug = :slug";
     const replacements = { slug };
 
@@ -1163,18 +1164,14 @@ export const getExerciseDetail = async (req, res) => {
         e.exercise_id, e.slug, e.name, e.name_en, e.description,
         e.difficulty_level, e.exercise_type, e.equipment_needed,
         e.thumbnail_url, e.gif_demo_url, e.primary_video_url,
-        
-        e.video_url, 
-
-        e.source_name,
-        e.source_url,
-        
-        e.popularity_score,
+        e.video_url, e.source_name, e.source_url, e.popularity_score,
         e.instructions,
 
+        -- 1. Lấy Gallery (Video phụ)
         COALESCE(
           (
             SELECT json_agg(json_build_object(
+              'id', ev.id,
               'url', ev.video_url,
               'title', ev.title
             ) ORDER BY ev.display_order ASC)
@@ -1184,25 +1181,21 @@ export const getExerciseDetail = async (req, res) => {
           '[]'::json
         ) AS gallery_videos,
 
+        -- 2. Lấy danh sách nhóm cơ (Gộp chung Primary + Secondary)
         COALESCE(
           (
-            SELECT json_agg(mg.name)
+            SELECT json_agg(json_build_object(
+              'id', mg.muscle_group_id,
+              'name', mg.name,
+              'impact', emg.impact_level
+            ))
             FROM exercise_muscle_group emg
             JOIN muscle_groups mg ON mg.muscle_group_id = emg.muscle_group_id
-            WHERE emg.exercise_id = e.exercise_id AND emg.impact_level = 'primary'
+            WHERE emg.exercise_id = e.exercise_id
           ), 
           '[]'::json
-        ) AS primary_muscles,
+        ) AS muscles_list
 
-        COALESCE(
-          (
-            SELECT json_agg(mg.name)
-            FROM exercise_muscle_group emg
-            JOIN muscle_groups mg ON mg.muscle_group_id = emg.muscle_group_id
-            WHERE emg.exercise_id = e.exercise_id AND emg.impact_level = 'secondary'
-          ), 
-          '[]'::json
-        ) AS secondary_muscles
       FROM exercises e
       WHERE ${whereClause}
       LIMIT 1
@@ -1221,10 +1214,16 @@ export const getExerciseDetail = async (req, res) => {
     const data = {
       ...ex,
       imageUrl: ex.thumbnail_url || ex.gif_demo_url || null,
-      primaryMuscles: ex.primary_muscles || [],
-      secondaryMuscles: ex.secondary_muscles || [],
+
+      // Map key 'muscles' cho Frontend dùng
+      muscles: ex.muscles_list || [],
+
       galleryVideos: ex.gallery_videos || [],
     };
+
+    // Log ra server để kiểm tra xem đã lấy được chưa
+    console.log("Server fetched muscles:", data.muscles);
+
     return res.status(200).json({ success: true, data });
   } catch (error) {
     console.error("getExerciseDetail error:", error);
@@ -1372,9 +1371,6 @@ export const createExercise = async (req, res) => {
   }
 };
 
-
-
-
 // PUT /api/exercises/:id
 export const updateExercise = async (req, res) => {
   const t = await sequelize.transaction();
@@ -1385,20 +1381,37 @@ export const updateExercise = async (req, res) => {
     const exercise = await Exercise.findByPk(id);
     if (!exercise) {
       await t.rollback();
-      return res.status(404).json({ success: false, message: "Exercise not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Exercise not found" });
     }
 
     // 2. Lấy dữ liệu Text & Update bảng chính
     const {
-      name, name_en, slug, description, difficulty_level,
-      exercise_type, equipment_needed, popularity_score,
-      primary_video_url, source_name, source_url
+      name,
+      name_en,
+      slug,
+      description,
+      difficulty_level,
+      exercise_type,
+      equipment_needed,
+      popularity_score,
+      primary_video_url,
+      source_name,
+      source_url,
     } = req.body;
 
     const updates = {
-      name, name_en, slug, description, difficulty_level,
-      exercise_type, equipment_needed,
-      primary_video_url, source_name, source_url,
+      name,
+      name_en,
+      slug,
+      description,
+      difficulty_level,
+      exercise_type,
+      equipment_needed,
+      primary_video_url,
+      source_name,
+      source_url,
       popularity_score: parseInt(popularity_score || 0),
     };
 
@@ -1406,47 +1419,79 @@ export const updateExercise = async (req, res) => {
     // Logic này OK vì là 1-1: Có mới thì thay thế
     const files = req.files || {};
     if (files.thumbnail?.[0]) {
-      updates.thumbnail_url = await uploadBufferToSupabase(files.thumbnail[0].buffer, files.thumbnail[0].originalname, "images");
+      updates.thumbnail_url = await uploadBufferToSupabase(
+        files.thumbnail[0].buffer,
+        files.thumbnail[0].originalname,
+        "images"
+      );
     }
     if (files.gif?.[0]) {
-      updates.gif_demo_url = await uploadBufferToSupabase(files.gif[0].buffer, files.gif[0].originalname, "images");
+      updates.gif_demo_url = await uploadBufferToSupabase(
+        files.gif[0].buffer,
+        files.gif[0].originalname,
+        "images"
+      );
     }
     if (files.video?.[0]) {
-      updates.video_url = await uploadBufferToSupabase(files.video[0].buffer, files.video[0].originalname, "videos");
+      updates.video_url = await uploadBufferToSupabase(
+        files.video[0].buffer,
+        files.video[0].originalname,
+        "videos"
+      );
     }
 
     // Cập nhật Instructions
-    if (req.body.instructions) updates.instructions = JSON.parse(req.body.instructions);
+    if (req.body.instructions)
+      updates.instructions = JSON.parse(req.body.instructions);
 
     await exercise.update(updates, { transaction: t });
 
     // 4. Xử lý Muscles (Ghi đè toàn bộ - Overwrite logic)
     // Vì data chỉ là ID (text), ta có thể xóa hết cũ thêm mới -> Đơn giản
     if (req.body.muscles) {
-      const muscles = JSON.parse(req.body.muscles);
-      await sequelize.query(`DELETE FROM exercise_muscle_group WHERE exercise_id = :id`, { replacements: { id }, transaction: t });
-      for (const m of muscles) {
-        await sequelize.query(
-          `INSERT INTO exercise_muscle_group (exercise_id, muscle_group_id, impact_level, created_at)
-           VALUES (:eid, :mid, :impact, NOW())`,
-          {
-            replacements: { eid: id, mid: m.id, impact: m.impact || 'primary' },
-            transaction: t
-          }
-        );
+      let muscles = [];
+      try {
+        // Parse JSON từ string
+        muscles = JSON.parse(req.body.muscles);
+      } catch (e) {
+        console.error("Lỗi parse muscles:", e);
+      }
+
+      // xoá sạch các dữ liệu liên quán đến muscles
+      await sequelize.query(
+        `DELETE FROM exercise_muscle_group WHERE exercise_id = :id`,
+        { replacements: { id }, transaction: t }
+      );
+
+      // thêm các dữ liệu vào nếu có
+      if (muscles.length > 0) {
+        for (const m of muscles) {
+          await sequelize.query(
+            `INSERT INTO exercise_muscle_group (exercise_id, muscle_group_id, impact_level, created_at)
+         VALUES (:eid, :mid, :impact, NOW())`,
+            {
+              replacements: {
+                eid: id,
+                mid: m.id,
+                impact: m.impact || "primary",
+              },
+              transaction: t,
+            }
+          );
+        }
       }
     }
 
     // ============================================================
     // 5. XỬ LÝ GALLERY (SMART SYNC LOGIC)
     // ============================================================
-    
+
     // A. Xử lý danh sách CŨ (Cần giữ lại hoặc update title)
     // Frontend cần gửi lên mảng: gallery_items_keep = [{id: 1, title: 'abc'}, {id: 5, title: 'xyz'}]
     let keepIds = [];
     if (req.body.gallery_items_keep) {
       const itemsKeep = JSON.parse(req.body.gallery_items_keep);
-      keepIds = itemsKeep.map(i => i.id);
+      keepIds = itemsKeep.map((i) => i.id);
 
       // Cập nhật title cho các video cũ
       for (const item of itemsKeep) {
@@ -1454,7 +1499,7 @@ export const updateExercise = async (req, res) => {
           `UPDATE exercise_videos SET title = :title, updated_at = NOW() WHERE id = :vid`,
           {
             replacements: { title: item.title, vid: item.id },
-            transaction: t
+            transaction: t,
           }
         );
       }
@@ -1477,7 +1522,10 @@ export const updateExercise = async (req, res) => {
     // C. Thêm mới Video (Upload file mới)
     if (files.gallery_videos?.length) {
       // Lấy max order để nối tiếp
-      const [maxRes] = await sequelize.query(`SELECT MAX(display_order) as mo FROM exercise_videos WHERE exercise_id = :id`, { replacements: { id }, transaction: t });
+      const [maxRes] = await sequelize.query(
+        `SELECT MAX(display_order) as mo FROM exercise_videos WHERE exercise_id = :id`,
+        { replacements: { id }, transaction: t }
+      );
       let nextOrder = (maxRes[0]?.mo || 0) + 1;
 
       // Xử lý title cho file mới
@@ -1487,25 +1535,30 @@ export const updateExercise = async (req, res) => {
       for (let i = 0; i < files.gallery_videos.length; i++) {
         const file = files.gallery_videos[i];
         const title = newTitles[i] || file.originalname;
-        
+
         // Upload lên Supabase
-        const url = await uploadBufferToSupabase(file.buffer, file.originalname, "videos");
-        
+        const url = await uploadBufferToSupabase(
+          file.buffer,
+          file.originalname,
+          "videos"
+        );
+
         // Insert vào DB
         await sequelize.query(
           `INSERT INTO exercise_videos (exercise_id, video_url, title, display_order, created_at, updated_at)
            VALUES (:eid, :url, :title, :order, NOW(), NOW())`,
           {
             replacements: { eid: id, url, title, order: nextOrder++ },
-            transaction: t
+            transaction: t,
           }
         );
       }
     }
 
     await t.commit();
-    return res.status(200).json({ success: true, message: "Cập nhật thành công!" });
-
+    return res
+      .status(200)
+      .json({ success: true, message: "Cập nhật thành công!" });
   } catch (error) {
     await t.rollback();
     console.error("Update Error:", error);
