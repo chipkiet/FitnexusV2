@@ -1,865 +1,621 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import { addExerciseToPlanApi, getPlanByIdApi } from "../../lib/api.js";
 import HeaderLogin from "../../components/header/HeaderLogin.jsx";
-import axios from "axios";
-
-// Icons (images) reused from demo for visual consistency
-import absIcon from "../../assets/body/coreIcon.svg";
-import backIcon from "../../assets/body/backIcon.svg";
-import bicepsIcon from "../../assets/body/bicepsIcon.svg";
-import cardioIcon from "../../assets/body/cardioIcon.svg";
-import chestIcon from "../../assets/body/chestIcon.svg";
-import forearmsIcon from "../../assets/body/forearmsIcon.svg";
-import glutesIcon from "../../assets/body/glutesIcon.svg";
-import shouldersIcon from "../../assets/body/shouldersIcon.svg";
-import tricepsIcon from "../../assets/body/tricepsIcon.svg";
-import upperLegsIcon from "../../assets/body/upperLegsIcon.svg";
-import lowerLegsIcon from "../../assets/body/lowerLegsIcon.svg";
 import StartWorkoutButton from "../../components/workout/StartWorkoutButton.jsx";
+import { useMuscleTree } from "../../hooks/muscleTree.js";
 
+// Icons
+import {
+  Search,
+  ChevronDown,
+  ChevronRight,
+  Plus,
+  Calendar,
+  Play,
+  Dumbbell,
+  Filter,
+  X,
+} from "lucide-react";
 
-function Badge({ children, tone = "gray" }) {
-  const tones = {
-    gray: "bg-gray-100 text-gray-700",
-    blue: "bg-blue-50 text-blue-700",
-    green: "bg-green-50 text-green-700",
-    amber: "bg-amber-50 text-amber-700",
-    purple: "bg-purple-50 text-purple-700",
-  };
-  return (
-    <span className={`inline-flex items-center px-2 py-1 rounded text-xs ${tones[tone] || tones.gray}`}>
-      {children}
-    </span>
+// --- COMPONENT: Muscle Accordion Item ---
+const MuscleAccordion = ({
+  parent,
+  selectedMuscle,
+  onSelect,
+  onToggleExpand,
+  isExpanded,
+}) => {
+  const isSelected = selectedMuscle?.id === parent.id;
+  const hasChildSelected = parent.children?.some(
+    (c) => c.id === selectedMuscle?.id
   );
-}
+  const hasChildren = parent.children && parent.children.length > 0;
 
-// Helpers (ported from demo and expanded)
-const normalizeStr = (v) => String(v || "").toLowerCase().trim();
-const groupSynonyms = {
-  abs: ["abs", "abdominals", "core", "stomach", "rectus-abdominis", "obliques"],
-  back: ["back", "lats", "latissimus", "lower back", "upper back", "trapezius", "rhomboids"],
-  biceps: ["biceps", "biceps-brachii", "brachialis"],
-  cardio: ["cardio", "aerobic"],
-  chest: ["chest", "pectorals", "pecs", "upper-chest", "mid-chest", "lower-chest"],
-  forearms: ["forearms", "forearm", "wrist-flexors", "wrist-extensors"],
-  glutes: ["glutes", "glute", "butt", "gluteus", "gluteus-maximus", "gluteus-medius"],
-  shoulders: ["shoulders", "delts", "deltoids", "anterior-deltoid", "lateral-deltoid", "posterior-deltoid"],
-  triceps: ["triceps", "triceps-brachii"],
-  "upper-legs": [
-    "upper legs",
-    "quadriceps",
-    "quads",
-    "hamstrings",
-    "thighs",
-    "adductors",
-    "abductors",
-    "hip-flexors",
-  ],
-  "lower-legs": ["lower legs", "calves", "calf", "gastrocnemius", "soleus"],
+  return (
+    <div className="border-b border-gray-100 last:border-0">
+      <div
+        className={`flex items-center justify-between py-2 pr-2 hover:bg-gray-50 rounded-lg transition-colors
+        ${isSelected ? "bg-blue-50" : ""}`}
+      >
+        {/* Click tên: Chọn nhóm cơ cha */}
+        <button
+          onClick={() => onSelect(parent)}
+          className={`flex-1 text-left text-sm font-medium px-2 py-1 truncate
+            ${isSelected ? "text-blue-700 font-bold" : "text-gray-700"}
+            ${hasChildSelected ? "text-blue-600" : ""}
+          `}
+        >
+          {parent.name}
+        </button>
+
+        {/* Nút nhỏ bên cạnh: Mở rộng/Thu gọn con */}
+        {hasChildren && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleExpand(parent.id);
+            }}
+            className={`p-1 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-200 transition-all ${
+              isExpanded ? "rotate-180 bg-gray-100" : ""
+            }`}
+          >
+            <ChevronDown className="w-4 h-4" />
+          </button>
+        )}
+      </div>
+
+      {/* Danh sách con */}
+      <div
+        className={`overflow-hidden transition-all duration-300 ease-in-out ${
+          isExpanded ? "max-h-96 opacity-100 mb-2" : "max-h-0 opacity-0"
+        }`}
+      >
+        <div className="pl-4 mt-1 ml-3 space-y-1 border-l-2 border-gray-100">
+          {parent.children?.map((child) => {
+            const isChildActive = selectedMuscle?.id === child.id;
+            return (
+              <button
+                key={child.id}
+                onClick={() => onSelect(child)}
+                className={`w-full text-left text-xs py-1.5 px-2 rounded-md block transition-colors
+                      ${
+                        isChildActive
+                          ? "text-blue-700 bg-blue-50 font-bold border-l-2 border-blue-500"
+                          : "text-gray-500 hover:text-gray-900 hover:bg-gray-50"
+                      }`}
+              >
+                {child.name}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
 };
-
-// No mock list — data comes from backend APIs
 
 export default function Exercise() {
   const navigate = useNavigate();
-  const location = useLocation();
 
-  // Thông báo trong sidebar: nội dung + tên bài tập + tổng số bài tập trong kế hoạch
-  const [sidebarNotice, setSidebarNotice] = useState(() => {
-    const st = location.state;
-    if (st && st.toast) {
-      return {
-        message: st.toast,
-        addedExerciseName: st.addedExerciseName || "",
-        planItemCount:
-          typeof st.planItemCount === "number" ? st.planItemCount : undefined,
-        visible: true,
-      };
-    }
-    return {
-      message: "",
-      addedExerciseName: "",
-      planItemCount: undefined,
-      visible: false,
-    };
-  });
-  useEffect(() => {
-    const st = location.state;
-    if (st && st.toast) {
-      setSidebarNotice({
-        message: st.toast,
-        addedExerciseName: st.addedExerciseName || "",
-        planItemCount:
-          typeof st.planItemCount === "number" ? st.planItemCount : undefined,
-        visible: true,
-      });
-      const t = setTimeout(
-        () => setSidebarNotice((v) => ({ ...v, visible: false })),
-        10000
-      );
-      return () => clearTimeout(t);
-    }
-  }, [location.state]);
+  // --- HOOKS & STATE ---
+  const { muscleTree } = useMuscleTree();
+  const [exercises, setExercises] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [total, setTotal] = useState(0);
 
-  const muscleGroups = [
-    { id: "abs", label: "Abs", icon: absIcon },
-    { id: "back", label: "Back", icon: backIcon },
-    { id: "biceps", label: "Biceps", icon: bicepsIcon },
-    { id: "cardio", label: "Cardio", icon: cardioIcon },
-    { id: "chest", label: "Chest", icon: chestIcon },
-    { id: "forearms", label: "Forearms", icon: forearmsIcon },
-    { id: "glutes", label: "Glutes", icon: glutesIcon },
-    { id: "shoulders", label: "Shoulders", icon: shouldersIcon },
-    { id: "triceps", label: "Triceps", icon: tricepsIcon },
-    { id: "upper-legs", label: "Upper Legs", icon: upperLegsIcon },
-    { id: "lower-legs", label: "Lower Legs", icon: lowerLegsIcon },
-  ];
-
-  const [selectedGroups, setSelectedGroups] = useState([]); // multi-select
-  const [modeAll, setModeAll] = useState(true); // all vs any
+  // Filters
   const [q, setQ] = useState("");
+  const [selectedMuscle, setSelectedMuscle] = useState(null); // {id, slug, name}
   const [level, setLevel] = useState("");
   const [equipment, setEquipment] = useState("");
-  const [type, setType] = useState("");
-
-  const [rawExercises, setRawExercises] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
-  const pageSize = 15;
-  const [total, setTotal] = useState(0);
-  const [clientPaging, setClientPaging] = useState(false);
+  const pageSize = 12;
 
-  const [todayList, setTodayList] = useState(() => []);
+  // UI State
+  const [expandedParents, setExpandedParents] = useState({}); // { [id]: true/false }
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
+  // Metadata & Context
   const [filterOptions, setFilterOptions] = useState({
     levels: [],
     equipments: [],
-    types: [],
   });
-
-  // filter metadata
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await axios.get("/api/exercises/filter/meta");
-        if (res.data?.success) {
-          const data = res.data.data || {};
-          setFilterOptions({
-            levels: Array.isArray(data.levels) ? data.levels : [],
-            equipments: Array.isArray(data.equipments) ? data.equipments : [],
-            types: Array.isArray(data.types) ? data.types : [],
-          });
-        }
-      } catch (e) {
-        console.warn("load filter meta failed", e);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  useEffect(() => {
-    try {
-      const saved = JSON.parse(
-        sessionStorage.getItem("today_workout") || "null"
-      );
-      if (Array.isArray(saved)) setTodayList(saved);
-    } catch {}
-  }, []);
-  useEffect(() => {
-    try {
-      sessionStorage.setItem("today_workout", JSON.stringify(todayList));
-    } catch {}
-  }, [todayList]);
-
   const [currentPlan, setCurrentPlan] = useState(() => {
     try {
-      const raw = sessionStorage.getItem("current_plan_context");
-      if (!raw) return null;
-      const obj = JSON.parse(raw);
-      if (obj && obj.plan_id) return obj;
-    } catch {}
-    return null;
+      return JSON.parse(
+        sessionStorage.getItem("current_plan_context") || "null"
+      );
+    } catch {
+      return null;
+    }
+  });
+  const [todayList, setTodayList] = useState(() => {
+    try {
+      return JSON.parse(sessionStorage.getItem("today_workout") || "[]");
+    } catch {
+      return [];
+    }
   });
   const [planItemsSet, setPlanItemsSet] = useState(new Set());
-  const [planItemsCount, setPlanItemsCount] = useState(undefined);
+  const [toastMsg, setToastMsg] = useState(null);
 
-  // Load plan items to mark membership when a current plan is active
+  // --- INIT ---
   useEffect(() => {
-    let alive = true;
-    async function loadPlanItems(pid) {
-      try {
-        const res = await getPlanByIdApi(pid);
-        // Expect res.success and res.data.items
-        const list = res?.data?.items || [];
-        const ids = new Set(
-          list.map((it) => String(it.exercise?.id ?? it.exercise_id))
-        );
-        if (!alive) return;
-        setPlanItemsSet(ids);
-        setPlanItemsCount(list.length);
-      } catch (e) {
-        if (!alive) return;
-        setPlanItemsSet(new Set());
-        setPlanItemsCount(undefined);
-      }
-    }
-    if (currentPlan?.plan_id) {
-      loadPlanItems(currentPlan.plan_id);
-    } else {
-      setPlanItemsSet(new Set());
-      setPlanItemsCount(undefined);
-    }
-    return () => {
-      alive = false;
-    };
-  }, [currentPlan?.plan_id]);
+    axios
+      .get("/api/exercises/filter/meta")
+      .then((res) => {
+        if (res.data?.success) setFilterOptions(res.data.data);
+      })
+      .catch(console.error);
+  }, []);
 
-  const clearCurrentPlan = () => {
-    try {
-      sessionStorage.removeItem("current_plan_context");
-    } catch {}
-    setCurrentPlan(null);
-    setPlanItemsSet(new Set());
-    setPlanItemsCount(undefined);
-  };
-
-  const toggleGroup = (id) => {
-    setSelectedGroups((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-    );
-  };
-
-  // Fetch exercises from BE (align with demo endpoints); degrade gracefully for multi-group
+  // --- FETCH ---
   useEffect(() => {
-    let alive = true;
-    async function load() {
+    const fetchEx = async () => {
       setLoading(true);
-      setError(null);
-      setClientPaging(false);
       try {
-        let res = null;
-        const onlyGroup =
-          selectedGroups.length === 1 ? selectedGroups[0] : null;
-        const baseParams = {
-          page,
-          pageSize,
-        };
-        if (q) baseParams.q = q;
-        if (level) baseParams.difficulty = level;
-        if (equipment) baseParams.equipment = equipment;
-        if (type) baseParams.type = type;
-        if (selectedGroups.length === 0) {
-          res = await axios.get("/api/exercises", {
-            params: baseParams,
-          });
-          if (alive) {
-            if (res.data?.success) {
-              setRawExercises(res.data.data || []);
-              setTotal(res.data.total ?? (res.data.data || []).length ?? 0);
-            } else setError({ message: "Không thể tải danh sách bài tập" });
-          }
-        } else if (onlyGroup === "cardio") {
-          res = await axios.get("/api/exercises/type/cardio", {
-            params: baseParams,
-          });
-          if (alive) {
-            if (res.data?.success) {
-              setRawExercises(res.data.data || []);
-              setTotal(res.data.total ?? (res.data.data || []).length ?? 0);
-            } else setError({ message: "Không thể tải danh sách bài tập" });
-          }
-        } else if (onlyGroup) {
-          res = await axios.get(`/api/exercises/muscle/${onlyGroup}`, {
-            params: baseParams,
-          });
-          if (alive) {
-            if (res.data?.success) {
-              setRawExercises(res.data.data || []);
-              setTotal(res.data.total ?? (res.data.data || []).length ?? 0);
-            } else setError({ message: "Không thể tải danh sách bài tập" });
-          }
-        } else {
-          // Multi-group: fetch by first group big page, then filter FE by the rest based on synonyms
-          const base = selectedGroups[0];
-          res = await axios.get(`/api/exercises/muscle/${base}`, {
-            params: { ...baseParams, page: 1, pageSize: 1000 },
-          });
-          if (alive) {
-            if (res.data?.success) {
-              setClientPaging(true);
-              setRawExercises(res.data.data || []);
-              // total set later after FE filters
-            } else setError({ message: "Không thể tải danh sách bài tập" });
-          }
+        let url = "/api/exercises";
+        if (selectedMuscle) {
+          const slug = selectedMuscle.slug || selectedMuscle.name;
+          url = `/api/exercises/muscle/${slug}`;
         }
-      } catch (e) {
-        if (alive)
-          setError({ message: e?.message || "Lỗi kết nối đến server" });
+        const res = await axios.get(url, {
+          params: { page, pageSize, q, difficulty: level, equipment },
+        });
+        if (res.data?.success) {
+          setExercises(res.data.data || []);
+          setTotal(res.data.total || 0);
+        }
+      } catch (err) {
+        console.error(err);
       } finally {
-        if (alive) setLoading(false);
+        setLoading(false);
       }
-    }
-    load();
-    return () => {
-      alive = false;
     };
-  }, [selectedGroups.join(","), page, pageSize, q, level, equipment, type]);
+    const t = setTimeout(fetchEx, 300);
+    return () => clearTimeout(t);
+  }, [page, q, selectedMuscle, level, equipment]);
 
-  // Normalize exercises from BE shape
-  const normalized = useMemo(() => {
-    const list = rawExercises || [];
-    return list.map((ex) => {
-      const id = ex.id ?? ex.exercise_id;
-      // Prefer GIF from DB when available; otherwise use whatever BE provided
-      const mediaUrl = ex.gif_demo_url || ex.imageUrl || ex.thumbnail_url || "";
-      const fallback = `https://picsum.photos/seed/exercise-${encodeURIComponent(
-        id ?? Math.random().toString(36).slice(2)
-      )}/800/450`;
-      return {
-        id,
-        name: ex.name || "",
-        imageUrl: mediaUrl || fallback,
-        description: ex.description || "",
-        difficulty: ex.difficulty || ex.difficulty_level || "",
-        impact: ex.impact_level || "",
-        population: ex.population || "",
-        equipment: ex.equipment || ex.equipment_needed || "",
-        // For group-based FE filtering
-        parts: [],
-        __raw: ex,
-      };
-    });
-  }, [rawExercises]);
-
-  // Build filter options from data
-  const optionSets = useMemo(() => {
-    const levels = new Set();
-    const equipments = new Set();
-    const types = new Set();
-    for (const ex of normalized) {
-      if (ex.difficulty) levels.add(String(ex.difficulty));
-      if (ex.equipment) equipments.add(String(ex.equipment));
-      if (ex.__raw?.exercise_type) types.add(String(ex.__raw.exercise_type));
-    }
-    return {
-      levels: Array.from(levels),
-      equipments: Array.from(equipments),
-      types: Array.from(types),
-    };
-  }, [normalized]);
-
-  // FE filter for search/level/equipment/type and multi-group mode (when clientPaging or selectedGroups>1)
-  const filtered = useMemo(() => {
-    // text/level/equipment/type filters
-    let arr = normalized.filter((ex) => {
-      if (q && !normalizeStr(ex.name).includes(normalizeStr(q))) return false;
-      if (level && normalizeStr(ex.difficulty) !== normalizeStr(level))
-        return false;
-      if (equipment && normalizeStr(ex.equipment) !== normalizeStr(equipment))
-        return false;
-      if (type && normalizeStr(ex.__raw?.exercise_type) !== normalizeStr(type))
-        return false;
-      return true;
-    });
-    // multi-group FE filtering (for >1 selection)
-    if (selectedGroups.length > 1) {
-      const matchesOne = (ex, g) => {
-        const nameNorm = normalizeStr(ex.name);
-        const syns = (groupSynonyms[g] || [g]).map((s) =>
-          normalizeStr(String(s)).replace(/-/g, " ")
-        );
-        for (const s of syns) if (nameNorm.includes(s)) return true;
-        return false;
-      };
-      arr = arr.filter((ex) => {
-        if (modeAll) return selectedGroups.every((g) => matchesOne(ex, g));
-        return selectedGroups.some((g) => matchesOne(ex, g));
-      });
-    }
-    return arr;
-  }, [normalized, q, level, equipment, type, selectedGroups, modeAll]);
-
-  // Total + pagination (client vs server)
-  const paged = useMemo(() => {
-    if (clientPaging || selectedGroups.length > 1) {
-      const start = (page - 1) * pageSize;
-      const end = start + pageSize;
-      return filtered.slice(start, end);
-    }
-    return filtered;
-  }, [filtered, clientPaging, selectedGroups.length, page, pageSize]);
-
-  useEffect(() => {
-    if (clientPaging || selectedGroups.length > 1) setTotal(filtered.length);
-  }, [filtered, clientPaging, selectedGroups.length]);
-
-  const addToToday = (ex) => {
-    setTodayList((prev) =>
-      prev.find((x) => x.id === ex.id) ? prev : [...prev, ex]
-    );
+  // --- HANDLERS ---
+  const handleToggleExpand = (id) => {
+    setExpandedParents((prev) => ({ ...prev, [id]: !prev[id] }));
   };
-  const removeFromToday = (id) => {
-    setTodayList((prev) => prev.filter((x) => x.id !== id));
+
+  const handleSelectMuscle = (muscle) => {
+    if (selectedMuscle?.id === muscle.id) setSelectedMuscle(null);
+    else setSelectedMuscle(muscle);
+    setPage(1);
+    // Tự động mở cha nếu chọn con (logic này optional)
   };
 
   const addToPlan = async (ex) => {
-    // If a current plan is active, add directly to that plan; otherwise go pick a plan
-    if (!currentPlan?.plan_id) {
-      navigate(`/plans/select?exerciseId=${encodeURIComponent(ex.id)}`, {
-        state: { exerciseName: ex.name },
-      });
-      return;
-    }
+    if (!currentPlan?.plan_id)
+      return navigate(`/plans/select?exerciseId=${ex.id}`);
     try {
-      const res = await addExerciseToPlanApi({
+      await addExerciseToPlanApi({
         planId: currentPlan.plan_id,
         exercise_id: ex.id,
-        sets_recommended: 3,
-        reps_recommended: "8-12",
-        rest_period_seconds: 60,
       });
-      // Optimistically update membership set
-      setPlanItemsSet((prev) => new Set([...prev, String(ex.id)]));
-      // Try to get new count from response; otherwise reload plan
-      const fromRes = (() => {
-        if (!res || typeof res !== "object") return undefined;
-        if (typeof res.plan_item_count === "number") return res.plan_item_count;
-        if (typeof res.items_count === "number") return res.items_count;
-        if (typeof res.total_items === "number") return res.total_items;
-        if (typeof res.total === "number") return res.total;
-        if (typeof res.count === "number") return res.count;
-        return undefined;
-      })();
-      let newCount = fromRes;
-      if (typeof fromRes === "number") setPlanItemsCount(fromRes);
-      else {
-        // Fallback: reload plan to count items
-        try {
-          const r = await getPlanByIdApi(currentPlan.plan_id);
-          const list = r?.data?.items || [];
-          newCount = list.length;
-          setPlanItemsCount(newCount);
-        } catch {}
-      }
-      // Show notice in sidebar
-      setSidebarNotice({
-        message: "Thêm bài tập thành công",
-        addedExerciseName: ex.name || "",
-        planItemCount:
-          typeof newCount === "number"
-            ? newCount
-            : typeof planItemsCount === "number"
-            ? planItemsCount + 1
-            : undefined,
-        visible: true,
-      });
-      // Auto-hide after 10s
-      setTimeout(
-        () => setSidebarNotice((v) => ({ ...v, visible: false })),
-        10000
-      );
+      setPlanItemsSet((p) => new Set([...p, String(ex.id)]));
+      setToastMsg(`Đã thêm vào Plan!`);
+      setTimeout(() => setToastMsg(null), 3000);
     } catch (e) {
-      alert(
-        e?.response?.data?.message ||
-          e?.message ||
-          "Không thể thêm vào kế hoạch"
-      );
+      alert("Lỗi thêm Plan");
     }
   };
 
+  useEffect(() => {
+    if (!currentPlan?.plan_id) return;
+    getPlanByIdApi(currentPlan.plan_id)
+      .then((res) => {
+        const ids = new Set(
+          (res?.data?.items || []).map((it) =>
+            String(it.exercise?.id ?? it.exercise_id)
+          )
+        );
+        setPlanItemsSet(ids);
+      })
+      .catch(() => {});
+  }, [currentPlan]);
+
+  useEffect(
+    () => sessionStorage.setItem("today_workout", JSON.stringify(todayList)),
+    [todayList]
+  );
+
   return (
-    <div className="min-h-screen text-gray-900 bg-white">
+    <div className="min-h-screen bg-[#F9FAFB] text-gray-900 font-sans">
       <HeaderLogin />
 
-      <main className="px-4 py-6 mx-auto max-w-7xl">
-        <div className="grid gap-6 md:grid-cols-10">
-          {/* Left: main content */}
-          <section className="space-y-6 md:col-span-7">
-            {/* Top: personalized sections (placeholders) */}
-            <div className="p-4 bg-white border rounded-xl">
-              <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold">Tiếp tục gần đây</h2>
-                <button
-                  className="text-sm text-blue-600 hover:underline"
-                  onClick={() => navigate("/dashboard")}
-                >
-                  Xem thêm
-                </button>
-              </div>
-              <p className="mt-1 text-sm text-gray-500">
-                Gợi ý nhanh dựa trên hoạt động gần đây của bạn.
-              </p>
-            </div>
+      <div className="max-w-[1400px] mx-auto px-4 py-8">
+        {/* Mobile Filter Toggle */}
+        <div className="mb-4 lg:hidden">
+          <button
+            onClick={() => setIsMobileFilterOpen(!isMobileFilterOpen)}
+            className="flex items-center justify-center w-full gap-2 py-2 font-bold bg-white border border-gray-300 rounded-lg shadow-sm"
+          >
+            <Filter className="w-4 h-4" />{" "}
+            {isMobileFilterOpen ? "Đóng bộ lọc" : "Mở bộ lọc"}
+          </button>
+        </div>
 
-            {/* Filters */}
-            <div className="p-4 bg-white border rounded-xl">
-              <div className="grid gap-3 md:grid-cols-4">
-                <div className="md:col-span-2">
-                  <input
-                    value={q}
-                    onChange={(e) => {
-                      setQ(e.target.value);
-                      setPage(1);
-                    }}
-                    placeholder="Tìm kiếm bài tập..."
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                  />
+        <div className="flex flex-col items-start gap-8 lg:flex-row">
+          {/* ========================================================= */}
+          {/* SIDEBAR (LEFT) - 25% Width */}
+          {/* ========================================================= */}
+          <aside
+            className={`lg:w-72 flex-shrink-0 space-y-6 ${
+              isMobileFilterOpen ? "block" : "hidden lg:block"
+            }`}
+          >
+            {/* 1. PLAN / TODAY CONTEXT (Đặt lên đầu để dễ thấy) */}
+            <div className="overflow-hidden bg-white border border-gray-200 shadow-sm rounded-xl">
+              {/* Tabs Header */}
+              <div className="flex border-b border-gray-100 bg-gray-50">
+                <div className="flex-1 py-3 text-xs font-bold tracking-wide text-center text-gray-700 uppercase border-r border-gray-200">
+                  Active Plan
                 </div>
-                <div>
-                  <select
-                    value={level}
-                    onChange={(e) => {
-                      setLevel(e.target.value);
-                      setPage(1);
-                    }}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                  >
-                    <option value="">Độ khó: Tất cả</option>
-                    {optionSets.levels.map((lv) => (
-                      <option key={lv} value={lv}>
-                        {lv}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <select
-                    value={equipment}
-                    onChange={(e) => {
-                      setEquipment(e.target.value);
-                      setPage(1);
-                    }}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                  >
-                    <option value="">Dụng cụ: Tất cả</option>
-                    {(filterOptions.equipments.length
-                      ? filterOptions.equipments
-                      : optionSets.equipments
-                    ).map((eq) => (
-                      <option key={eq} value={eq}>
-                        {eq}
-                      </option>
-                    ))}
-                  </select>
+                <div className="flex-1 py-3 text-xs font-bold tracking-wide text-center text-gray-700 uppercase">
+                  Session
                 </div>
               </div>
 
-              {/* Multi-group chips + mode */}
-              <div className="flex flex-wrap items-center gap-2 mt-4">
-                <div className="mr-2 text-sm text-gray-700">Nhóm cơ:</div>
-                {muscleGroups.map((g) => {
-                  const active = selectedGroups.includes(g.id);
-                  return (
+              <div className="p-4 space-y-4">
+                {/* Plan Status */}
+                {currentPlan ? (
+                  <div className="text-sm">
+                    <div className="flex items-start justify-between mb-1">
+                      <span className="font-bold text-blue-700 line-clamp-1">
+                        {currentPlan.name}
+                      </span>
+                      <button
+                        onClick={() => {
+                          sessionStorage.removeItem("current_plan_context");
+                          setCurrentPlan(null);
+                        }}
+                        className="text-[10px] text-red-500 hover:underline shrink-0 ml-2"
+                      >
+                        Thoát
+                      </button>
+                    </div>
+                    <p className="mb-2 text-xs text-gray-500">
+                      {planItemsSet.size} bài tập
+                    </p>
                     <button
-                      key={g.id}
-                      onClick={() => toggleGroup(g.id)}
-                      className={`px-3 py-1.5 rounded-full border text-sm ${
-                        active
-                          ? "border-blue-600 text-blue-700 bg-blue-50"
-                          : "border-gray-300 hover:bg-gray-50"
-                      }`}
+                      onClick={() => navigate(`/plans/${currentPlan.plan_id}`)}
+                      className="w-full py-1.5 border border-blue-200 text-blue-700 rounded text-xs font-bold hover:bg-blue-50"
                     >
-                      {g.label}
+                      Quản lý Plan
                     </button>
-                  );
-                })}
-                <div className="flex items-center gap-2 ml-auto text-sm">
-                  <span className="text-gray-600">Chế độ:</span>
-                  <button
-                    className={`px-2 py-1 rounded border ${
-                      modeAll
-                        ? "bg-blue-50 border-blue-600 text-blue-700"
-                        : "border-gray-300"
-                    }`}
-                    onClick={() => setModeAll(true)}
-                  >
-                    All
-                  </button>
-                  <button
-                    className={`px-2 py-1 rounded border ${
-                      !modeAll
-                        ? "bg-blue-50 border-blue-600 text-blue-700"
-                        : "border-gray-300"
-                    }`}
-                    onClick={() => setModeAll(false)}
-                  >
-                    Any
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Results */}
-            <div>
-              <div className="mb-3 text-sm text-gray-600">
-                Tìm thấy {total} bài tập
-              </div>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-                {loading ? (
-                  <div className="p-6 text-sm text-gray-600">
-                    Đang tải danh sách bài tập...
-                  </div>
-                ) : error ? (
-                  <div className="p-6 text-sm text-red-600">
-                    {error.message}
-                  </div>
-                ) : paged.length === 0 ? (
-                  <div className="p-6 text-sm text-gray-600">
-                    Không tìm thấy bài tập phù hợp
                   </div>
                 ) : (
-                  paged.map((ex) => (
-                    <div
-                      key={ex.id}
-                      className="overflow-hidden bg-white border rounded-xl"
-                    >
-                      {ex.imageUrl ? (
-                        <div
-                          className="relative w-full bg-gray-100"
-                          style={{ paddingBottom: "56%" }}
-                        >
-                          <img
-                            src={ex.imageUrl}
-                            alt={ex.name}
-                            className="absolute inset-0 object-cover w-full h-full"
-                          />
-                        </div>
-                      ) : (
-                        <div
-                          className="relative w-full bg-gray-100"
-                          style={{ paddingBottom: "56%" }}
-                        />
-                      )}
-                      <div className="p-4">
-                        <div className="flex items-start justify-between gap-3">
-                          <h3 className="text-base font-semibold text-gray-900 line-clamp-2">
-                            {ex.name}
-                          </h3>
-                          <button
-                            className="text-sm text-blue-600 hover:underline"
-                            onClick={() =>
-                              navigate(`/exercises/${ex.id}`, { state: ex })
-                            }
-                          >
-                            Chi tiết
-                          </button>
-                        </div>
-                        <div className="flex flex-wrap gap-2 mt-2">
-                          {ex.difficulty && (
-                            <Badge tone="amber">{ex.difficulty}</Badge>
-                          )}
-                          {ex.__raw?.exercise_type && (
-                            <Badge tone="purple">
-                              {ex.__raw.exercise_type}
-                            </Badge>
-                          )}
-                          {ex.equipment && (
-                            <Badge tone="blue">{ex.equipment}</Badge>
-                          )}
-                          {currentPlan?.plan_id &&
-                            planItemsSet.has(String(ex.id)) && (
-                              <span className="inline-flex items-center px-2 py-1 text-xs text-green-700 border border-green-200 rounded bg-green-50">
-                                Thuộc plan {currentPlan.plan_id} -{" "}
-                                {currentPlan.name || "(Không có tên)"}
-                              </span>
-                            )}
-                        </div>
-                        <div className="flex items-center gap-2 mt-4">
-                          <button
-                            onClick={() => addToPlan(ex)}
-                            className="px-3 py-1.5 text-sm font-medium text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50"
-                          >
-                            + Thêm vào Plan
-                          </button>
-                          <button
-                            onClick={() => addToToday(ex)}
-                            className="px-3 py-1.5 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
-                          >
-                            + Buổi hôm nay
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))
+                  <button
+                    onClick={() => navigate("/plans/select")}
+                    className="w-full py-2 text-xs text-gray-500 border border-gray-300 border-dashed rounded-lg hover:border-blue-400 hover:text-blue-600"
+                  >
+                    + Chọn Plan để thêm bài tập
+                  </button>
                 )}
-              </div>
-              {/* Pagination */}
-              <div className="flex items-center justify-between mt-4">
-                <div className="text-sm text-gray-600">
-                  Trang {page} / {Math.max(1, Math.ceil(total / pageSize))}
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    disabled={page <= 1 || loading}
-                    onClick={() => setPage((p) => Math.max(1, p - 1))}
-                    className={`px-3 py-2 text-sm border rounded-lg ${
-                      page <= 1 || loading
-                        ? "text-gray-400 border-gray-200"
-                        : "border-gray-300 hover:bg-gray-50"
-                    }`}
-                  >
-                    Trang trước
-                  </button>
-                  <button
-                    type="button"
-                    disabled={
-                      loading ||
-                      page >= Math.max(1, Math.ceil(total / pageSize))
-                    }
-                    onClick={() => setPage((p) => p + 1)}
-                    className={`px-3 py-2 text-sm border rounded-lg ${
-                      loading ||
-                      page >= Math.max(1, Math.ceil(total / pageSize))
-                        ? "text-gray-400 border-gray-200"
-                        : "border-gray-300 hover:bg-gray-50"
-                    }`}
-                  >
-                    Trang sau
-                  </button>
-                </div>
-              </div>
-            </div>
-          </section>
 
-          {/* Right: Today dock */}
-          <aside className="md:col-span-3">
-            <div className="sticky top-20">
-              {/* Current plan context box */}
-              {currentPlan?.plan_id && (
-                <div className="p-3 mb-4 text-sm text-blue-900 border border-blue-200 rounded-lg bg-blue-50">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1">
-                      <div className="font-semibold">
-                        Plan hiện tại: {currentPlan.plan_id} -{" "}
-                        {currentPlan.name || "(Không có tên)"}
-                      </div>
-                      {typeof planItemsCount === "number" && (
-                        <div className="mt-1 text-xs">
-                          Hiện có {planItemsCount} bài tập trong kế hoạch này.
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        className="text-xs text-blue-700 hover:underline"
-                        onClick={() =>
-                          navigate(`/plans/${currentPlan.plan_id}`)
-                        }
-                      >
-                        Xem
-                      </button>
-                      <button
-                        className="text-xs text-gray-600 hover:underline"
-                        onClick={() => navigate(`/plans/select`)}
-                      >
-                        Đổi
-                      </button>
-                      <button
-                        className="text-xs text-red-600 hover:underline"
-                        onClick={clearCurrentPlan}
-                      >
-                        Bỏ chọn
-                      </button>
-                    </div>
+                <div className="h-[1px] bg-gray-100"></div>
+
+                {/* Today List Status */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-bold text-gray-700">
+                      Buổi tập hôm nay
+                    </span>
+                    <span className="bg-gray-100 text-gray-600 text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                      {todayList.length}
+                    </span>
                   </div>
-                </div>
-              )}
-              {sidebarNotice.visible && (
-                <div className="p-3 mb-4 text-sm text-white bg-green-600 rounded-lg shadow">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1">
-                      <div className="font-semibold">
-                        {sidebarNotice.message}
-                      </div>
-                      <div className="mt-1 text-xs opacity-90">
-                        {sidebarNotice.addedExerciseName ? (
-                          <span>
-                            Đã thêm: <b>{sidebarNotice.addedExerciseName}</b>.
-                          </span>
-                        ) : null}
-                        {typeof sidebarNotice.planItemCount === "number" ? (
-                          <span>
-                            {" "}
-                            Hiện tại kế hoạch có{" "}
-                            <b>{sidebarNotice.planItemCount}</b> bài tập.
-                          </span>
-                        ) : null}
-                      </div>
-                    </div>
-                    <button
-                      className="text-white/90 hover:text-white"
-                      aria-label="Đóng thông báo"
-                      onClick={() =>
-                        setSidebarNotice((v) => ({ ...v, visible: false }))
-                      }
-                    >
-                      ×
-                    </button>
-                  </div>
-                </div>
-              )}
-              <div className="p-4 bg-white border rounded-xl">
-                <div className="flex items-center justify-between mb-2">
-                  <h2 className="text-lg font-semibold">Buổi tập hôm nay</h2>
-                  <button
-                    className="text-xs text-gray-500 hover:text-gray-700"
-                    onClick={() => setTodayList([])}
-                  >
-                    Xoá hết
-                  </button>
-                </div>
-                {!todayList.length ? (
-                  <p className="text-sm text-gray-500">
-                    Chưa có bài tập nào. Thêm từ danh sách bên trái.
-                  </p>
-                ) : (
-                  <div className="space-y-2 max-h-[50vh] overflow-auto pr-1">
-                    {todayList.map((ex) => (
-                      <div
-                        key={ex.id}
-                        className="flex items-center justify-between gap-2 p-2 border rounded-lg"
-                      >
-                        <div className="min-w-0">
-                          <div className="text-sm font-medium text-gray-800 truncate">
-                            {ex.name}
+                  {todayList.length > 0 ? (
+                    <>
+                      <div className="space-y-1 mb-2 max-h-[120px] overflow-y-auto custom-scrollbar">
+                        {todayList.map((ex, i) => (
+                          <div
+                            key={i}
+                            className="flex items-center justify-between pl-2 text-xs text-gray-600 border-l-2 border-gray-200"
+                          >
+                            <span className="truncate">{ex.name}</span>
+                            <button
+                              onClick={() =>
+                                setTodayList((p) =>
+                                  p.filter((_, idx) => idx !== i)
+                                )
+                              }
+                              className="text-gray-300 hover:text-red-500"
+                            >
+                              ×
+                            </button>
                           </div>
-                          <div className="text-xs text-gray-500">
-                            {ex.equipment} • {ex.difficulty}
-                          </div>
-                        </div>
-                        <button
-                          className="px-2 py-1 text-xs text-red-600 border border-red-200 rounded hover:bg-red-50"
-                          onClick={() => removeFromToday(ex.id)}
-                        >
-                          Xoá
-                        </button>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                )}
-                <div className="mt-3">
-                  {!todayList.length ? (
-                    <button
-                      className="w-full px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg disabled:opacity-60"
-                      disabled
-                    >
-                      Bắt đầu buổi
-                    </button>
+                      <StartWorkoutButton
+                        exercises={todayList}
+                        className="w-full py-2 text-xs font-bold text-white rounded bg-zinc-900 hover:bg-black"
+                      />
+                    </>
                   ) : (
-                    <StartWorkoutButton exercises={todayList} />
+                    <p className="text-[10px] text-gray-400 italic">
+                      Chưa chọn bài tập nào.
+                    </p>
                   )}
                 </div>
               </div>
             </div>
+
+            {/* 2. SEARCH */}
+            <div className="p-4 bg-white border border-gray-200 shadow-sm rounded-xl">
+              <h3 className="mb-3 text-xs font-black tracking-widest text-gray-400 uppercase">
+                Tìm kiếm
+              </h3>
+              <div className="relative">
+                <Search className="absolute w-4 h-4 text-gray-400 -translate-y-1/2 left-3 top-1/2" />
+                <input
+                  value={q}
+                  onChange={(e) => setQ(e.target.value)}
+                  placeholder="Tên bài tập..."
+                  className="w-full py-2 pr-3 text-sm border border-gray-200 rounded-lg outline-none pl-9 bg-gray-50 focus:ring-1 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+
+            {/* 3. BODY FOCUS (MUSCLE TREE) */}
+            <div className="p-4 bg-white border border-gray-200 shadow-sm rounded-xl">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-xs font-black tracking-widest text-gray-400 uppercase">
+                  Nhóm cơ
+                </h3>
+                {selectedMuscle && (
+                  <button
+                    onClick={() => setSelectedMuscle(null)}
+                    className="text-[10px] text-red-500 hover:underline"
+                  >
+                    Xóa lọc
+                  </button>
+                )}
+              </div>
+
+              <div className="space-y-1 max-h-[400px] overflow-y-auto pr-1 custom-scrollbar">
+                {/* Option All */}
+                <button
+                  onClick={() => setSelectedMuscle(null)}
+                  className={`w-full text-left px-2 py-2 text-sm font-bold rounded-lg transition-colors ${
+                    !selectedMuscle
+                      ? "bg-zinc-900 text-white"
+                      : "text-gray-600 hover:bg-gray-50"
+                  }`}
+                >
+                  Tất cả cơ thể
+                </button>
+
+                {/* Tree */}
+                {muscleTree.map((parent) => (
+                  <MuscleAccordion
+                    key={parent.id}
+                    parent={parent}
+                    selectedMuscle={selectedMuscle}
+                    onSelect={handleSelectMuscle}
+                    onToggleExpand={handleToggleExpand}
+                    isExpanded={!!expandedParents[parent.id]}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* 4. OTHER FILTERS */}
+            <div className="p-4 space-y-4 bg-white border border-gray-200 shadow-sm rounded-xl">
+              <div>
+                <h3 className="mb-2 text-xs font-black tracking-widest text-gray-400 uppercase">
+                  Độ khó
+                </h3>
+                <select
+                  value={level}
+                  onChange={(e) => setLevel(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none bg-gray-50 focus:border-blue-500"
+                >
+                  <option value="">Tất cả độ khó</option>
+                  {filterOptions.levels.map((l) => (
+                    <option key={l} value={l}>
+                      {l}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <h3 className="mb-2 text-xs font-black tracking-widest text-gray-400 uppercase">
+                  Dụng cụ
+                </h3>
+                <select
+                  value={equipment}
+                  onChange={(e) => setEquipment(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none bg-gray-50 focus:border-blue-500"
+                >
+                  <option value="">Tất cả dụng cụ</option>
+                  {filterOptions.equipments.map((e) => (
+                    <option key={e} value={e}>
+                      {e}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
           </aside>
+
+          {/* ========================================================= */}
+          {/* MAIN CONTENT (RIGHT) - 75% Width */}
+          {/* ========================================================= */}
+          <main className="flex-1 min-w-0">
+            {/* Header Info */}
+            <div className="flex items-end justify-between pb-4 mb-6 border-b border-gray-200">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  Danh sách bài tập
+                </h2>
+                <p className="mt-1 text-sm text-gray-500">
+                  Hiển thị <b>{total}</b> bài tập
+                  {selectedMuscle && (
+                    <span>
+                      {" "}
+                      cho nhóm{" "}
+                      <b className="text-blue-600">{selectedMuscle.name}</b>
+                    </span>
+                  )}
+                </p>
+              </div>
+            </div>
+
+            {/* Grid */}
+            {loading ? (
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 animate-pulse">
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <div key={i} className="h-64 bg-gray-200 rounded-xl"></div>
+                ))}
+              </div>
+            ) : exercises.length === 0 ? (
+              <div className="py-20 text-center bg-white border border-gray-300 border-dashed rounded-xl">
+                <Dumbbell className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                <p className="font-medium text-gray-500">
+                  Không tìm thấy bài tập phù hợp.
+                </p>
+                <button
+                  onClick={() => {
+                    setQ("");
+                    setSelectedMuscle(null);
+                    setLevel("");
+                    setEquipment("");
+                  }}
+                  className="mt-2 text-blue-600 hover:underline"
+                >
+                  Xóa bộ lọc
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {exercises.map((ex) => (
+                  <div
+                    key={ex.id}
+                    className="flex flex-col overflow-hidden transition-all duration-300 bg-white border border-gray-200 shadow-sm group rounded-xl hover:shadow-xl hover:-translate-y-1"
+                  >
+                    {/* Thumbnail */}
+                    <div
+                      className="relative overflow-hidden bg-gray-100 cursor-pointer aspect-video"
+                      onClick={() => navigate(`/exercises/${ex.id}`)}
+                    >
+                      <img
+                        src={
+                          ex.imageUrl ||
+                          ex.thumbnail_url ||
+                          ex.gif_demo_url ||
+                          "/placeholder.jpg"
+                        }
+                        alt={ex.name}
+                        className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
+                      />
+                      {ex.difficulty && (
+                        <div
+                          className={`absolute top-2 left-2 px-2 py-0.5 rounded text-[10px] font-bold uppercase text-white shadow-sm
+                                  ${
+                                    ex.difficulty === "beginner"
+                                      ? "bg-emerald-500"
+                                      : ex.difficulty === "advanced"
+                                      ? "bg-rose-500"
+                                      : "bg-amber-500"
+                                  }`}
+                        >
+                          {ex.difficulty}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Content */}
+                    <div className="flex flex-col flex-1 p-4">
+                      <h3
+                        className="mb-1 text-base font-bold text-gray-900 transition-colors line-clamp-1 group-hover:text-blue-600"
+                        title={ex.name}
+                      >
+                        {ex.name}
+                      </h3>
+                      <div className="flex items-center gap-2 mb-4 text-xs text-gray-500">
+                        <span>{ex.equipment || "No Equipment"}</span>
+                        <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
+                        <span className="capitalize">
+                          {ex.exercise_type || "Strength"}
+                        </span>
+                      </div>
+
+                      {/* Buttons */}
+                      <div className="flex gap-2 mt-auto">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            addToPlan(ex);
+                          }}
+                          className={`flex-1 py-2 rounded-lg text-xs font-bold uppercase transition-colors border
+                                  ${
+                                    currentPlan?.plan_id &&
+                                    planItemsSet.has(String(ex.id))
+                                      ? "bg-green-50 text-green-700 border-green-200 cursor-default"
+                                      : "bg-white text-gray-700 border-gray-200 hover:border-blue-500 hover:text-blue-600"
+                                  }`}
+                        >
+                          {currentPlan?.plan_id &&
+                          planItemsSet.has(String(ex.id))
+                            ? "Đã có"
+                            : "+ Plan"}
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setTodayList((p) => [...p, ex]);
+                          }}
+                          className="flex items-center justify-center w-10 text-gray-500 transition-colors bg-gray-100 rounded-lg hover:bg-zinc-900 hover:text-white"
+                          title="Add to Today"
+                        >
+                          <Plus className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Pagination */}
+            {total > pageSize && (
+              <div className="flex justify-center gap-2 mt-10">
+                <button
+                  disabled={page === 1}
+                  onClick={() => setPage((p) => p - 1)}
+                  className="px-4 py-2 text-sm font-medium bg-white border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                >
+                  Prev
+                </button>
+                <span className="px-4 py-2 text-sm font-bold text-white rounded-lg bg-zinc-900">
+                  {page}
+                </span>
+                <button
+                  disabled={page * pageSize >= total}
+                  onClick={() => setPage((p) => p + 1)}
+                  className="px-4 py-2 text-sm font-medium bg-white border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </main>
         </div>
-      </main>
+      </div>
+
+      {/* Toast */}
+      {toastMsg && (
+        <div className="fixed z-50 flex items-center gap-2 px-5 py-3 text-sm font-medium text-white rounded-lg shadow-xl bottom-6 right-6 bg-zinc-800 animate-in slide-in-from-bottom-5">
+          <div className="w-2 h-2 bg-green-400 rounded-full"></div> {toastMsg}
+        </div>
+      )}
     </div>
   );
 }
