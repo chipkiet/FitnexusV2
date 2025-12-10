@@ -755,3 +755,18 @@ export const listUserScreenshotsApi = async ({
   const res = await api.get(endpoints.screenshots.list, { params });
   return res.data;
 };
+
+
+export const getSystemContentApi = async (key) => {
+  // Thêm timestamp để browser không cache request này
+  const t = new Date().getTime();
+  const res = await api.get(`/api/content/${key}?t=${t}`);
+  return res.data;
+};
+
+export const updateSystemContentApi = async (key, formData) => {
+  const res = await api.put(`/api/content/${key}`, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return res.data;
+};

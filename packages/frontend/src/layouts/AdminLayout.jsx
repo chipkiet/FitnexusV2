@@ -18,8 +18,10 @@ import {
   Bell, // Dùng icon Bell làm nút toggle
   Search,
   Sun,
-  PanelRightClose, // Icon khi mở
-  PanelRightOpen, // Icon khi đóng
+  PanelRightClose,
+  PanelRightOpen,
+  Settings,
+  Layout,
 } from "lucide-react";
 import NotificationsDropdown from "../components/common/NotificationsDropdown.jsx"; // Vẫn giữ dropdown nếu muốn, hoặc bỏ
 import { useNotificationsFeed } from "../hooks/useNotificationsFeed.js";
@@ -116,6 +118,16 @@ export default function AdminLayout() {
             label: "Báo lỗi người dùng",
             to: "/admin/support",
           },
+        ],
+      },
+
+      {
+        key: "system",
+        icon: Settings, // Import icon Settings từ lucide-react
+        label: "Giao diện & Nội dung",
+        children: [
+          { icon: Layout, label: "Dashboard Hero", to: "/admin/content/hero" },
+          // Sau này thêm Feature, Banner...
         ],
       },
     ],

@@ -239,9 +239,15 @@ export default function Exercise() {
       try {
         let url = "/api/exercises";
         if (selectedMuscle) {
-          const slug = selectedMuscle.slug || selectedMuscle.name;
-          url = `/api/exercises/muscle/${slug}`;
+          // --- LOGIC QUAN TRỌNG: Ưu tiên dùng slug chuẩn ---
+          // Nếu database lưu "Ngực" là name, "nguc" là slug, ta cần dùng "nguc" để gửi lên.
+          // Nhưng code cũ của bạn có thể đang dùng name để filter.
+          // Hãy thử dùng slug trước, nếu API lỗi thì fallback về name.
+
+          const slugToSend = selectedMuscle.slug || selectedMuscle.name;
+          url = `/api/exercises/muscle/${encodeURIComponent(slugToSend)}`;
         }
+
         const res = await axios.get(url, {
           params: { page, pageSize, q, difficulty: level, equipment },
         });

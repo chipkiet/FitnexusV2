@@ -4,6 +4,9 @@ import { useNavigate } from "react-router-dom";
 import HeaderLogin from "../../components/header/HeaderLogin.jsx";
 import ChatWidget from "../../components/common/ChatWidget.jsx";
 import { Flame, MessageCircle, Star, ThumbsUp } from "lucide-react";
+
+import DashboardHero from "../../pages/dashboard/DashboardHero.jsx"
+
 import {
   getMyPlansApi,
   listWorkoutSessionsApi,
@@ -840,64 +843,22 @@ const reviewFormRef = useRef(null);
       <HeaderLogin />
 
       {/* HERO SECTION */}
-      <section className="relative flex flex-col md:flex-row items-center justify-between px-8 md:px-20 py-20 bg-gradient-to-r from-[#0b1023] via-[#101735] to-[#162142] text-white rounded-b-[3rem] overflow-hidden">
-        {/* Video Background */}
-        <div className="absolute inset-0 z-0">
-          <video
-            autoPlay
-            muted
-            loop
-            playsInline
-            className="object-cover w-full h-full"
-          >
-            <source src="/vidbgr.mp4" type="video/mp4" />
-          </video>
-          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/50 to-black/70"></div>
-        </div>
-        <div className="z-10 space-y-6 text-center md:w-1/2 md:text-left">
-          <h1 className="text-5xl font-extrabold leading-tight md:text-6xl">
-            Trải nghiệm <span className="text-blue-400">AI Workout</span>
-            <br />
-            cùng Fitnexus
-          </h1>
-          <p className="max-w-lg text-lg text-gray-300">
-            Kết hợp AI, mô hình hoá chuyển động, dinh dưỡng và cộng đồng giúp
-            bạn luyện tập hiệu quả hơn mỗi ngày.
-          </p>
-          <div className="flex justify-center gap-4 md:justify-start">
-            <button
-              className="px-8 py-3 font-semibold bg-blue-400 rounded-lg hover:bg-blue-600"
-              onClick={handleContinueWorkout}
-              disabled={continueLoading}
-            >
-              {continueLoading
-                ? "Đang kiểm tra buổi tập..."
-                : activeSession?.session_id
-                ? `Tiếp tục buổi tập — ${
-                    activeSession?.plan_name || "Kế hoạch"
-                  }`
-                : suggestedPlan?.plan_id
-                ? `Bắt đầu buổi tập — ${suggestedPlan?.name || "Kế hoạch"}`
-                : "Chọn kế hoạch để bắt đầu"}
-            </button>
-            <button
-              className="px-8 py-3 font-semibold border border-blue-400 rounded-lg hover:bg-blue-400/10"
-              onClick={() => vxpGo("pricing", navigate)}
-              style={{ display: isPremiumOrAdmin ? "none" : undefined }}
-            >
-              Nâng cấp Premium
-            </button>
-          </div>
-        </div>
-      </section>
+      <DashboardHero
+        user={user}
+        onContinue={handleContinueWorkout}
+        continueLoading={continueLoading}
+        activeSession={activeSession}
+        suggestedPlan={suggestedPlan}
+        onPremiumClick={() => vxpGo("pricing", navigate)}
+        isPremiumOrAdmin={isPremiumOrAdmin}
+      />
 
       {/* MAIN CONTENT: 30% Achievements / 70% Navigation */}
       <section className="px-8 py-12 bg-white md:px-20">
         <div className="grid gap-6 md:grid-cols-10">
           {/* Left 30%: Thành tựu / Kế hoạch / Streak */}
           <aside className="space-y-5 md:col-span-3">
-            {/* Hero metric */}
-            {/* Hero metric: Thành tựu hôm nay + biểu đồ 7 ngày */}
+        
             <div className="p-5 border rounded-xl border-slate-200 bg-slate-50">
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold text-slate-900">
@@ -1282,7 +1243,8 @@ const reviewFormRef = useRef(null);
                 Đánh giá & cảm nhận từ chính bạn
               </h2>
               <p className="mt-1 text-sm text-slate-500">
-                Mọi chỉ số bên dưới được tính hoàn toàn từ những đánh giá mà cộng đồng của bạn gửi lên, không có dữ liệu mẫu.
+                Mọi chỉ số bên dưới được tính hoàn toàn từ những đánh giá mà
+                cộng đồng của bạn gửi lên, không có dữ liệu mẫu.
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-3">
@@ -1309,9 +1271,12 @@ const reviewFormRef = useRef(null);
                   </div>
                   <div className="text-sm text-white/70">/ 5 sao</div>
                 </div>
-                <div className="mt-2">{renderStars(reviewStats.averageRating)}</div>
+                <div className="mt-2">
+                  {renderStars(reviewStats.averageRating)}
+                </div>
                 <div className="mt-3 text-sm text-white/70">
-                  {numberFormatter.format(reviewStats.totalReviews)} lượt đánh giá
+                  {numberFormatter.format(reviewStats.totalReviews)} lượt đánh
+                  giá
                 </div>
               </div>
 
@@ -1322,10 +1287,14 @@ const reviewFormRef = useRef(null);
                     type="button"
                     onClick={() => toggleRatingFilter(item.star)}
                     className={`flex items-center gap-3 px-3 py-2 rounded-2xl border border-white/10 transition ${
-                      ratingFilter === item.star ? "bg-white/25" : "bg-white/10 hover:bg-white/20"
+                      ratingFilter === item.star
+                        ? "bg-white/25"
+                        : "bg-white/10 hover:bg-white/20"
                     }`}
                   >
-                    <span className="text-sm font-semibold w-9">{item.star}★</span>
+                    <span className="text-sm font-semibold w-9">
+                      {item.star}★
+                    </span>
                     <div className="flex-1 h-2 overflow-hidden rounded-full bg-white/20">
                       <div
                         className="h-full bg-amber-300"
@@ -1348,7 +1317,9 @@ const reviewFormRef = useRef(null);
                 <div className="flex items-center gap-3 p-3 border rounded-2xl bg-white/5 border-white/10">
                   <Star className="w-4 h-4 text-amber-300" />
                   <div>
-                    <p className="text-[11px] uppercase tracking-wide text-white/60">Tổng lượt đánh giá</p>
+                    <p className="text-[11px] uppercase tracking-wide text-white/60">
+                      Tổng lượt đánh giá
+                    </p>
                     <p className="text-lg font-semibold">
                       {numberFormatter.format(reviewStats.totalReviews)}
                     </p>
@@ -1380,7 +1351,11 @@ const reviewFormRef = useRef(null);
                 <h3 className="mt-1 text-lg font-bold text-white">
                   Chia sẻ trải nghiệm để truyền cảm hứng cho cộng đồng
                 </h3>
-                <form ref={reviewFormRef} className="mt-4 space-y-3 text-sm" onSubmit={handleReviewSubmit}>
+                <form
+                  ref={reviewFormRef}
+                  className="mt-4 space-y-3 text-sm"
+                  onSubmit={handleReviewSubmit}
+                >
                   {editingReviewId ? (
                     <div className="flex items-center justify-between px-3 py-2 text-xs text-white/80 bg-white/10 rounded-2xl">
                       <span>Đang chỉnh sửa đánh giá hiện có</span>
@@ -1405,7 +1380,9 @@ const reviewFormRef = useRef(null);
                           <button
                             key={starValue}
                             type="button"
-                            onClick={() => handleReviewFieldChange("rating", starValue)}
+                            onClick={() =>
+                              handleReviewFieldChange("rating", starValue)
+                            }
                             className={`w-9 h-9 rounded-full border ${
                               active
                                 ? "bg-amber-300/20 border-amber-200 text-white"
@@ -1420,50 +1397,68 @@ const reviewFormRef = useRef(null);
                   </div>
                   <div className="grid gap-3 md:grid-cols-2">
                     <div>
-                      <label className="text-[11px] uppercase tracking-wide text-white/60">Tiêu đề</label>
+                      <label className="text-[11px] uppercase tracking-wide text-white/60">
+                        Tiêu đề
+                      </label>
                       <input
                         type="text"
                         maxLength={80}
                         value={reviewForm.headline}
-                        onChange={(e) => handleReviewFieldChange("headline", e.target.value)}
+                        onChange={(e) =>
+                          handleReviewFieldChange("headline", e.target.value)
+                        }
                         className="w-full px-3 py-2 mt-1 text-xs bg-white text-slate-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-200"
                         placeholder="Ví dụ: AI Trainer quá hữu ích"
                       />
                     </div>
                     <div>
-                      <label className="text-[11px] uppercase tracking-wide text-white/60">Chương trình</label>
+                      <label className="text-[11px] uppercase tracking-wide text-white/60">
+                        Chương trình
+                      </label>
                       <input
                         type="text"
                         maxLength={80}
                         value={reviewForm.program}
-                        onChange={(e) => handleReviewFieldChange("program", e.target.value)}
+                        onChange={(e) =>
+                          handleReviewFieldChange("program", e.target.value)
+                        }
                         className="w-full px-3 py-2 mt-1 text-xs bg-white text-slate-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-200"
                         placeholder="AI Trainer · Hybrid Strength"
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="text-[11px] uppercase tracking-wide text-white/60">Tag (phân cách bằng dấu ,)</label>
+                    <label className="text-[11px] uppercase tracking-wide text-white/60">
+                      Tag (phân cách bằng dấu ,)
+                    </label>
                     <input
                       type="text"
                       value={reviewForm.tags}
-                      onChange={(e) => handleReviewFieldChange("tags", e.target.value)}
+                      onChange={(e) =>
+                        handleReviewFieldChange("tags", e.target.value)
+                      }
                       className="w-full px-3 py-2 mt-1 text-xs bg-white text-slate-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-200"
                       placeholder="AI Trainer, Nutrition"
                     />
                   </div>
                   <div>
-                    <label className="text-[11px] uppercase tracking-wide text-white/60">Nội dung đánh giá</label>
+                    <label className="text-[11px] uppercase tracking-wide text-white/60">
+                      Nội dung đánh giá
+                    </label>
                     <textarea
                       rows={4}
                       value={reviewForm.comment}
-                      onChange={(e) => handleReviewFieldChange("comment", e.target.value)}
+                      onChange={(e) =>
+                        handleReviewFieldChange("comment", e.target.value)
+                      }
                       className="w-full px-3 py-2 mt-1 text-xs bg-white text-slate-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-200"
                       placeholder="Chia sẻ cảm nhận thực tế sau khi luyện tập..."
                     />
                   </div>
                   <div>
-                    <label className="text-[11px] uppercase tracking-wide text-white/60">Ảnh minh hoạ</label>
+                    <label className="text-[11px] uppercase tracking-wide text-white/60">
+                      Ảnh minh hoạ
+                    </label>
                     <div className="flex flex-wrap items-center gap-3 mt-1">
                       <label className="px-3 py-2 text-xs font-semibold text-blue-700 bg-white rounded-full cursor-pointer hover:bg-slate-100">
                         <input
@@ -1471,15 +1466,24 @@ const reviewFormRef = useRef(null);
                           accept="image/*"
                           multiple
                           className="hidden"
-                          onChange={(e) => handleReviewFilesChange(e.target.files)}
+                          onChange={(e) =>
+                            handleReviewFilesChange(e.target.files)
+                          }
                         />
                         + Thêm ảnh
                       </label>
                       {reviewPreviews.length ? (
                         <div className="flex flex-wrap gap-2">
                           {reviewPreviews.map((preview) => (
-                            <div key={preview.url} className="w-16 h-16 overflow-hidden border rounded-lg border-white/20">
-                              <img src={preview.url} alt={preview.name} className="object-cover w-full h-full" />
+                            <div
+                              key={preview.url}
+                              className="w-16 h-16 overflow-hidden border rounded-lg border-white/20"
+                            >
+                              <img
+                                src={preview.url}
+                                alt={preview.name}
+                                className="object-cover w-full h-full"
+                              />
                             </div>
                           ))}
                         </div>
@@ -1487,10 +1491,14 @@ const reviewFormRef = useRef(null);
                     </div>
                   </div>
                   {reviewMessage.error ? (
-                    <p className="text-xs text-rose-200">{reviewMessage.error}</p>
+                    <p className="text-xs text-rose-200">
+                      {reviewMessage.error}
+                    </p>
                   ) : null}
                   {reviewMessage.success ? (
-                    <p className="text-xs text-emerald-200">{reviewMessage.success}</p>
+                    <p className="text-xs text-emerald-200">
+                      {reviewMessage.success}
+                    </p>
                   ) : null}
                   <button
                     type="submit"
@@ -1501,7 +1509,8 @@ const reviewFormRef = useRef(null);
                   </button>
                 </form>
                 <p className="mt-3 text-[11px] text-white/60">
-                  Đánh giá được lưu cục bộ và hiển thị ngay trên bảng tin của bạn.
+                  Đánh giá được lưu cục bộ và hiển thị ngay trên bảng tin của
+                  bạn.
                 </p>
               </div>
             </div>
@@ -1540,9 +1549,12 @@ const reviewFormRef = useRef(null);
                     {reviewsError}
                   </div>
                 ) : null}
-                {!reviewsLoading && !reviewsError && filteredReviews.length === 0 ? (
+                {!reviewsLoading &&
+                !reviewsError &&
+                filteredReviews.length === 0 ? (
                   <div className="p-6 text-center border border-dashed rounded-2xl border-slate-200 text-slate-500">
-                    Chưa có đánh giá cho điều kiện lọc hiện tại. Hãy là người đầu tiên chia sẻ cảm nhận!
+                    Chưa có đánh giá cho điều kiện lọc hiện tại. Hãy là người
+                    đầu tiên chia sẻ cảm nhận!
                   </div>
                 ) : null}
                 {!reviewsLoading &&
@@ -1551,7 +1563,10 @@ const reviewFormRef = useRef(null);
                     const reviewId = review.review_id;
                     const reviewBody = review.comment || "";
                     const reviewExpanded = !!expandedReviewContent[reviewId];
-                    const reviewShouldTruncate = needsTruncate(reviewBody, REVIEW_CONTENT_LIMIT);
+                    const reviewShouldTruncate = needsTruncate(
+                      reviewBody,
+                      REVIEW_CONTENT_LIMIT
+                    );
                     const reviewDisplayText =
                       reviewExpanded || !reviewShouldTruncate
                         ? reviewBody
@@ -1560,45 +1575,78 @@ const reviewFormRef = useRef(null);
                     const commentSection = (() => {
                       const allComments = review.comments || [];
                       const sortedComments = [...allComments].sort((a, b) => {
-                        const aDate = new Date(a.created_at || a.createdAt || 0).getTime();
-                        const bDate = new Date(b.created_at || b.createdAt || 0).getTime();
+                        const aDate = new Date(
+                          a.created_at || a.createdAt || 0
+                        ).getTime();
+                        const bDate = new Date(
+                          b.created_at || b.createdAt || 0
+                        ).getTime();
                         return aDate - bDate;
                       });
                       const expanded = !!commentExpanded[reviewId];
                       const visibleComments = expanded
                         ? sortedComments
                         : sortedComments.slice(0, COMMENT_PREVIEW_LIMIT);
-                      const hiddenComments = Math.max(sortedComments.length - COMMENT_PREVIEW_LIMIT, 0);
+                      const hiddenComments = Math.max(
+                        sortedComments.length - COMMENT_PREVIEW_LIMIT,
+                        0
+                      );
 
                       return (
                         <div className="pt-5 mt-6 border-t border-slate-100">
                           <div className="flex items-center justify-between text-xs font-semibold text-slate-600">
-                            <span>Bình luận ({numberFormatter.format(review.comment_count || 0)})</span>
+                            <span>
+                              Bình luận (
+                              {numberFormatter.format(
+                                review.comment_count || 0
+                              )}
+                              )
+                            </span>
                           </div>
                           <div className="mt-3 space-y-4">
                             {visibleComments.map((comment) => {
-                              const commentId = comment.comment_id || comment.id;
+                              const commentId =
+                                comment.comment_id || comment.id;
                               const canEdit =
                                 user &&
-                                (user.user_id === comment.user_id || String(user.role || "").toUpperCase() === "ADMIN");
-                              const editState = commentEditing[commentId] || null;
+                                (user.user_id === comment.user_id ||
+                                  String(user.role || "").toUpperCase() ===
+                                    "ADMIN");
+                              const editState =
+                                commentEditing[commentId] || null;
                               const commentBody = comment.content || "";
-                              const commentExpandedState = !!expandedCommentContent[commentId];
-                              const commentShouldTruncate = needsTruncate(commentBody, COMMENT_CONTENT_LIMIT);
+                              const commentExpandedState =
+                                !!expandedCommentContent[commentId];
+                              const commentShouldTruncate = needsTruncate(
+                                commentBody,
+                                COMMENT_CONTENT_LIMIT
+                              );
                               const commentDisplayText =
                                 commentExpandedState || !commentShouldTruncate
                                   ? commentBody
-                                  : formatTruncatedText(commentBody, COMMENT_CONTENT_LIMIT);
+                                  : formatTruncatedText(
+                                      commentBody,
+                                      COMMENT_CONTENT_LIMIT
+                                    );
 
                               return (
-                                <div key={commentId} className="p-4 text-sm bg-slate-50 rounded-2xl">
+                                <div
+                                  key={commentId}
+                                  className="p-4 text-sm bg-slate-50 rounded-2xl"
+                                >
                                   <div className="flex items-start gap-3">
-                                    {renderAvatar(comment.avatar_url, comment.display_name, "w-10 h-10 text-xs")}
+                                    {renderAvatar(
+                                      comment.avatar_url,
+                                      comment.display_name,
+                                      "w-10 h-10 text-xs"
+                                    )}
                                     <div className="flex-1">
                                       <div className="flex items-start justify-between gap-2">
                                         <div>
                                           <div className="flex items-center gap-2">
-                                            <span className="font-semibold text-slate-900">{comment.display_name}</span>
+                                            <span className="font-semibold text-slate-900">
+                                              {comment.display_name}
+                                            </span>
                                             {comment.role === "ADMIN" ? (
                                               <span className="px-2 py-0.5 text-[10px] font-semibold uppercase rounded-full bg-amber-100 text-amber-700">
                                                 Admin
@@ -1606,7 +1654,9 @@ const reviewFormRef = useRef(null);
                                             ) : null}
                                           </div>
                                           <span className="text-[10px] text-slate-400">
-                                            {reviewDateFormatter.format(new Date(comment.created_at))}
+                                            {reviewDateFormatter.format(
+                                              new Date(comment.created_at)
+                                            )}
                                           </span>
                                         </div>
                                         {canEdit ? (
@@ -1614,7 +1664,9 @@ const reviewFormRef = useRef(null);
                                             <button
                                               type="button"
                                               className="px-2 py-1 text-slate-500 hover:text-slate-700"
-                                              onClick={() => toggleCommentMenu(commentId)}
+                                              onClick={() =>
+                                                toggleCommentMenu(commentId)
+                                              }
                                             >
                                               ...
                                             </button>
@@ -1623,7 +1675,12 @@ const reviewFormRef = useRef(null);
                                                 <button
                                                   type="button"
                                                   className="w-full px-3 py-2 text-left hover:bg-slate-50"
-                                                  onClick={() => handleStartEditComment(reviewId, comment)}
+                                                  onClick={() =>
+                                                    handleStartEditComment(
+                                                      reviewId,
+                                                      comment
+                                                    )
+                                                  }
                                                 >
                                                   Sửa
                                                 </button>
@@ -1632,7 +1689,10 @@ const reviewFormRef = useRef(null);
                                                   className="w-full px-3 py-2 text-left text-rose-600 hover:bg-rose-50"
                                                   onClick={() => {
                                                     toggleCommentMenu(null);
-                                                    handleDeleteComment(reviewId, commentId);
+                                                    handleDeleteComment(
+                                                      reviewId,
+                                                      commentId
+                                                    );
                                                   }}
                                                 >
                                                   Xoá
@@ -1650,7 +1710,10 @@ const reviewFormRef = useRef(null);
                                             onChange={(e) =>
                                               setCommentEditing((prev) => ({
                                                 ...prev,
-                                                [commentId]: { ...editState, text: e.target.value },
+                                                [commentId]: {
+                                                  ...editState,
+                                                  text: e.target.value,
+                                                },
                                               }))
                                             }
                                             className="w-full px-3 py-2 text-xs border rounded-lg border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-100"
@@ -1661,7 +1724,9 @@ const reviewFormRef = useRef(null);
                                                 <label
                                                   key={url}
                                                   className={`flex items-center gap-1 px-2 py-1 text-[10px] border rounded-full ${
-                                                    editState.retainMedia?.includes(url)
+                                                    editState.retainMedia?.includes(
+                                                      url
+                                                    )
                                                       ? "bg-blue-50 text-blue-700 border-blue-200"
                                                       : "border-slate-200 text-slate-500"
                                                   }`}
@@ -1669,11 +1734,24 @@ const reviewFormRef = useRef(null);
                                                   <input
                                                     type="checkbox"
                                                     className="hidden"
-                                                    checked={editState.retainMedia?.includes(url)}
-                                                    onChange={() => handleEditRetainToggle(commentId, url)}
+                                                    checked={editState.retainMedia?.includes(
+                                                      url
+                                                    )}
+                                                    onChange={() =>
+                                                      handleEditRetainToggle(
+                                                        commentId,
+                                                        url
+                                                      )
+                                                    }
                                                   />
-                                                  {editState.retainMedia?.includes(url) ? "Giữ" : "Bỏ"}
-                                                  <span className="truncate max-w-[80px]">{url.split("/").pop()}</span>
+                                                  {editState.retainMedia?.includes(
+                                                    url
+                                                  )
+                                                    ? "Giữ"
+                                                    : "Bỏ"}
+                                                  <span className="truncate max-w-[80px]">
+                                                    {url.split("/").pop()}
+                                                  </span>
                                                 </label>
                                               ))}
                                             </div>
@@ -1685,34 +1763,54 @@ const reviewFormRef = useRef(null);
                                                 accept="image/*"
                                                 multiple
                                                 className="hidden"
-                                                onChange={(e) => handleEditFilesChange(commentId, e.target.files)}
+                                                onChange={(e) =>
+                                                  handleEditFilesChange(
+                                                    commentId,
+                                                    e.target.files
+                                                  )
+                                                }
                                               />
                                               + Thêm ảnh
                                             </label>
                                             {editState.previews?.length ? (
                                               <div className="flex flex-wrap gap-2">
-                                                {editState.previews.map((preview) => (
-                                                  <div
-                                                    key={preview.url}
-                                                    className="w-12 h-12 overflow-hidden border rounded-lg border-slate-200"
-                                                  >
-                                                    <img src={preview.url} alt={preview.name} className="object-cover w-full h-full" />
-                                                  </div>
-                                                ))}
+                                                {editState.previews.map(
+                                                  (preview) => (
+                                                    <div
+                                                      key={preview.url}
+                                                      className="w-12 h-12 overflow-hidden border rounded-lg border-slate-200"
+                                                    >
+                                                      <img
+                                                        src={preview.url}
+                                                        alt={preview.name}
+                                                        className="object-cover w-full h-full"
+                                                      />
+                                                    </div>
+                                                  )
+                                                )}
                                               </div>
                                             ) : null}
                                           </div>
                                           <div className="flex items-center gap-2">
                                             <button
                                               type="button"
-                                              onClick={() => handleUpdateCommentSubmit(reviewId, commentId)}
+                                              onClick={() =>
+                                                handleUpdateCommentSubmit(
+                                                  reviewId,
+                                                  commentId
+                                                )
+                                              }
                                               className="px-3 py-1 text-xs font-semibold text-white bg-blue-600 rounded-full hover:bg-blue-700"
                                             >
                                               Lưu
                                             </button>
                                             <button
                                               type="button"
-                                              onClick={() => handleCancelEditComment(commentId)}
+                                              onClick={() =>
+                                                handleCancelEditComment(
+                                                  commentId
+                                                )
+                                              }
                                               className="px-3 py-1 text-xs font-semibold border rounded-full text-slate-600 border-slate-300"
                                             >
                                               Huỷ
@@ -1728,13 +1826,18 @@ const reviewFormRef = useRef(null);
                                                 type="button"
                                                 className="ml-1 text-[11px] font-semibold text-blue-600 hover:underline"
                                                 onClick={() =>
-                                                  setExpandedCommentContent((prev) => ({
-                                                    ...prev,
-                                                    [commentId]: !commentExpandedState,
-                                                  }))
+                                                  setExpandedCommentContent(
+                                                    (prev) => ({
+                                                      ...prev,
+                                                      [commentId]:
+                                                        !commentExpandedState,
+                                                    })
+                                                  )
                                                 }
                                               >
-                                                {commentExpandedState ? "Thu gọn" : "Xem thêm"}
+                                                {commentExpandedState
+                                                  ? "Thu gọn"
+                                                  : "Xem thêm"}
                                               </button>
                                             ) : null}
                                           </p>
@@ -1748,7 +1851,11 @@ const reviewFormRef = useRef(null);
                                                   rel="noopener noreferrer"
                                                   className="block w-20 h-20 overflow-hidden border rounded-lg border-slate-200"
                                                 >
-                                                  <img src={url} alt="comment" className="object-cover w-full h-full" />
+                                                  <img
+                                                    src={url}
+                                                    alt="comment"
+                                                    className="object-cover w-full h-full"
+                                                  />
                                                 </a>
                                               ))}
                                             </div>
@@ -1765,33 +1872,56 @@ const reviewFormRef = useRef(null);
                                 <button
                                   type="button"
                                   className="text-xs font-semibold text-blue-600 hover:underline"
-                                  onClick={() => toggleCommentVisibility(reviewId)}
+                                  onClick={() =>
+                                    toggleCommentVisibility(reviewId)
+                                  }
                                 >
                                   {expanded
                                     ? "Thu gọn bình luận"
-                                    : `Xem thêm bình luận${hiddenComments ? ` (${hiddenComments}+)` : ""}`}
+                                    : `Xem thêm bình luận${
+                                        hiddenComments
+                                          ? ` (${hiddenComments}+)`
+                                          : ""
+                                      }`}
                                 </button>
                               </div>
                             ) : null}
-                            <form onSubmit={(e) => handleCommentSubmit(e, reviewId)} className="space-y-2">
+                            <form
+                              onSubmit={(e) => handleCommentSubmit(e, reviewId)}
+                              className="space-y-2"
+                            >
                               <div className="flex items-start gap-2">
                                 <div className="pt-1">
-                                  {renderAvatar(user?.avatarUrl, currentUserName, "w-10 h-10 text-xs")}
+                                  {renderAvatar(
+                                    user?.avatarUrl,
+                                    currentUserName,
+                                    "w-10 h-10 text-xs"
+                                  )}
                                 </div>
                                 <div className="flex items-center flex-1 gap-2">
                                   <input
                                     type="text"
                                     value={commentDrafts[reviewId] || ""}
-                                    onChange={(e) => handleCommentChange(reviewId, e.target.value)}
+                                    onChange={(e) =>
+                                      handleCommentChange(
+                                        reviewId,
+                                        e.target.value
+                                      )
+                                    }
                                     placeholder="Viết bình luận..."
                                     className="flex-1 px-3 py-2 text-xs border rounded-full border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-100"
                                   />
                                   <button
                                     type="submit"
                                     className="px-3 py-2 text-xs font-semibold text-white bg-blue-600 rounded-full hover:bg-blue-700 disabled:opacity-50"
-                                    disabled={commentSubmitting[reviewId] || !(commentDrafts[reviewId] || "").trim()}
+                                    disabled={
+                                      commentSubmitting[reviewId] ||
+                                      !(commentDrafts[reviewId] || "").trim()
+                                    }
                                   >
-                                    {commentSubmitting[reviewId] ? "Đang gửi..." : "Gửi"}
+                                    {commentSubmitting[reviewId]
+                                      ? "Đang gửi..."
+                                      : "Gửi"}
                                   </button>
                                 </div>
                               </div>
@@ -1802,20 +1932,31 @@ const reviewFormRef = useRef(null);
                                     accept="image/*"
                                     multiple
                                     className="hidden"
-                                    onChange={(e) => handleCommentFilesChange(reviewId, e.target.files)}
+                                    onChange={(e) =>
+                                      handleCommentFilesChange(
+                                        reviewId,
+                                        e.target.files
+                                      )
+                                    }
                                   />
                                   + Thêm ảnh
                                 </label>
                                 {commentPreviews[reviewId]?.length ? (
                                   <div className="flex flex-wrap gap-2">
-                                    {commentPreviews[reviewId].map((preview) => (
-                                      <div
-                                        key={preview.url}
-                                        className="overflow-hidden border rounded-lg w-14 h-14 border-slate-200"
-                                      >
-                                        <img src={preview.url} alt={preview.name} className="object-cover w-full h-full" />
-                                      </div>
-                                    ))}
+                                    {commentPreviews[reviewId].map(
+                                      (preview) => (
+                                        <div
+                                          key={preview.url}
+                                          className="overflow-hidden border rounded-lg w-14 h-14 border-slate-200"
+                                        >
+                                          <img
+                                            src={preview.url}
+                                            alt={preview.name}
+                                            className="object-cover w-full h-full"
+                                          />
+                                        </div>
+                                      )
+                                    )}
                                   </div>
                                 ) : null}
                               </div>
@@ -1832,21 +1973,39 @@ const reviewFormRef = useRef(null);
                       >
                         <div className="flex flex-wrap items-start justify-between gap-4">
                           <div className="flex items-center gap-3">
-                            {renderAvatar(review.avatar_url, review.display_name, "w-14 h-14 text-lg")}
+                            {renderAvatar(
+                              review.avatar_url,
+                              review.display_name,
+                              "w-14 h-14 text-lg"
+                            )}
                             <div>
-                              <p className="text-base font-semibold text-slate-900">{review.display_name}</p>
-                              <p className="text-xs text-slate-500">{review.program}</p>
+                              <p className="text-base font-semibold text-slate-900">
+                                {review.display_name}
+                              </p>
+                              <p className="text-xs text-slate-500">
+                                {review.program}
+                              </p>
                             </div>
                           </div>
                           <div className="flex items-center gap-2 text-xs text-slate-500">
-                            <div>{reviewDateFormatter.format(new Date(review.created_at))}</div>
-                            {user && (user.user_id === review.user_id || isCurrentUserAdmin) ? (
+                            <div>
+                              {reviewDateFormatter.format(
+                                new Date(review.created_at)
+                              )}
+                            </div>
+                            {user &&
+                            (user.user_id === review.user_id ||
+                              isCurrentUserAdmin) ? (
                               <div className="relative">
                                 <button
                                   type="button"
                                   className="px-2 py-1 text-slate-500 hover:text-slate-700"
                                   onClick={() =>
-                                    setReviewMenus((prev) => (prev === review.review_id ? null : review.review_id))
+                                    setReviewMenus((prev) =>
+                                      prev === review.review_id
+                                        ? null
+                                        : review.review_id
+                                    )
                                   }
                                 >
                                   ...
@@ -1856,14 +2015,18 @@ const reviewFormRef = useRef(null);
                                     <button
                                       type="button"
                                       className="w-full px-3 py-2 text-left hover:bg-slate-50"
-                                      onClick={() => handleStartEditReview(review)}
+                                      onClick={() =>
+                                        handleStartEditReview(review)
+                                      }
                                     >
                                       Sửa
                                     </button>
                                     <button
                                       type="button"
                                       className="w-full px-3 py-2 text-left text-rose-600 hover:bg-rose-50"
-                                      onClick={() => handleDeleteReview(review.review_id)}
+                                      onClick={() =>
+                                        handleDeleteReview(review.review_id)
+                                      }
                                     >
                                       Xoá
                                     </button>
@@ -1876,11 +2039,15 @@ const reviewFormRef = useRef(null);
 
                         <div className="flex items-center gap-2 mt-3">
                           {renderStars(review.rating)}
-                          <span className="text-sm font-semibold text-slate-700">{review.rating}.0</span>
+                          <span className="text-sm font-semibold text-slate-700">
+                            {review.rating}.0
+                          </span>
                         </div>
 
                         {review.headline ? (
-                          <h3 className="mt-2 text-base font-semibold text-slate-900">{review.headline}</h3>
+                          <h3 className="mt-2 text-base font-semibold text-slate-900">
+                            {review.headline}
+                          </h3>
                         ) : null}
                         <p className="mt-1 text-base leading-relaxed text-slate-600">
                           {reviewDisplayText}
@@ -1909,7 +2076,11 @@ const reviewFormRef = useRef(null);
                                 rel="noopener noreferrer"
                                 className="block w-24 h-24 overflow-hidden border rounded-xl border-slate-200"
                               >
-                                <img src={url} alt="media" className="object-cover w-full h-full" />
+                                <img
+                                  src={url}
+                                  alt="media"
+                                  className="object-cover w-full h-full"
+                                />
                               </a>
                             ))}
                           </div>
@@ -1938,11 +2109,25 @@ const reviewFormRef = useRef(null);
                                 review.userVote
                                   ? "text-blue-600 border-blue-200 bg-blue-50"
                                   : "text-slate-600 border-slate-200 hover:border-blue-200"
-                              } ${helpfulLoading[review.review_id] ? "opacity-60" : ""}`}
+                              } ${
+                                helpfulLoading[review.review_id]
+                                  ? "opacity-60"
+                                  : ""
+                              }`}
                             >
-                              <ThumbsUp className={`w-4 h-4 ${review.userVote ? "text-blue-600" : "text-slate-500"}`} />
+                              <ThumbsUp
+                                className={`w-4 h-4 ${
+                                  review.userVote
+                                    ? "text-blue-600"
+                                    : "text-slate-500"
+                                }`}
+                              />
                               {review.userVote ? "Đã hữu ích" : "Hữu ích"}
-                              <span className="ml-1">{numberFormatter.format(review.helpful_count || 0)}</span>
+                              <span className="ml-1">
+                                {numberFormatter.format(
+                                  review.helpful_count || 0
+                                )}
+                              </span>
                             </button>
                           </div>
                         </div>

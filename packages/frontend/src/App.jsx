@@ -15,7 +15,7 @@ import Landing from "./pages/landing/Landing.jsx";
 import NutritionAI from "./pages/nutrition/NutritionAI.jsx";
 import NutritionDemo from "./pages/nutrition/NutritionDemo.jsx";
 import NutritionPersonalize from "./pages/nutrition/NutritionPersonalize.jsx";
-import Dashboard from "./pages/user/Dashboard.jsx";
+import Dashboard from "./pages/dashboard/Dashboard.jsx";
 import ScreenshotLibrary from "./pages/user/ScreenshotLibrary.jsx";
 import Modeling from "./pages/model3D/Modeling.jsx";
 import ModelingDemo from "./pages/model3D/ModelingDemo.jsx";
@@ -50,7 +50,7 @@ import OnboardingEntry from "./pages/boardings/OnboardingEntry.jsx";
 import AdminLayout from "./layouts/AdminLayout.jsx";
 import AdminOverview from "./pages/admin/Overview.jsx";
 import AdminUserDetail from "./pages/admin/UserDetail.jsx";
-import AdminContentManage from "./pages/admin/content/ContentManage.jsx";
+import AdminContentManage from "./pages/admin/exercise/ContentManage.jsx";
 import AdminFinancialManage from "./pages/admin/AdminRevenue.jsx";
 import Role from "./pages/admin/Role.jsx";
 import Plan from "./pages/admin/Plan.jsx";
@@ -63,8 +63,10 @@ import AdminRevenue from "./pages/admin/AdminRevenue.jsx";
 import AdminUsers from "./pages/admin/AdminUsers.jsx";
 import AdminPopularExercises from "./pages/admin/PopularExercises.jsx";
 import AdminSupportReports from "./pages/admin/SupportReports.jsx";
-import AdminExerciseList from "./pages/admin/content/AdminExerciseList.jsx";
-import AdminExerciseRight from "./pages/admin/content/AdminExerciseRight.jsx";
+import AdminExerciseList from "./pages/admin/exercise/AdminExerciseList.jsx";
+import AdminExerciseRight from "./pages/admin/exercise/AdminExerciseRight.jsx";
+
+import AdminHeroSettings from "./pages/admin/content/AdminHeroSettings.jsx";
 
 // Account pages
 import PersonalInfo from "./pages/account/PersonalInfo.jsx";
@@ -373,6 +375,8 @@ function App() {
                 path="content/exercises/edit/:id"
                 element={<AdminExerciseRight />}
               />
+
+              <Route path="content/hero" element={<AdminHeroSettings />} />
             </Route>
 
             {/* Catch all: redirect based on auth status */}
