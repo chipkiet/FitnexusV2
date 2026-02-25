@@ -17,7 +17,7 @@ import ResumeRestartModal from './ResumeRestartModal.jsx';
 * <StartWorkoutButton planId={planId} planName={plan?.name} />
 * <StartWorkoutButton exercises={todayList} />
 */
-export default function StartWorkoutButton({ planId, planName, exercises }) {
+export default function StartWorkoutButton({ planId, planName, exercises, className, children }) {
   const navigate = useNavigate();
   const [starting, setStarting] = useState(false);
   const [activeSession, setActiveSession] = useState(null);
@@ -26,10 +26,10 @@ export default function StartWorkoutButton({ planId, planName, exercises }) {
 
   const createNewSession = async () => {
     try {
-      const payload = planId 
+      const payload = planId
         ? { plan_id: Number(planId) }
         : { exercise_ids: exercises.map(ex => ex.id) };
-      
+
       const res = await api.post('/api/workout', payload);
 
       if (res?.data?.success) {
@@ -114,11 +114,11 @@ export default function StartWorkoutButton({ planId, planName, exercises }) {
   return (
     <>
       <button
-        className="w-full px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg disabled:opacity-60"
+        className={className || "w-full px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg disabled:opacity-60"}
         onClick={startWorkout}
         disabled={starting}
       >
-        {starting ? 'Đang bắt đầu...' : 'Bắt đầu buổi'}
+        {starting ? 'Đang bắt đầu...' : (children || 'Bắt đầu buổi')}
       </button>
 
       {showResumeModal && activeSession && (
@@ -142,10 +142,14 @@ StartWorkoutButton.propTypes = {
     id: PropTypes.any.isRequired,
     name: PropTypes.string,
   })),
+  className: PropTypes.string,
+  children: PropTypes.node,
 };
 
 StartWorkoutButton.defaultProps = {
   planId: null,
   planName: '',
   exercises: null,
+  className: '',
+  children: null,
 };

@@ -1,29 +1,39 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/auth.context.jsx";
-import { getMyPlansApi, addExerciseToPlanApi, listWorkoutSessionsApi, deletePlanApi } from "../../lib/api.js";
+import { getMyPlansApi, addExerciseToPlanApi, listWorkoutSessionsApi, deletePlanApi, createPlanApi } from "../../lib/api.js";
+
+// shadcn components
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Info, Book, Eye, Trash2, RefreshCw } from "lucide-react";
 
 export default function PlanPicker() {
   // Modal hiển thị khi người dùng chưa có plan nào
   function NoPlansModal({ onClose, onCreatePlan }) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose}>
-        <div className="w-full max-w-md p-6 mx-4 bg-white shadow-2xl rounded-xl" onClick={(e) => e.stopPropagation()}>
-          <h3 className="mb-2 text-xl font-semibold text-gray-900">
-            Chưa có kế hoạch luyện tập
-          </h3>
-          <p className="mb-6 text-sm text-gray-600">
-            Bạn cần tạo một kế hoạch trước khi thêm bài tập. Bạn có muốn tạo kế hoạch mới ngay bây giờ không?
-          </p>
-          <div className="space-y-3">
-            <button onClick={onCreatePlan} className="w-full px-4 py-3 text-sm font-semibold text-white transition-colors bg-green-600 rounded-lg hover:bg-green-700">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
+        <Card className="w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
+          <CardHeader>
+            <CardTitle>Chưa có kế hoạch luyện tập</CardTitle>
+            <CardDescription>
+              Bạn cần tạo một kế hoạch trước khi thêm bài tập. Bạn có muốn tạo kế hoạch mới ngay bây giờ không?
+            </CardDescription>
+          </CardHeader>
+          <CardFooter className="flex flex-col gap-3">
+            <Button className="w-full" onClick={onCreatePlan}>
               Tạo kế hoạch mới
-            </button>
-            <button onClick={onClose} className="w-full px-4 py-3 text-sm font-medium text-gray-700 transition-colors border-2 border-gray-300 rounded-lg hover:bg-gray-50">
+            </Button>
+            <Button variant="outline" className="w-full" onClick={onClose}>
               Để sau
-            </button>
-          </div>
-        </div>
+            </Button>
+          </CardFooter>
+        </Card>
       </div>
     );
   }
@@ -31,21 +41,23 @@ export default function PlanPicker() {
   // Modal xác nhận xóa plan
   function DeleteConfirmationModal({ planName, onConfirm, onCancel, isDeleting }) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onCancel}>
-        <div className="w-full max-w-md p-6 mx-4 bg-white shadow-2xl rounded-xl" onClick={(e) => e.stopPropagation()}>
-          <h3 className="mb-2 text-xl font-semibold text-red-800">Xác nhận xóa</h3>
-          <p className="mb-6 text-sm text-gray-600">
-            Bạn có chắc chắn muốn xóa kế hoạch "<b>{planName}</b>"? Hành động này không thể hoàn tác.
-          </p>
-          <div className="flex gap-4">
-            <button onClick={onCancel} disabled={isDeleting} className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onCancel}>
+        <Card className="w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
+          <CardHeader>
+            <CardTitle className="text-destructive">Xác nhận xóa</CardTitle>
+            <CardDescription>
+              Bạn có chắc chắn muốn xóa kế hoạch "<b>{planName}</b>"? Hành động này không thể hoàn tác.
+            </CardDescription>
+          </CardHeader>
+          <CardFooter className="flex gap-4">
+            <Button variant="outline" className="flex-1" onClick={onCancel} disabled={isDeleting}>
               Hủy
-            </button>
-            <button onClick={onConfirm} disabled={isDeleting} className="flex-1 px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-60">
+            </Button>
+            <Button variant="destructive" className="flex-1" onClick={onConfirm} disabled={isDeleting}>
               {isDeleting ? "Đang xóa..." : "Xóa kế hoạch"}
-            </button>
-          </div>
-        </div>
+            </Button>
+          </CardFooter>
+        </Card>
       </div>
     );
   }
@@ -69,7 +81,7 @@ export default function PlanPicker() {
   const [deletingPlan, setDeletingPlan] = useState(null); // State cho modal xóa
   const [isDeleting, setIsDeleting] = useState(false);
   const [saving, setSaving] = useState(false);
-
+  const [creating, setCreating] = useState(false); // State cho quick create
 
   const load = async () => {
     setLoading(true);
@@ -90,7 +102,7 @@ export default function PlanPicker() {
         const itemsSess = sess?.data?.items ?? sess?.data ?? [];
         const setIds = new Set((Array.isArray(itemsSess) ? itemsSess : []).map((s) => s.plan_id).filter((v) => Number.isFinite(v)));
         setCompletedPlanIds(setIds);
-      } catch {}
+      } catch { }
     } catch (e) {
       // Nếu BE chưa có endpoint list, im lặng và để người dùng tạo mới
       setShowNoPlansModal(true);
@@ -129,7 +141,7 @@ export default function PlanPicker() {
         const picked = (items || []).find((p) => p.plan_id === selectedPlanId);
         const ctx = { plan_id: selectedPlanId, name: picked?.name || "" };
         sessionStorage.setItem("current_plan_context", JSON.stringify(ctx));
-      } catch {}
+      } catch { }
       // Lấy tổng số bài tập từ response nếu BE có trả về (không gọi endpoint khác)
       const planItemCount = (() => {
         const d = resData;
@@ -165,6 +177,69 @@ export default function PlanPicker() {
     }
   };
 
+  const handleQuickCreate = async () => {
+    if (!exerciseId) return;
+    setCreating(true);
+    setError(null);
+    try {
+      const todayStr = new Date().toLocaleDateString("vi-VN");
+      const newPlan = await createPlanApi({
+        name: `Giáo án mới - ${todayStr}`,
+        description: "Kế hoạch được tạo nhanh từ chức năng Thêm bài tập",
+        difficulty_level: "beginner",
+        is_public: false,
+      });
+
+      const planId = newPlan?.plan_id || newPlan?.data?.plan_id;
+      if (!planId) throw new Error("Không lấy được ID kế hoạch mới tạo");
+
+      const resData = await addExerciseToPlanApi({
+        planId,
+        exercise_id: exerciseId,
+        sets_recommended: 3,
+        reps_recommended: "8-12",
+        rest_period_seconds: 60,
+      });
+
+      try {
+        const ctx = { plan_id: planId, name: `Giáo án mới - ${todayStr}` };
+        sessionStorage.setItem("current_plan_context", JSON.stringify(ctx));
+      } catch { }
+
+      const planItemCount = (() => {
+        const d = resData;
+        if (!d || typeof d !== "object") return undefined;
+        if (typeof d.plan_item_count === "number") return d.plan_item_count;
+        if (typeof d.items_count === "number") return d.items_count;
+        if (typeof d.total_items === "number") return d.total_items;
+        if (typeof d.total === "number") return d.total;
+        if (typeof d.count === "number") return d.count;
+        if (Array.isArray(d.items)) return d.items.length;
+        if (Array.isArray(d.data?.items)) return d.data.items.length;
+        if (Array.isArray(d.data)) return d.data.length;
+        return undefined;
+      })();
+
+      const serverExerciseName = resData?.exercise_name || resData?.exercise?.name || resData?.data?.exercise?.name;
+      const addedExerciseName = serverExerciseName || exerciseName || "";
+
+      navigate("/exercises", {
+        replace: true,
+        state: {
+          toast: "Tạo kế hoạch và thêm bài tập thành công",
+          addedExerciseName,
+          planItemCount,
+        },
+      });
+    } catch (e) {
+      setError({
+        message: e?.response?.data?.message || e?.message || "Tạo nhanh kế hoạch thất bại",
+      });
+    } finally {
+      setCreating(false);
+    }
+  };
+
   const handleDelete = async (planId) => {
     setIsDeleting(true);
     setError(null);
@@ -182,153 +257,194 @@ export default function PlanPicker() {
       setIsDeleting(false);
     }
   };
-  // Removed quick-create handler per request
+
+  const pendingPlans = items.filter((p) => !completedPlanIds.has(p.plan_id));
+  const completedPlans = items.filter((p) => completedPlanIds.has(p.plan_id));
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-3xl px-4 py-10 mx-auto">
-        <h1 className="mb-6 text-2xl font-bold text-gray-900">Chọn kế hoạch để thêm bài tập</h1>
+    <div className="min-h-screen bg-slate-50 py-10">
+      <div className="max-w-[800px] mx-auto px-4">
+
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold text-slate-900">Chọn kế hoạch để thêm bài tập</h1>
+          <Button variant="ghost" size="icon" onClick={load} title="Tải lại">
+            <RefreshCw className={`w-5 h-5 ${loading ? "animate-spin" : ""}`} />
+          </Button>
+        </div>
+
         {exerciseId ? (
-          <div className="mb-4 text-sm text-gray-600">Bài tập chọn: ID <b>{exerciseId}</b></div>
+          <div className="mb-4 text-sm text-muted-foreground">Bài tập chọn: ID <b>{exerciseId}</b></div>
         ) : (
-          <div className="mb-4 text-sm text-gray-600">Không có bài tập được chọn. Hãy quay lại Thư viện để chọn.</div>
+          <Alert className="mb-4">
+            <Info className="h-4 w-4" />
+            <AlertTitle>Thông báo</AlertTitle>
+            <AlertDescription>Không có bài tập được chọn. Hãy quay lại Thư viện để chọn.</AlertDescription>
+          </Alert>
         )}
 
         {error && (
-          <div className="p-3 mb-4 text-sm text-red-700 border border-red-200 rounded bg-red-50">{error.message}</div>
+          <Alert variant="destructive" className="mb-4">
+            <Info className="h-4 w-4" />
+            <AlertTitle>Lỗi</AlertTitle>
+            <AlertDescription>{error.message}</AlertDescription>
+          </Alert>
         )}
 
         {/* My plans */}
-        <div className="p-5 mb-6 bg-white border rounded-xl">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-semibold text-gray-900">Kế hoạch của tôi</h2>
-            <button
-              type="button"
-              onClick={load}
-              className="px-3 py-1 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
-            >
-              Tải lại
-            </button>
-          </div>
-          {loading ? (
-            <div className="text-sm text-gray-600">Đang tải danh sách plan...</div>
-          ) : items.length === 0 ? (
-            <div className="text-sm text-gray-500">Bạn chưa có kế hoạch nào.</div>
-          ) : (
-            <div className="space-y-4">
-              {/* Chưa hoàn thành */}
-              <div>
-                <div className="mb-2 text-sm font-semibold text-gray-800">Chưa hoàn thành</div>
-                <div className="space-y-2">
-                  {items.filter((p) => !completedPlanIds.has(p.plan_id)).map((p) => (
-                    <label key={p.plan_id} className="flex items-center justify-between gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
-                      <input
-                        type="radio"
-                        name="picked_plan"
-                        value={p.plan_id}
-                        checked={selectedPlanId === p.plan_id}
-                        onChange={() => setSelectedPlanId(p.plan_id)}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium text-gray-900 truncate">{p.name || '(Không có tên)'}</div>
-                        {p.description && (
-                          <div className="text-xs text-gray-600 truncate">{p.description}</div>
-                        )}
-                        {p.difficulty_level && (
-                          <div className="text-xs text-gray-500">Độ khó: {p.difficulty_level}</div>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <button
-                          type="button"
-                          className="px-3 py-1.5 text-xs text-blue-600 border border-blue-200 rounded hover:bg-blue-50"
-                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate(`/plans/${p.plan_id}`); }}
-                        >
-                          Xem
-                        </button>
-                        <button
-                          type="button"
-                          className="px-3 py-1.5 text-xs text-red-600 border border-red-200 rounded hover:bg-red-50"
-                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); setDeletingPlan(p); }}
-                        >
-                          Xóa
-                        </button>
-                      </div>
-                    </label>
-                  ))}
-                </div>
+        <Card className="mb-6 rounded-xl shadow-sm border">
+          <CardHeader className="flex flex-row items-center justify-between pb-4">
+            <CardTitle className="text-lg">Kế hoạch của tôi</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <div className="text-sm text-muted-foreground py-8 text-center flex flex-col items-center justify-center">
+                Đang tải danh sách plan...
               </div>
-
-              {/* Đã hoàn thành */}
-              <div>
-                <div className="mb-2 text-sm font-semibold text-gray-800">Đã hoàn thành</div>
-                {Array.from(completedPlanIds).length === 0 ? (
-                  <div className="text-xs text-gray-500">Chưa có kế hoạch hoàn thành</div>
-                ) : (
-                  <div className="space-y-2">
-                    {items.filter((p) => completedPlanIds.has(p.plan_id)).map((p) => (
-                      <label key={p.plan_id} className="flex items-center justify-between gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
-                        <input
-                          type="radio"
-                          name="picked_plan"
-                          value={p.plan_id}
-                          checked={selectedPlanId === p.plan_id}
-                          onChange={() => setSelectedPlanId(p.plan_id)}
-                        />
-                        <div className="flex-1 min-w-0">
-                          <div className="text-sm font-medium text-gray-900 truncate">{p.name || '(Không có tên)'}</div>
-                          {p.description && (
-                            <div className="text-xs text-gray-600 truncate">{p.description}</div>
-                          )}
-                          {p.difficulty_level && (
-                            <div className="text-xs text-gray-500">Độ khó: {p.difficulty_level}</div>
-                          )}
-                          <div className="mt-1 text-xs text-green-700">Đã từng hoàn thành</div>
-                        </div>
-                        <div className="flex items-center gap-2 shrink-0">
-                          <button
-                            type="button"
-                            className="px-3 py-1.5 text-xs text-blue-600 border border-blue-200 rounded hover:bg-blue-50"
-                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate(`/plans/${p.plan_id}`); }}
-                          >
-                            Xem
-                          </button>
-                          <button
-                            type="button"
-                            className="px-3 py-1.5 text-xs text-red-600 border border-red-200 rounded hover:bg-red-50"
-                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); setDeletingPlan(p); }}
-                          >
-                            Xóa
-                          </button>
-                        </div>
-                      </label>
-                    ))}
-                  </div>
-                )}
+            ) : items.length === 0 ? (
+              <div className="text-sm text-muted-foreground py-10 text-center flex flex-col items-center justify-center">
+                <Book className="h-10 w-10 mb-4 opacity-50" />
+                Bạn chưa có kế hoạch nào.
               </div>
-            </div>
-          )}
+            ) : (
+              <ScrollArea className="h-fit pr-4 max-h-[500px]">
+                <RadioGroup
+                  value={selectedPlanId ? String(selectedPlanId) : ""}
+                  onValueChange={(val) => setSelectedPlanId(Number(val))}
+                  className="space-y-6"
+                >
+                  {/* Chưa hoàn thành */}
+                  {pendingPlans.length > 0 && (
+                    <div>
+                      <h4 className="text-sm uppercase tracking-wider text-muted-foreground font-semibold mb-3">Chưa hoàn thành</h4>
+                      <div className="space-y-2">
+                        {pendingPlans.map((p) => (
+                          <div
+                            key={p.plan_id}
+                            onClick={() => setSelectedPlanId(p.plan_id)}
+                            className={`flex items-start justify-between gap-3 p-4 border rounded-lg cursor-pointer transition-colors hover:bg-slate-100 ${selectedPlanId === p.plan_id ? 'border-primary bg-primary/5' : 'border-border'}`}
+                          >
+                            <div className="flex items-start gap-3 flex-1">
+                              <RadioGroupItem value={String(p.plan_id)} id={`plan-${p.plan_id}`} className="mt-1" />
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="text-sm font-medium text-foreground truncate">{p.name || '(Không có tên)'}</span>
+                                  {p.difficulty_level && <Badge variant="secondary" className="capitalize">{p.difficulty_level}</Badge>}
+                                </div>
+                                {p.description && (
+                                  <p className="text-xs text-muted-foreground line-clamp-1">{p.description}</p>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate(`/plans/${p.plan_id}`); }}
+                              >
+                                Xem
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                                onClick={(e) => { e.preventDefault(); e.stopPropagation(); setDeletingPlan(p); }}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
-          <div className="flex items-center gap-3 mt-4">
-            <button
-              type="button"
-              disabled={(items.length > 0 && !selectedPlanId) || !exerciseId || saving}
-              onClick={handleAddToSelected}
-              className="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-60"
-            >
-              Thêm vào plan đã chọn
-            </button>
-            <button
-              type="button"
+                  {/* Đã hoàn thành */}
+                  {completedPlans.length > 0 && (
+                    <div>
+                      <h4 className="text-sm uppercase tracking-wider text-muted-foreground font-semibold mb-3">Đã hoàn thành</h4>
+                      <div className="space-y-2">
+                        {completedPlans.map((p) => (
+                          <div
+                            key={p.plan_id}
+                            onClick={() => setSelectedPlanId(p.plan_id)}
+                            className={`flex items-start justify-between gap-3 p-4 border rounded-lg cursor-pointer transition-colors hover:bg-slate-100 ${selectedPlanId === p.plan_id ? 'border-primary bg-primary/5' : 'border-border'}`}
+                          >
+                            <div className="flex items-start gap-3 flex-1">
+                              <RadioGroupItem value={String(p.plan_id)} id={`plan-${p.plan_id}`} className="mt-1" />
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="text-sm font-medium text-foreground truncate">{p.name || '(Không có tên)'}</span>
+                                  {p.difficulty_level && <Badge variant="secondary" className="capitalize">{p.difficulty_level}</Badge>}
+                                </div>
+                                {p.description && (
+                                  <p className="text-xs text-muted-foreground line-clamp-1">{p.description}</p>
+                                )}
+                                <div className="mt-1 text-xs text-emerald-600 font-medium tracking-wide">Đã từng hoàn thành</div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate(`/plans/${p.plan_id}`); }}
+                              >
+                                Xem
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                                onClick={(e) => { e.preventDefault(); e.stopPropagation(); setDeletingPlan(p); }}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </RadioGroup>
+              </ScrollArea>
+            )}
+          </CardContent>
+          <Separator />
+          <CardFooter className="flex items-center gap-3 pt-6 justify-end">
+            <Button
+              variant="outline"
+              size="lg"
               onClick={() => navigate('/exercises')}
-              className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
             >
               Trở lại Thư viện
-            </button>
-          </div>
-        </div>
+            </Button>
+            <Button
+              size="lg"
+              disabled={(items.length > 0 && !selectedPlanId) || !exerciseId || saving}
+              onClick={handleAddToSelected}
+            >
+              Thêm vào plan đã chọn
+            </Button>
+          </CardFooter>
+        </Card>
 
-        {/* Quick create removed as requested */}
+        {/* Nút Giáo án mới */}
+        {exerciseId && (
+          <Card className="flex flex-col items-center justify-center p-6 mt-6 border-dashed border-2 bg-transparent shadow-none">
+            <CardTitle className="mb-2 text-base">Chưa có kế hoạch phù hợp?</CardTitle>
+            <CardDescription className="mb-4 text-center max-w-[400px]">
+              Tạo nhanh một giáo án mới và tự động thêm bài tập đang chọn.
+            </CardDescription>
+            <Button
+              disabled={creating}
+              onClick={handleQuickCreate}
+              variant="default"
+              className="bg-green-600 hover:bg-green-700 text-white"
+            >
+              {creating ? "Đang tạo..." : "Giáo án mới"}
+            </Button>
+          </Card>
+        )}
+
         {showNoPlansModal && (
           <NoPlansModal
             onClose={() => setShowNoPlansModal(false)}

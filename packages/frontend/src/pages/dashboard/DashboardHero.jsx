@@ -58,9 +58,9 @@ export default function DashboardHero({
     (safeContent.mediaUrl && safeContent.mediaUrl.match(/\.(mp4|webm|mov)$/i));
 
   return (
-    <section className="relative flex flex-col md:flex-row items-center justify-between px-8 md:px-20 py-24 bg-[#0F172A] text-white rounded-b-[3rem] overflow-hidden min-h-[550px]">
+    <section className="relative flex items-center justify-center px-6 overflow-hidden bg-slate-900 rounded-b-[3rem] text-white" style={{ minHeight: "80vh", paddingBlock: "var(--section-spacing)" }}>
       {/* Background */}
-      <div className="absolute inset-0 z-0 bg-slate-900">
+      <div className="absolute inset-0 z-0">
         {isVideo ? (
           <video
             // QUAN TRỌNG: Key thay đổi giúp React biết phải load lại video mới
@@ -83,48 +83,49 @@ export default function DashboardHero({
           />
         )}
         {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-black/20"></div>{" "}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-black/70"></div>
       </div>
 
       {/* Content */}
-      <div className="relative z-10 w-full space-y-8 text-center duration-700 md:w-3/5 md:text-left animate-in fade-in slide-in-from-left-5">
-        {" "}
-        <h1
-          className="text-5xl font-extrabold leading-tight tracking-tight md:text-7xl drop-shadow-xl shadow-black"
-          dangerouslySetInnerHTML={{ __html: safeContent.title }}
-        />
-        <p className="max-w-xl text-lg font-medium leading-relaxed text-white md:text-xl drop-shadow-md">
-          {safeContent.description}
-        </p>
-        {safeContent.showButton && (
-          <div className="flex flex-wrap justify-center gap-4 pt-2 md:justify-start">
-            <button
-              onClick={onContinue}
-              disabled={continueLoading}
-              className="flex items-center gap-3 px-8 py-4 text-lg font-bold text-white transition-all bg-blue-600 rounded-full shadow-xl group hover:bg-blue-500 shadow-blue-900/30 hover:scale-105 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
-            >
-              {continueLoading ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : (
-                <>
-                  {activeSession?.session_id
-                    ? `Tiếp tục: ${activeSession.plan_name}`
-                    : safeContent.buttonText || "Bắt đầu ngay"}
-                  <PlayCircle className="w-5 h-5 transition-transform group-hover:translate-x-1" />
-                </>
-              )}
-            </button>
-
-            {!isPremiumOrAdmin && (
+      <div className="relative z-10 w-full mx-auto" style={{ maxWidth: "var(--container-width)" }}>
+        <div className="w-full space-y-8 text-center duration-700 md:w-3/5 md:text-left animate-in fade-in slide-in-from-left-5">
+          <h1
+            className="text-5xl font-extrabold leading-tight tracking-tight md:text-7xl drop-shadow-xl shadow-black"
+            dangerouslySetInnerHTML={{ __html: safeContent.title }}
+          />
+          <p className="max-w-xl text-lg font-medium leading-relaxed text-gray-200 md:text-xl drop-shadow-md">
+            {safeContent.description}
+          </p>
+          {safeContent.showButton && (
+            <div className="flex flex-wrap justify-center gap-4 pt-4 md:justify-start">
               <button
-                onClick={onPremiumClick}
-                className="px-8 py-4 font-bold text-white transition-all border rounded-full border-white/40 bg-black/30 hover:bg-black/50 backdrop-blur-md"
+                onClick={onContinue}
+                disabled={continueLoading}
+                className="flex items-center gap-3 px-10 py-5 text-lg font-bold text-black transition-transform bg-white rounded-full shadow-xl hover:scale-105 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed group"
               >
-                Gói Premium
+                {continueLoading ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <>
+                    {activeSession?.session_id
+                      ? `Tiếp tục: ${activeSession.plan_name}`
+                      : safeContent.buttonText || "Bắt đầu ngay"}
+                    <PlayCircle className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+                  </>
+                )}
               </button>
-            )}
-          </div>
-        )}
+
+              {!isPremiumOrAdmin && (
+                <button
+                  onClick={onPremiumClick}
+                  className="px-10 py-5 text-lg font-bold text-white transition-colors border border-white/30 rounded-full hover:bg-white/10 backdrop-blur-sm"
+                >
+                  Gói Premium
+                </button>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </section>
   );
