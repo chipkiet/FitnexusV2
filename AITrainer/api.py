@@ -40,7 +40,7 @@ app.add_middleware(
 # !!! QUAN TRỌNG: Dán khóa API hợp lệ của bạn vào đây !!!
 GEMINI_API_KEY = "AIzaSyCBHEa4eJfTwEMCoJkKr8POz4_lNwomPrU" 
 
-if not GEMINI_API_KEY or GEMINI_API_KEY == "DÁN_KHÓA_API_HỢP_LỆ_CỦA_BẠN_VÀO_ĐÂY":
+if not GEMINI_API_KEY or GEMINI_API_KEY == "AIzaSyAgV9vKqGz2hhQJ6sgPBfZsEB6dj4o16_E":
     print("LỖI: Bạn chưa cấu hình khóa API cho Gemini trong file api.py.")
     sys.exit(1)
 
