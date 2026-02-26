@@ -35,13 +35,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# --- CẤU HÌNH VÀ KHỞI TẠO MODEL ---
+from dotenv import load_dotenv
+load_dotenv(override=True)
 
-# !!! QUAN TRỌNG: Dán khóa API hợp lệ của bạn vào đây !!!
-GEMINI_API_KEY = "AIzaSyCBHEa4eJfTwEMCoJkKr8POz4_lNwomPrU" 
+# !!! QUAN TRỌNG: Dán khóa API hợp lệ của bạn vào .env (`GEMINI_API_KEY=...`)
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
-if not GEMINI_API_KEY or GEMINI_API_KEY == "DÁN_KHÓA_API_HỢP_LỆ_CỦA_BẠN_VÀO_ĐÂY":
-    print("LỖI: Bạn chưa cấu hình khóa API cho Gemini trong file api.py.")
+if not GEMINI_API_KEY or GEMINI_API_KEY == "DÁN_KHÓA_API_HỢP_LỆ_CỦA_BẠN_VÀO_ĐÂY" or GEMINI_API_KEY == "AIzaSyCBHEa4eJfTwEMCoJkKr8POz4_lNwomPrU":
+    print("LỖI: Bạn chưa cấu hình khóa API hợp lệ cho Gemini. Vui lòng cập nhật GEMINI_API_KEY trong file .env")
     sys.exit(1)
 
 genai.configure(api_key=GEMINI_API_KEY)
@@ -49,7 +50,7 @@ print("Khởi tạo cấu hình Gemini API...")
 
 # Chuẩn bị danh sách model fallback
 GEMINI_MODELS = [
-    os.getenv("GEMINI_MODEL") or "gemini-2.5-flash-lite",
+    os.getenv("GEMINI_MODEL") or "gemini-2.0-flash-lite",
 ]
 
 def _gemini_generate_json(prompt: str, timeout_sec: int = 120):
