@@ -1,58 +1,29 @@
 # core/pose_analyzer.py
 import cv2
-from ultralytics import YOLO
 import numpy as np
+import mediapipe as mp
 
-# Các chỉ số của keypoint theo mô hình YOLOv8-pose
-# Vai trái: 5, Vai phải: 6
-# Hông trái: 11, Hông phải: 12
-YOLO_KP_INDICES = {
-    "nose": 0,
-    "left_eye": 1,
-    "right_eye": 2,
-    "left_ear": 3,
-    "right_ear": 4,
-    "left_shoulder": 5,
-    "right_shoulder": 6,
-    "left_elbow": 7,
-    "right_elbow": 8,
-    "left_wrist": 9,
-    "right_wrist": 10,
-    "left_hip": 11,
-    "right_hip": 12,
-    "left_knee": 13,
-    "right_knee": 14,
-    "left_ankle": 15,
-    "right_ankle": 16,
-}
+mp_pose = mp.solutions.pose
+mp_drawing = mp.solutions.drawing_utils
+mp_drawing_styles = mp.solutions.drawing_styles
 
-def load_yolo_model(model_path='yolov8n-pose.pt'):
-    """Tải mô hình YOLOv8-pose đã được huấn luyện sẵn."""
-    try:
-        model = YOLO(model_path)
-        print("Đã tải YOLOv8-pose model thành công.")
-        return model
-    except Exception as e:
-        print(f"Lỗi khi tải mô hình YOLOv8: {e}")
-        return None
+def load_pose_model():
+    """Tạo đối tượng MediaPipe Pose."""
+    print("Khởi tạo mô hình MediaPipe Pose...")
+    # Khởi tạo một phiên bản Pose tĩnh cho ảnh (static_image_mode = True)
+    return mp_pose.Pose(
+        static_image_mode=True, 
+        model_complexity=2, # Độ chính xác cao nhất
+        enable_segmentation=True, # Bật mask để có thể bắt sát rìa cơ thể hơn
+        min_detection_confidence=0.5
+    )
 
 def _euclidean_distance(p1, p2): 
-    """Dùng thuật toán tính khoảng cách Eucliden giữa 2 điểm (x1, y1) và (x2, y2)"""
     return np.sqrt((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)
 
-def _get_keypoint_coords(keypoints, key_name):
-    """Lấy toạ độ (x, y , confidence) của keypoint theo tên"""
-    idx = YOLO_KP_INDICES[key_name]
-    x, y, conf = keypoints[idx]
-    return x, y, conf
-
-def _calculate_measurements_from_keypoints(keypoints, known_height_cm=None):
+def _calculate_measurements_from_landmarks(landmarks, image_width, image_height, segmentation_mask=None, known_height_cm=None):
     """
-    Tính toán các số đo cơ thể từ keypoints.
-
-    Returns: 
-        dict: Dictonary chứa các số đo (px và cm có known_height_cm)
-
+    Tính toán số đo cơ thể từ 33 Keypoints của MediaPipe Pose Landmarks.
     """
     measurements = {
         "pixel_measurements": {},
@@ -61,316 +32,245 @@ def _calculate_measurements_from_keypoints(keypoints, known_height_cm=None):
         "confidence_flags": {}
     }
 
-    try :
-        # Lất toạ độ các điểm cần thiết
-        ls_x, ls_y, ls_conf = _get_keypoint_coords(keypoints, "left_shoulder")
-        rs_x, rs_y, rs_conf = _get_keypoint_coords(keypoints, "right_shoulder")
-        lh_x, lh_y, lh_conf = _get_keypoint_coords(keypoints, "left_hip")
-        rh_x, rh_y, rh_conf = _get_keypoint_coords(keypoints, "right_hip")
-        la_x, la_y, la_conf = _get_keypoint_coords(keypoints, "left_ankle")
-        ra_x, ra_y, ra_conf = _get_keypoint_coords(keypoints, "right_ankle")
+    try:
+        # Lấy toạ độ các điểm chính (nhân với width, height để ra pixel thật)
+        def get_pt(idx):
+            lm = landmarks.landmark[idx]
+            return (lm.x * image_width, lm.y * image_height, lm.visibility)
 
-        # 1. Shoulder width
+        # 11: Left Shoulder, 12: Right Shoulder
+        ls_x, ls_y, ls_conf = get_pt(mp_pose.PoseLandmark.LEFT_SHOULDER)
+        rs_x, rs_y, rs_conf = get_pt(mp_pose.PoseLandmark.RIGHT_SHOULDER)
+        
+        # 23: Left Hip, 24: Right Hip
+        lh_x, lh_y, lh_conf = get_pt(mp_pose.PoseLandmark.LEFT_HIP)
+        rh_x, rh_y, rh_conf = get_pt(mp_pose.PoseLandmark.RIGHT_HIP)
+
+        # 27: Left Ankle, 28: Right Ankle
+        la_x, la_y, la_conf = get_pt(mp_pose.PoseLandmark.LEFT_ANKLE)
+        ra_x, ra_y, ra_conf = get_pt(mp_pose.PoseLandmark.RIGHT_ANKLE)
+
+        # 0: Nose
+        nose_x, nose_y, nose_conf = get_pt(mp_pose.PoseLandmark.NOSE)
+
+        # Lấy thêm tọa độ khuỷu tay/đầu gối để làm hệ tham chiếu cho độ dày cơ thể
+        left_elbow_x = get_pt(mp_pose.PoseLandmark.LEFT_ELBOW)[0]
+        right_elbow_x = get_pt(mp_pose.PoseLandmark.RIGHT_ELBOW)[0]
+        
+        # 1. Shoulder width (Đo từ mép ngoài bắp tay)
         if min(ls_conf, rs_conf) >= 0.5:
-            shoulder_width_px = _euclidean_distance((ls_x, ls_y), (rs_x, rs_y))
+            # MediaPipe khớp vai nằm tít tắp trong xương đòn, ta cần nới rộng ra sát bắp tay ngoài
+            # Ta dùng khoảng cách từ tâm người ra khuỷu tay làm trần, hoặc nới rộng 20-30%
+            inner_shoulder_width = abs(ls_x - rs_x)
+            
+            # Ước tính phần bắp tay (deltoid) dư ra ngoài dựa trên tỷ lệ vai
+            # Nhân hệ số 1.3 sẽ khá sát viền áo phông/bắp tay ngoài
+            shoulder_width_px = inner_shoulder_width * 1.3
+            
+            # Tính điểm trái/phải thực tế để vẽ (bung đều từ tâm)
+            cx, cy = (ls_x + rs_x) / 2, (ls_y + rs_y) / 2
+            draw_ls_x = cx + (ls_x - cx) * 1.3
+            draw_rs_x = cx + (rs_x - cx) * 1.3
+            
             measurements["pixel_measurements"]["shoulder_width"] = float(shoulder_width_px)
             measurements["confidence_flags"]["shoulder_width"] = True
-        else :
+            measurements["draw_points"] = {"shoulder": ((draw_ls_x, ls_y), (draw_rs_x, rs_y))}
+        else:
             measurements["confidence_flags"]["shoulder_width"] = False
-            print("Cảnh báo : Độ tin cậy vai được đưa ra trong trường hợp này không cao")
-        
+
         # 2. Hip width
         if min(lh_conf, rh_conf) >= 0.5:
-            hip_width_px = _euclidean_distance((lh_x, lh_y), (rh_x, rh_y))
+            inner_hip_width = abs(lh_x - rh_x)
+            # Khớp háng/đùi của MP nằm sâu bên trong, viền ngoài hông thường rộng hơn 35-40%
+            hip_width_px = inner_hip_width * 1.38
+            
+            cx, cy = (lh_x + rh_x) / 2, (lh_y + rh_y) / 2
+            draw_lh_x = cx + (lh_x - cx) * 1.38
+            draw_rh_x = cx + (rh_x - cx) * 1.38
+            
             measurements["pixel_measurements"]["hip_width"] = float(hip_width_px)
             measurements["confidence_flags"]["hip_width"] = True
+            measurements["draw_points"] = measurements.get("draw_points", {})
+            measurements["draw_points"]["hip"] = ((draw_lh_x, lh_y), (draw_rh_x, rh_y))
         else:
             measurements["confidence_flags"]["hip_width"] = False
-            print("Cảnh báo: Độ tin cậy hông được phân tích ra từ ảnh không cao")
 
-        # 3. Waist width : Phân được suy ra từ vị trí vai và hông
-        # Giả định eo nằm ở khoảng 60% từ vai xuống hông
-
+        # 3. Waist width (Nội suy 45% từ hông lên vai)
         if min(ls_conf, rs_conf, lh_conf, rh_conf) >= 0.5:
-            waist_ratio = 0.6  # Có thể điều chỉnh tỷ lệ này
+            waist_ratio = 0.45 
+            lw_x = lh_x + waist_ratio * (ls_x - lh_x)
+            lw_y = lh_y + waist_ratio * (ls_y - lh_y)
+            rw_x = rh_x + waist_ratio * (rs_x - rh_x)
+            rw_y = rh_y + waist_ratio * (rs_y - rh_y)
             
-            # Tính điểm eo trái (nội suy giữa vai trái và hông trái)
-            left_waist_x = ls_x + waist_ratio * (lh_x - ls_x)
-            left_waist_y = ls_y + waist_ratio * (lh_y - ls_y)
+            # Eo thường ít mỡ/thịt dư bọc ngoài hơn Vai/Hông, nới rộng 25% (1.25)
+            inner_waist_width = abs(lw_x - rw_x)
+            waist_width_px = inner_waist_width * 1.25
             
-            # Tính điểm eo phải (nội suy giữa vai phải và hông phải)
-            right_waist_x = rs_x + waist_ratio * (rh_x - rs_x)
-            right_waist_y = rs_y + waist_ratio * (rh_y - rs_y)
+            cx, cy = (lw_x + rw_x) / 2, (lw_y + rw_y) / 2
+            draw_lw_x = cx + (lw_x - cx) * 1.25
+            draw_rw_x = cx + (rw_x - cx) * 1.25
             
-            waist_width_px = _euclidean_distance(
-                (left_waist_x, left_waist_y), 
-                (right_waist_x, right_waist_y)
-            )
             measurements["pixel_measurements"]["waist_width"] = float(waist_width_px)
             measurements["confidence_flags"]["waist_width"] = True
-            
-            # Lưu tọa độ điểm eo để vẽ sau này
-            measurements["waist_points"] = {
-                "left": (left_waist_x, left_waist_y),
-                "right": (right_waist_x, right_waist_y)
-            }
+            measurements["draw_points"]["waist"] = ((draw_lw_x, lw_y), (draw_rw_x, rw_y))
         else:
             measurements["confidence_flags"]["waist_width"] = False
-            print("Cảnh báo: Không thể tính chiều rộng eo")
 
-        # 4. Height (chiều cao tổng thể)
-        # Lấy rẩ cả các điểm có độ tin cậy > 0.3
-        valid_y_coords = []
-        for kp in keypoints:
-            x, y, conf = kp
-            if conf > 0.3: 
-                valid_y_coords.append(y)
+        # 4. Height (Từ mũi / mỏm đầu mút đến gót chân thấp nhất)
+        valid_ys = [lm.y * image_height for lm in landmarks.landmark if lm.visibility > 0.5]
+        if len(valid_ys) > 5:
+            min_y = min(valid_ys)
+            # Thêm khoáng cách từ mắt/mũi lên đỉnh đầu (xấp xỉ 10% chiều cao mặt)
+            if nose_conf > 0.5:
+                # Ước lượng đỉnh đầu cao hơn mũi chút đỉnh
+                min_y = nose_y - abs(ls_x - rs_x)*0.4 
 
-        if len(valid_y_coords) >= 2:
-            height_px = (max(valid_y_coords) - min(valid_y_coords))
+            max_y = max(valid_ys)
+            height_px = max_y - min_y
             measurements["pixel_measurements"]["height"] = float(height_px)
             measurements["confidence_flags"]["height"] = True
-        else :
+        else:
             measurements["confidence_flags"]["height"] = False
-            print("Cảnh báo, không đủ thông tin cùng keypoints để tính chiều cao")
-        
-        # 5. Leg length (độ dài chân)
+
+        # 5. Leg length
         if min(lh_conf, rh_conf, la_conf, ra_conf) >= 0.5:
-            # Tính điểm giữa hông
-            mid_hip_x = (lh_x + rh_x) / 2
             mid_hip_y = (lh_y + rh_y) / 2
-            
-            # Tính điểm giữa mắt cá chân
-            mid_ankle_x = (la_x + ra_x) / 2
             mid_ankle_y = (la_y + ra_y) / 2
-            
-            leg_length_px = _euclidean_distance(
-                (mid_hip_x, mid_hip_y), 
-                (mid_ankle_x, mid_ankle_y)
-            )
+            leg_length_px = abs(mid_ankle_y - mid_hip_y)
             measurements["pixel_measurements"]["leg_length"] = float(leg_length_px)
             measurements["confidence_flags"]["leg_length"] = True
-            
-            # Lưu tọa độ để vẽ
-            measurements["leg_points"] = {
-                "mid_hip": (mid_hip_x, mid_hip_y),
-                "mid_ankle": (mid_ankle_x, mid_ankle_y)
-            }
+            measurements["draw_points"]["leg"] = (
+                ((lh_x + rh_x)/2, mid_hip_y),
+                ((la_x + ra_x)/2, mid_ankle_y)
+            )
         else:
             measurements["confidence_flags"]["leg_length"] = False
-            print("Cảnh báo: Độ tin cậy chân thấp, cung cấp thêm hình ảnh để rõ ràng hơn")
 
-        # 6. Tính tỷ lệ vai/hông và eo/hông
-        if ("shoulder_width" in measurements["pixel_measurements"] and 
-            "hip_width" in measurements["pixel_measurements"]):
-            hip_width = measurements["pixel_measurements"]["hip_width"]
-            if hip_width > 0:
-                ratio = measurements["pixel_measurements"]["shoulder_width"] / hip_width
-                measurements["pixel_measurements"]["shoulder_hip_ratio"] = float(ratio)
-        if ("waist_width" in measurements["pixel_measurements"] and
-            "hip_width" in measurements["pixel_measurements"]):
-            hip_width = measurements["pixel_measurements"]["hip_width"]
-            if hip_width > 0:
-                whr = measurements["pixel_measurements"]["waist_width"] / hip_width
-                measurements["pixel_measurements"]["waist_hip_ratio"] = float(whr)
-        
-        # 7. Quy đổi sang cm nếu có known_height_cm
-        if known_height_cm and "height" in measurements["pixel_measurements"]:
+        # 6. Ratios
+        if measurements["confidence_flags"].get("shoulder_width") and measurements["confidence_flags"].get("hip_width"):
+            ratio = measurements["pixel_measurements"]["shoulder_width"] / measurements["pixel_measurements"]["hip_width"]
+            measurements["pixel_measurements"]["shoulder_hip_ratio"] = float(ratio)
+            
+        if measurements["confidence_flags"].get("waist_width") and measurements["confidence_flags"].get("hip_width"):
+            whr = measurements["pixel_measurements"]["waist_width"] / measurements["pixel_measurements"]["hip_width"]
+            measurements["pixel_measurements"]["waist_hip_ratio"] = float(whr)
+
+        # 7. Conversions to cm
+        if known_height_cm and measurements["confidence_flags"].get("height"):
             height_px = measurements["pixel_measurements"]["height"]
-            if height_px > 0:
-                scale_cm_per_px = known_height_cm / height_px
-                measurements["scale_cm_per_px"] = float(scale_cm_per_px)
+            scale = known_height_cm / height_px
+            measurements["scale_cm_per_px"] = float(scale)
 
-                # Quy đổi tất cả các số đo sang cm 
-                for key, value_px in measurements["pixel_measurements"].items():
-                    if key != "shoulder_hip_ratio": # Tỷ lệ không cần quy đổi
-                        try:
-                            measurements["cm_measurements"][key] = float(value_px) * float(scale_cm_per_px)
-                        except Exception:
-                            continue
+            for k, v in measurements["pixel_measurements"].items():
+                if k not in ["shoulder_hip_ratio", "waist_hip_ratio"]:
+                    measurements["cm_measurements"][k] = v * scale
 
-                print(f"Tỉ lệ quy đổi: {scale_cm_per_px} cm/pixel")
-        
-        # 8. Phân loại hình dáng (shape) và cơ địa (somatotype) — heuristic đơn giản
+        # 8. Classifications
         try:
             shp = measurements["pixel_measurements"].get("shoulder_hip_ratio")
             whr = measurements["pixel_measurements"].get("waist_hip_ratio")
-            height_px = measurements["pixel_measurements"].get("height") or 0.0
-            leg_px = measurements["pixel_measurements"].get("leg_length") or 0.0
-            shoulder_px = measurements["pixel_measurements"].get("shoulder_width") or 0.0
+            h_px = measurements["pixel_measurements"].get("height", 0)
+            l_px = measurements["pixel_measurements"].get("leg_length", 0)
+            s_px = measurements["pixel_measurements"].get("shoulder_width", 0)
 
-            def classify_shape(shp, whr):
-                if shp is None or whr is None:
-                    return None
-                if shp > 1.15 and whr < 0.9:
-                    return "Inverted Triangle"
-                if shp < 0.9 and (whr >= 0.9):
-                    return "Triangle"
-                if abs(shp - 1.0) <= 0.1 and 0.9 <= whr <= 1.05:
-                    return "Rectangle"
-                if shp >= 1.0 and whr < 1.0:
-                    return "Inverted Triangle"
-                if shp < 1.0 and whr >= 1.0:
-                    return "Triangle"
-                return "Rectangle"
-
-            def classify_somatotype(shoulder_px, height_px, leg_px, whr):
-                if not height_px or height_px <= 0:
-                    return None
-                sh_over_h = float(shoulder_px) / float(height_px)
-                leg_over_h = float(leg_px) / float(height_px) if height_px else 0.0
-                if sh_over_h < 0.23 and leg_over_h > 0.53 and (whr is not None and whr <= 0.9):
-                    return "Ectomorph"
-                if 0.23 <= sh_over_h <= 0.27 and (whr is not None and 0.85 <= whr <= 0.95) and 0.49 <= leg_over_h <= 0.53:
-                    return "Mesomorph"
-                if (whr is not None and whr >= 0.95) or sh_over_h > 0.27:
-                    return "Endomorph"
-                return "Mesomorph"
+            def get_shape(s_h_r, w_h_r):
+                if not s_h_r or not w_h_r: return None
+                if s_h_r > 1.15 and w_h_r < 0.9: return "Inverted Triangle"
+                if s_h_r < 0.9 and w_h_r >= 0.9: return "Triangle"
+                if abs(s_h_r - 1.0) <= 0.1 and 0.9 <= w_h_r <= 1.05: return "Rectangle"
+                return "Hourglass" if w_h_r < 0.85 else "Rectangle"
+                
+            def get_soma(s, h, l, w_h_r):
+                if not h: return None
+                s_h = s/h
+                l_h = l/h
+                if s_h < 0.23 and l_h > 0.53: return "Ectomorph"
+                if 0.23 <= s_h <= 0.27 and 0.49 <= l_h <= 0.53: return "Mesomorph"
+                return "Endomorph"
 
             measurements["classifications"] = {
-                "shape_type": classify_shape(shp, whr),
-                "somatotype": classify_somatotype(shoulder_px, height_px, leg_px, whr),
+                "shape_type": get_shape(shp, whr),
+                "somatotype": get_soma(s_px, h_px, l_px, whr),
             }
-        except Exception:
-            measurements["classifications"] = measurements.get("classifications", {})
+        except:
+             measurements["classifications"] = {}
 
         return measurements
-    except (IndexError, KeyError) as e:
-        print(f"Lỗi: không đủ keypoints để tính toán - {e}")
+    except Exception as e:
+        print(f"Lỗi phân tích: {e}")
         return measurements
 
-def _calculate_ratio_from_keypoints(keypoints):
-    """Tính toán tỷ lệ vai/hông từ các keypoints."""
-    try:
-        # Lấy tọa độ X và độ tin cậy của các điểm cần thiết
-        ls_x, _, ls_conf = keypoints[YOLO_KP_INDICES["left_shoulder"]]
-        rs_x, _, rs_conf = keypoints[YOLO_KP_INDICES["right_shoulder"]]
-        lh_x, _, lh_conf = keypoints[YOLO_KP_INDICES["left_hip"]]
-        rh_x, _, rh_conf = keypoints[YOLO_KP_INDICES["right_hip"]]
-
-        # Chỉ tính toán nếu tất cả các điểm đều được phát hiện với độ tin cậy > 0.5
-        if min(ls_conf, rs_conf, lh_conf, rh_conf) < 0.5:
-            print("Cảnh báo: Không thể xác định rõ tất cả các khớp vai và hông.")
-            return None
-
-        shoulder_width = abs(ls_x - rs_x)
-        hip_width = abs(lh_x - rh_x)
-
-        if hip_width > 0:
-            return shoulder_width / hip_width
-        return None
-    except IndexError:
-        print("Lỗi: Không đủ keypoints để tính toán tỷ lệ.")
-        return None
-    
-
-def draw_measurements_on_image(image, measurements, keypoints):
-    """Vẽ các đường đo và số đo lên ảnh."""
+def draw_measurements_on_image(image, measurements, landmarks):
     annotated_img = image.copy()
     
-    # Màu sắc
-    COLOR_SHOULDER = (255, 0, 0)  # Đỏ
-    COLOR_HIP = (0, 255, 0)       # Xanh lá
-    COLOR_WAIST = (0, 255, 255)   # Vàng
-    COLOR_LEG = (255, 0, 255)     # Tím
+    # 1. Vẽ bộ xương chuẩn 33 điểm của MediaPipe mờ nhẹ làm nền
+    if landmarks:
+        mp_drawing.draw_landmarks(
+            annotated_img,
+            landmarks,
+            mp_pose.POSE_CONNECTIONS,
+            landmark_drawing_spec=mp_drawing.DrawingSpec(color=(255, 255, 255), thickness=1, circle_radius=1),
+            connection_drawing_spec=mp_drawing.DrawingSpec(color=(255, 255, 255), thickness=1)
+        )
+
+    # 2. Vẽ đè các đường kích thước ngang đã mở rộng
+    draw_pts = measurements.get("draw_points", {})
     
-    # Vẽ đường vai
-    if measurements["confidence_flags"].get("shoulder_width"):
-        ls_x, ls_y, _ = _get_keypoint_coords(keypoints, "left_shoulder")
-        rs_x, rs_y, _ = _get_keypoint_coords(keypoints, "right_shoulder")
-        cv2.line(annotated_img, (int(ls_x), int(ls_y)), (int(rs_x), int(rs_y)), 
-                 COLOR_SHOULDER, 2)
+    colors = {
+        "shoulder": (255, 0, 0), # Đỏ
+        "hip": (0, 255, 0),      # Xanh
+        "waist": (0, 255, 255),  # Vàng
+        "leg": (255, 0, 255)     # Tím
+    }
     
-    # Vẽ đường hông
-    if measurements["confidence_flags"].get("hip_width"):
-        lh_x, lh_y, _ = _get_keypoint_coords(keypoints, "left_hip")
-        rh_x, rh_y, _ = _get_keypoint_coords(keypoints, "right_hip")
-        cv2.line(annotated_img, (int(lh_x), int(lh_y)), (int(rh_x), int(rh_y)), 
-                 COLOR_HIP, 2)
-    
-    # Vẽ đường eo
-    if measurements["confidence_flags"].get("waist_width") and "waist_points" in measurements:
-        left_waist = measurements["waist_points"]["left"]
-        right_waist = measurements["waist_points"]["right"]
-        cv2.line(annotated_img, 
-                 (int(left_waist[0]), int(left_waist[1])),
-                 (int(right_waist[0]), int(right_waist[1])),
-                 COLOR_WAIST, 2)
-        cv2.circle(annotated_img, (int(left_waist[0]), int(left_waist[1])), 
-                   5, COLOR_WAIST, -1)
-        cv2.circle(annotated_img, (int(right_waist[0]), int(right_waist[1])), 
-                   5, COLOR_WAIST, -1)
-    
-    # Vẽ đường chân
-    if measurements["confidence_flags"].get("leg_length") and "leg_points" in measurements:
-        mid_hip = measurements["leg_points"]["mid_hip"]
-        mid_ankle = measurements["leg_points"]["mid_ankle"]
-        cv2.line(annotated_img, 
-                 (int(mid_hip[0]), int(mid_hip[1])),
-                 (int(mid_ankle[0]), int(mid_ankle[1])),
-                 COLOR_LEG, 2)
-    
-    # Vẽ text số đo
-    y_offset = 30
-    font = cv2.FONT_HERSHEY_SIMPLEX
-    font_scale = 0.6
-    
-    # Hiển thị số đo cm nếu có, không thì hiển thị px
-    if measurements["cm_measurements"]:
-        measurements_to_display = measurements["cm_measurements"]
-        unit = "cm"
-    else:
-        measurements_to_display = measurements["pixel_measurements"]
-        unit = "px"
-    
-    for key, value in measurements_to_display.items():
-        if key != "shoulder_hip_ratio":
-            text = f"{key}: {value:.1f} {unit}"
-            cv2.putText(annotated_img, text, (10, y_offset), 
-                       font, font_scale, (255, 255, 255), 2)
-            y_offset += 25
-    
-    # Hiển thị tỷ lệ vai/hông
-    if "shoulder_hip_ratio" in measurements["pixel_measurements"]:
-        ratio = measurements["pixel_measurements"]["shoulder_hip_ratio"]
-        text = f"Shoulder/Hip ratio: {ratio:.2f}"
-        cv2.putText(annotated_img, text, (10, y_offset), 
-                   font, font_scale, (255, 255, 255), 2)
-    
+    for key, color in colors.items():
+        if key in draw_pts:
+            pts = draw_pts[key]
+            # Điểm lưu ở _calculate_measurements_from_landmarks đã được nhân margin rỗng rãi
+            cv2.line(annotated_img, (int(pts[0][0]), int(pts[0][1])), (int(pts[1][0]), int(pts[1][1])), color, 3)
+            # Đối với đường ngang (Vai, Eo, Hông) Vẽ thêm cục chấm tròn bự ở đầu mép
+            if key in ["shoulder", "hip", "waist"]:
+                 cv2.circle(annotated_img, (int(pts[0][0]), int(pts[0][1])), 6, color, -1)
+                 cv2.circle(annotated_img, (int(pts[1][0]), int(pts[1][1])), 6, color, -1)
+
     return annotated_img
 
-def analyze_pose_with_yolo(model, image, known_height_cm=None):
+def analyze_pose_with_model(pose_model, image, known_height_cm=None):
     """
-    Phân tích ảnh bằng YOLO, trả về ảnh đã vẽ, tỷ lệ và các số đo.    
-    Args:
-        model: YOLO model
-        image: Ảnh đầu vào
-        known_height_cm: Chiều cao thực tế (cm) để quy đổi, None nếu không có
+    Phân tích ảnh bằng MediaPipe Holistic/Pose thay cho YOLO.
+    """
+    # MediaPipe yêu cầu ảnh RGB
+    image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     
-    Returns:
-        tuple: (annotated_image, ratio, measurements)
-    """
-    results = model(image)
-
-    if not results or not results[0].keypoints:
+    # Process
+    results = pose_model.process(image_rgb)
+    
+    if not results.pose_landmarks:
         return None, None, None
 
-    keypoints_tensor = results[0].keypoints.data[0]
-    keypoints_list = keypoints_tensor.cpu().numpy()
-
-    if len(keypoints_list) == 0:
-        return None, None, None
-
-    # Vẽ kết quả lên ảnh
-    annotated_image = results[0].plot()
-
-    # Tính toán các số đo chi tiết
-    measurements = _calculate_measurements_from_keypoints(keypoints_list, known_height_cm)
+    height, width, _ = image.shape
     
-    # Vẽ thêm các đường đo lên ảnh
-    annotated_image = draw_measurements_on_image(annotated_image, measurements, keypoints_list)
+    # Tính số đo
+    measurements = _calculate_measurements_from_landmarks(
+        results.pose_landmarks, 
+        width, height, 
+        segmentation_mask=results.segmentation_mask, # Dành riêng cho mở rộng trong tương lai
+        known_height_cm=known_height_cm
+    )
+    
+    # Vẽ ảnh
+    annotated_image = draw_measurements_on_image(image, measurements, results.pose_landmarks)
+    
+    # Overlay hình bóng Mask (phần thịt thật sự) mờ mờ màu xanh biển (nếu MediaPipe quét được)
+    if results.segmentation_mask is not None:
+        condition = np.stack((results.segmentation_mask,) * 3, axis=-1) > 0.3
+        bg_image = np.zeros(image.shape, dtype=np.uint8)
+        bg_image[:] = (200, 150, 50) # Màu xanh ánh kim
+        annotated_image = np.where(condition, cv2.addWeighted(annotated_image, 0.7, bg_image, 0.3, 0), annotated_image)
 
-    # Tính toán tỷ lệ
-    ratio = _calculate_ratio_from_keypoints(keypoints_list)
+    ratio = None
+    if measurements["confidence_flags"].get("shoulder_hip_ratio"):
+         ratio = measurements["pixel_measurements"]["shoulder_hip_ratio"]
 
     return annotated_image, ratio, measurements
