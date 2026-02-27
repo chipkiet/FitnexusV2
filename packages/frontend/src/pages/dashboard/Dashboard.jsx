@@ -143,7 +143,7 @@ export default function Dashboard() {
   const [expandedReviewContent, setExpandedReviewContent] = useState({});
   const [commentExpanded, setCommentExpanded] = useState({});
   const [expandedCommentContent, setExpandedCommentContent] = useState({});
-const reviewFormRef = useRef(null);
+  const reviewFormRef = useRef(null);
   const currentUserName = useMemo(
     () => user?.full_name || user?.name || user?.username || user?.email?.split("@")[0] || "Thành viên ẩn danh",
     [user]
@@ -194,7 +194,7 @@ const reviewFormRef = useRef(null);
         (list || []).forEach((preview) => {
           try {
             URL.revokeObjectURL(preview.url);
-          } catch {}
+          } catch { }
         });
       });
     };
@@ -205,7 +205,7 @@ const reviewFormRef = useRef(null);
         (state?.previews || []).forEach((preview) => {
           try {
             URL.revokeObjectURL(preview.url);
-          } catch {}
+          } catch { }
         });
       });
     };
@@ -215,7 +215,7 @@ const reviewFormRef = useRef(null);
       reviewPreviews.forEach((preview) => {
         try {
           if (isBlobUrl(preview.url)) URL.revokeObjectURL(preview.url);
-        } catch {}
+        } catch { }
       });
     };
   }, [reviewPreviews]);
@@ -288,7 +288,7 @@ const reviewFormRef = useRef(null);
     reviewPreviews.forEach((preview) => {
       try {
         URL.revokeObjectURL(preview.url);
-      } catch {}
+      } catch { }
     });
     const next = list.map((file) => ({
       name: file.name,
@@ -399,7 +399,7 @@ const reviewFormRef = useRef(null);
     oldPreviews.forEach((preview) => {
       try {
         URL.revokeObjectURL(preview.url);
-      } catch {}
+      } catch { }
     });
     const nextPreviews = fileList.map((file) => ({
       name: file.name,
@@ -427,10 +427,10 @@ const reviewFormRef = useRef(null);
         prev.map((review) =>
           review.review_id === reviewId
             ? {
-                ...review,
-                comment_count: (review.comment_count || 0) + 1,
-                comments: [...(review.comments || []), newComment],
-              }
+              ...review,
+              comment_count: (review.comment_count || 0) + 1,
+              comments: [...(review.comments || []), newComment],
+            }
             : review
         )
       );
@@ -496,7 +496,7 @@ const reviewFormRef = useRef(null);
       current.previews.forEach((preview) => {
         try {
           URL.revokeObjectURL(preview.url);
-        } catch {}
+        } catch { }
       });
     }
     setCommentEditing((prev) => {
@@ -525,7 +525,7 @@ const reviewFormRef = useRef(null);
       state.previews.forEach((preview) => {
         try {
           URL.revokeObjectURL(preview.url);
-        } catch {}
+        } catch { }
       });
       const newFiles = Array.from(files || []).slice(0, 3);
       const previews = newFiles.map((file) => ({
@@ -554,11 +554,11 @@ const reviewFormRef = useRef(null);
         prev.map((review) =>
           review.review_id === reviewId
             ? {
-                ...review,
-                comments: (review.comments || []).map((comment) =>
-                  (comment.comment_id || comment.id) === commentId ? updatedComment : comment
-                ),
-              }
+              ...review,
+              comments: (review.comments || []).map((comment) =>
+                (comment.comment_id || comment.id) === commentId ? updatedComment : comment
+              ),
+            }
             : review
         )
       );
@@ -577,12 +577,12 @@ const reviewFormRef = useRef(null);
         prev.map((review) =>
           review.review_id === reviewId
             ? {
-                ...review,
-                comment_count: Math.max((review.comment_count || 1) - 1, 0),
-                comments: (review.comments || []).filter(
-                  (comment) => (comment.comment_id || comment.id) !== commentId
-                ),
-              }
+              ...review,
+              comment_count: Math.max((review.comment_count || 1) - 1, 0),
+              comments: (review.comments || []).filter(
+                (comment) => (comment.comment_id || comment.id) !== commentId
+              ),
+            }
             : review
         )
       );
@@ -714,7 +714,7 @@ const reviewFormRef = useRef(null);
         });
 
         setWeeklyChart(dayBuckets);
-      } catch {}
+      } catch { }
       setPlansLoading(false);
     };
     loadPlans();
@@ -737,7 +737,7 @@ const reviewFormRef = useRef(null);
           setContinueLoading(false);
           return;
         }
-      } catch {}
+      } catch { }
 
       let suggested = null;
       try {
@@ -745,7 +745,7 @@ const reviewFormRef = useRef(null);
         const ctx = raw ? JSON.parse(raw) : null;
         if (ctx?.plan_id)
           suggested = { plan_id: ctx.plan_id, name: ctx.name || "Kế hoạch" };
-      } catch {}
+      } catch { }
       if (!suggested && Array.isArray(plans) && plans.length > 0) {
         const p = plans[0];
         suggested = { plan_id: p.plan_id, name: p.name || "Kế hoạch" };
@@ -766,7 +766,7 @@ const reviewFormRef = useRef(null);
       try {
         const pingRes = await pingLoginStreak();
         serverTriggered = !!pingRes?.triggered;
-      } catch {}
+      } catch { }
       try {
         const res = await getLoginStreakSummary();
         if (!mounted) return;
@@ -789,7 +789,7 @@ const reviewFormRef = useRef(null);
             } else {
               try {
                 localStorage.setItem(STREAK_MODAL_KEY, latest.date);
-              } catch {}
+              } catch { }
             }
             if (shouldShow) setShowStreakModal(true);
           }
@@ -858,7 +858,7 @@ const reviewFormRef = useRef(null);
         <div className="grid gap-6 md:grid-cols-10">
           {/* Left 30%: Thành tựu / Kế hoạch / Streak */}
           <aside className="space-y-5 md:col-span-3">
-        
+
             <div className="p-5 border rounded-xl border-slate-200 bg-slate-50">
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold text-slate-900">
@@ -1091,11 +1091,10 @@ const reviewFormRef = useRef(null);
                       return (
                         <div
                           key={day.date || `empty-${idx}`}
-                          className={`flex flex-col items-center justify-center rounded-2xl border px-2 py-3 text-center ${
-                            day.active
-                              ? "border-transparent bg-gradient-to-br from-amber-100 to-orange-200 text-amber-900 shadow"
-                              : "border-dashed border-slate-200 bg-slate-50 text-slate-400"
-                          }`}
+                          className={`flex flex-col items-center justify-center rounded-2xl border px-2 py-3 text-center ${day.active
+                            ? "border-transparent bg-gradient-to-br from-amber-100 to-orange-200 text-amber-900 shadow"
+                            : "border-dashed border-slate-200 bg-slate-50 text-slate-400"
+                            }`}
                         >
                           <span className="text-[10px] uppercase tracking-wide">
                             {dayLabel}
@@ -1258,98 +1257,70 @@ const reviewFormRef = useRef(null);
             </div>
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-[360px,1fr]">
-            {/* Summary */}
-            <div className="flex flex-col gap-6 p-6 text-white rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900">
-              <div>
-                <div className="text-xs uppercase tracking-[0.3em] text-white/70">
-                  Điểm trung bình
-                </div>
-                <div className="flex items-end gap-3 mt-2">
-                  <div className="text-5xl font-black tracking-tight">
-                    {reviewStats.averageRating.toFixed(1)}
-                  </div>
-                  <div className="text-sm text-white/70">/ 5 sao</div>
-                </div>
-                <div className="mt-2">
-                  {renderStars(reviewStats.averageRating)}
-                </div>
-                <div className="mt-3 text-sm text-white/70">
-                  {numberFormatter.format(reviewStats.totalReviews)} lượt đánh
-                  giá
+          {/* Anchor: Tổng quan Đánh Giá */}
+          <div className="flex flex-col gap-8 p-10 bg-white border border-gray-100 shadow-[0_10px_40px_rgba(0,0,0,0.04)] text-center md:flex-row md:items-center md:text-left justify-center md:justify-start" style={{ borderRadius: "var(--card-radius)" }}>
+            <div className="flex flex-col items-center flex-1 md:items-start md:border-r border-gray-100 md:pr-10">
+              <div className="text-xs font-bold tracking-[0.2em] text-gray-400 uppercase">
+                Điểm trung bình
+              </div>
+              <div className="flex items-end gap-3 mt-4">
+                <div className="text-6xl font-black tracking-tight text-slate-900 md:text-7xl">
+                  {reviewStats.averageRating.toFixed(1)}
+                  <span className="text-3xl text-gray-300 md:text-4xl">/5</span>
                 </div>
               </div>
+              <div className="mt-4">
+                {renderStars(reviewStats.averageRating)}
+              </div>
+              <div className="mt-3 text-sm font-medium text-gray-500">
+                Dựa trên {numberFormatter.format(reviewStats.totalReviews)} lượt đánh giá
+              </div>
+            </div>
 
-              <div className="space-y-2">
-                {ratingBreakdown.map((item) => (
-                  <button
-                    key={item.star}
-                    type="button"
-                    onClick={() => toggleRatingFilter(item.star)}
-                    className={`flex items-center gap-3 px-3 py-2 rounded-2xl border border-white/10 transition ${
-                      ratingFilter === item.star
-                        ? "bg-white/25"
-                        : "bg-white/10 hover:bg-white/20"
+            <div className="flex-1 w-full max-w-sm mx-auto space-y-3 md:pl-10">
+              {ratingBreakdown.map((item) => (
+                <button
+                  key={item.star}
+                  type="button"
+                  onClick={() => toggleRatingFilter(item.star)}
+                  className={`flex items-center gap-4 px-4 py-2 rounded-xl transition w-full ${ratingFilter === item.star
+                    ? "bg-blue-50 text-slate-900"
+                    : "bg-transparent hover:bg-gray-50 text-slate-600"
                     }`}
-                  >
-                    <span className="text-sm font-semibold w-9">
-                      {item.star}★
-                    </span>
-                    <div className="flex-1 h-2 overflow-hidden rounded-full bg-white/20">
-                      <div
-                        className="h-full bg-amber-300"
-                        style={{ width: `${item.percentage}%` }}
-                      />
-                    </div>
-                    <span className="text-sm">{item.percentage}%</span>
-                  </button>
-                ))}
+                >
+                  <span className="text-sm font-bold w-9 text-left">
+                    {item.star}★
+                  </span>
+                  <div className="flex-1 h-2 overflow-hidden bg-gray-100 rounded-full">
+                    <div
+                      className="h-full bg-amber-400 rounded-full"
+                      style={{ width: `${item.percentage}%` }}
+                    />
+                  </div>
+                  <span className="text-sm font-medium w-12 text-right">{item.percentage}%</span>
+                </button>
+              ))}
+              {ratingFilter !== 0 && (
                 <button
                   type="button"
-                  className="text-xs underline text-white/70 underline-offset-4 hover:text-white"
+                  className="w-full px-4 py-2 mt-2 text-sm font-semibold text-blue-600 hover:underline"
                   onClick={() => setRatingFilter(0)}
                 >
-                  {ratingFilter ? "Xóa lọc theo sao" : "Đang xem tất cả"}
+                  Xóa bộ lọc sao
                 </button>
-              </div>
+              )}
+            </div>
+          </div>
 
-              <div className="grid grid-cols-1 gap-3 text-sm">
-                <div className="flex items-center gap-3 p-3 border rounded-2xl bg-white/5 border-white/10">
-                  <Star className="w-4 h-4 text-amber-300" />
-                  <div>
-                    <p className="text-[11px] uppercase tracking-wide text-white/60">
-                      Tổng lượt đánh giá
-                    </p>
-                    <p className="text-lg font-semibold">
-                      {numberFormatter.format(reviewStats.totalReviews)}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-4 border rounded-2xl border-white/10 bg-white/5">
-                <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/70">
-                  <MessageCircle className="w-4 h-4 text-white" />
-                  Chủ đề nổi bật
-                </div>
-                <div className="flex flex-wrap gap-2 mt-3">
-                  {trendingTags.map((item) => (
-                    <span
-                      key={item.tag}
-                      className="px-2.5 py-1 text-xs rounded-full border border-white/15 bg-white/10 text-white/90"
-                    >
-                      #{item.tag} · {item.count}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              <div className="p-4 border rounded-2xl border-white/15 bg-white/10">
-                <p className="text-xs font-semibold tracking-[0.3em] uppercase text-white/60">
+          <div className="grid gap-8 lg:grid-cols-[60%,1fr]">
+            {/* Review Form Column (Right on Desktop, order 2) */}
+            <div className="flex flex-col order-2 space-y-8">
+              <div className="sticky p-8 border border-gray-100 bg-white shadow-[0_4px_20px_rgba(0,0,0,0.02)] top-32" style={{ borderRadius: "var(--card-radius)" }}>
+                <p className="text-xs font-bold tracking-[0.2em] text-gray-500 uppercase">
                   Viết đánh giá của bạn
                 </p>
-                <h3 className="mt-1 text-lg font-bold text-white">
-                  Chia sẻ trải nghiệm để truyền cảm hứng cho cộng đồng
+                <h3 className="mt-2 text-xl font-bold text-slate-900">
+                  Chia sẻ trải nghiệm với cộng đồng
                 </h3>
                 <form
                   ref={reviewFormRef}
@@ -1383,11 +1354,10 @@ const reviewFormRef = useRef(null);
                             onClick={() =>
                               handleReviewFieldChange("rating", starValue)
                             }
-                            className={`w-9 h-9 rounded-full border ${
-                              active
-                                ? "bg-amber-300/20 border-amber-200 text-white"
-                                : "border-white/20 text-white/60"
-                            }`}
+                            className={`w-10 h-10 rounded-full border font-bold transition-colors ${active
+                              ? "bg-amber-50 border-amber-300 text-amber-600 shadow-sm"
+                              : "border-gray-200 text-gray-400 hover:border-gray-300 hover:bg-gray-50"
+                              }`}
                           >
                             {starValue}
                           </button>
@@ -1397,7 +1367,7 @@ const reviewFormRef = useRef(null);
                   </div>
                   <div className="grid gap-3 md:grid-cols-2">
                     <div>
-                      <label className="text-[11px] uppercase tracking-wide text-white/60">
+                      <label className="text-xs font-semibold tracking-wide text-gray-600 uppercase">
                         Tiêu đề
                       </label>
                       <input
@@ -1407,12 +1377,12 @@ const reviewFormRef = useRef(null);
                         onChange={(e) =>
                           handleReviewFieldChange("headline", e.target.value)
                         }
-                        className="w-full px-3 py-2 mt-1 text-xs bg-white text-slate-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-200"
+                        className="w-full px-4 py-3 mt-2 text-sm bg-white border border-gray-200 text-slate-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="Ví dụ: AI Trainer quá hữu ích"
                       />
                     </div>
                     <div>
-                      <label className="text-[11px] uppercase tracking-wide text-white/60">
+                      <label className="text-xs font-semibold tracking-wide text-gray-600 uppercase">
                         Chương trình
                       </label>
                       <input
@@ -1422,13 +1392,13 @@ const reviewFormRef = useRef(null);
                         onChange={(e) =>
                           handleReviewFieldChange("program", e.target.value)
                         }
-                        className="w-full px-3 py-2 mt-1 text-xs bg-white text-slate-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-200"
+                        className="w-full px-4 py-3 mt-2 text-sm bg-white border border-gray-200 text-slate-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="AI Trainer · Hybrid Strength"
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="text-[11px] uppercase tracking-wide text-white/60">
+                    <label className="text-xs font-semibold tracking-wide text-gray-600 uppercase">
                       Tag (phân cách bằng dấu ,)
                     </label>
                     <input
@@ -1437,12 +1407,12 @@ const reviewFormRef = useRef(null);
                       onChange={(e) =>
                         handleReviewFieldChange("tags", e.target.value)
                       }
-                      className="w-full px-3 py-2 mt-1 text-xs bg-white text-slate-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-200"
+                      className="w-full px-4 py-3 mt-2 text-sm bg-white border border-gray-200 text-slate-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="AI Trainer, Nutrition"
                     />
                   </div>
                   <div>
-                    <label className="text-[11px] uppercase tracking-wide text-white/60">
+                    <label className="text-xs font-semibold tracking-wide text-gray-600 uppercase">
                       Nội dung đánh giá
                     </label>
                     <textarea
@@ -1451,16 +1421,16 @@ const reviewFormRef = useRef(null);
                       onChange={(e) =>
                         handleReviewFieldChange("comment", e.target.value)
                       }
-                      className="w-full px-3 py-2 mt-1 text-xs bg-white text-slate-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-200"
+                      className="w-full px-4 py-3 mt-2 text-sm bg-white border border-gray-200 text-slate-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Chia sẻ cảm nhận thực tế sau khi luyện tập..."
                     />
                   </div>
                   <div>
-                    <label className="text-[11px] uppercase tracking-wide text-white/60">
+                    <label className="text-xs font-semibold tracking-wide text-gray-600 uppercase">
                       Ảnh minh hoạ
                     </label>
-                    <div className="flex flex-wrap items-center gap-3 mt-1">
-                      <label className="px-3 py-2 text-xs font-semibold text-blue-700 bg-white rounded-full cursor-pointer hover:bg-slate-100">
+                    <div className="flex flex-wrap items-center gap-3 mt-2">
+                      <label className="px-5 py-2.5 text-xs font-bold text-blue-700 bg-blue-50 border border-blue-100 rounded-full cursor-pointer hover:bg-blue-100 transition-colors">
                         <input
                           type="file"
                           accept="image/*"
@@ -1477,7 +1447,7 @@ const reviewFormRef = useRef(null);
                           {reviewPreviews.map((preview) => (
                             <div
                               key={preview.url}
-                              className="w-16 h-16 overflow-hidden border rounded-lg border-white/20"
+                              className="w-16 h-16 overflow-hidden border border-gray-200 rounded-lg"
                             >
                               <img
                                 src={preview.url}
@@ -1491,44 +1461,47 @@ const reviewFormRef = useRef(null);
                     </div>
                   </div>
                   {reviewMessage.error ? (
-                    <p className="text-xs text-rose-200">
+                    <p className="font-semibold text-red-500 text-[13px]">
                       {reviewMessage.error}
                     </p>
                   ) : null}
                   {reviewMessage.success ? (
-                    <p className="text-xs text-emerald-200">
+                    <p className="font-semibold text-green-600 text-[13px]">
                       {reviewMessage.success}
                     </p>
                   ) : null}
                   <button
                     type="submit"
                     disabled={reviewSubmitting}
-                    className="w-full px-4 py-2 text-sm font-semibold text-blue-700 bg-white rounded-full hover:bg-slate-100 disabled:opacity-60"
+                    className="w-full px-4 py-3 text-sm font-bold text-white transition-opacity bg-blue-600 rounded-full shadow-lg hover:bg-blue-700 disabled:opacity-50 shadow-blue-900/20"
                   >
                     {reviewSubmitting ? "Đang gửi..." : "Gửi đánh giá"}
                   </button>
                 </form>
-                <p className="mt-3 text-[11px] text-white/60">
+                <p className="mt-4 text-xs text-center text-gray-500">
                   Đánh giá được lưu cục bộ và hiển thị ngay trên bảng tin của
                   bạn.
                 </p>
               </div>
             </div>
 
-            {/* Review list */}
-            <div className="p-6 bg-white border rounded-3xl border-slate-200">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="text-sm text-slate-600">
-                  Đang lọc:{" "}
-                  <span className="font-semibold text-slate-900">
-                    {ratingFilter ? `${ratingFilter} sao` : "Tất cả sao"}
-                  </span>{" "}
-                  · {numberFormatter.format(reviewsTotal)} review
+            {/* Review list column (Left on Desktop, order 1) */}
+            <div className="flex flex-col order-1">
+              <div className="flex flex-wrap items-center justify-between gap-4 px-2 mb-6 border-b border-gray-100 pb-6">
+                <div className="text-sm font-medium text-slate-500">
+                  <span className="font-bold text-slate-900">{numberFormatter.format(reviewsTotal)} Đánh giá</span>
+                  {ratingFilter > 0 && (
+                    <>
+                      <span className="mx-2 text-gray-300">|</span>
+                      <span>Lọc theo: <span className="font-bold text-slate-900">{ratingFilter} sao</span></span>
+                    </>
+                  )}
                 </div>
-                <div className="flex items-center gap-2 text-sm text-slate-500">
-                  <span>Sắp xếp:</span>
+                <div className="flex items-center gap-3 text-sm font-medium text-slate-500">
+                  <span>Sắp xếp theo</span>
                   <select
-                    className="px-3 py-1.5 text-sm border rounded-xl border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                    className="px-4 py-2 text-sm font-semibold bg-white border border-gray-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-gray-300 transition-colors cursor-pointer"
+                    style={{ borderRadius: "var(--card-radius)" }}
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
                   >
@@ -1550,8 +1523,8 @@ const reviewFormRef = useRef(null);
                   </div>
                 ) : null}
                 {!reviewsLoading &&
-                !reviewsError &&
-                filteredReviews.length === 0 ? (
+                  !reviewsError &&
+                  filteredReviews.length === 0 ? (
                   <div className="p-6 text-center border border-dashed rounded-2xl border-slate-200 text-slate-500">
                     Chưa có đánh giá cho điều kiện lọc hiện tại. Hãy là người
                     đầu tiên chia sẻ cảm nhận!
@@ -1611,7 +1584,7 @@ const reviewFormRef = useRef(null);
                                 user &&
                                 (user.user_id === comment.user_id ||
                                   String(user.role || "").toUpperCase() ===
-                                    "ADMIN");
+                                  "ADMIN");
                               const editState =
                                 commentEditing[commentId] || null;
                               const commentBody = comment.content || "";
@@ -1625,20 +1598,21 @@ const reviewFormRef = useRef(null);
                                 commentExpandedState || !commentShouldTruncate
                                   ? commentBody
                                   : formatTruncatedText(
-                                      commentBody,
-                                      COMMENT_CONTENT_LIMIT
-                                    );
+                                    commentBody,
+                                    COMMENT_CONTENT_LIMIT
+                                  );
 
                               return (
                                 <div
                                   key={commentId}
-                                  className="p-4 text-sm bg-slate-50 rounded-2xl"
+                                  className="p-4 text-sm bg-gray-50 border border-gray-100 shadow-[0_2px_10px_rgba(0,0,0,0.02)]"
+                                  style={{ borderRadius: "var(--card-radius)" }}
                                 >
                                   <div className="flex items-start gap-3">
                                     {renderAvatar(
                                       comment.avatar_url,
                                       comment.display_name,
-                                      "w-10 h-10 text-xs"
+                                      "w-10 h-10 shadow-sm ring-1 ring-gray-200 text-xs"
                                     )}
                                     <div className="flex-1">
                                       <div className="flex items-start justify-between gap-2">
@@ -1648,12 +1622,12 @@ const reviewFormRef = useRef(null);
                                               {comment.display_name}
                                             </span>
                                             {comment.role === "ADMIN" ? (
-                                              <span className="px-2 py-0.5 text-[10px] font-semibold uppercase rounded-full bg-amber-100 text-amber-700">
+                                              <span className="px-2.5 py-0.5 text-[10px] font-bold uppercase rounded-full bg-blue-50 text-blue-700 ring-1 ring-blue-200">
                                                 Admin
                                               </span>
                                             ) : null}
                                           </div>
-                                          <span className="text-[10px] text-slate-400">
+                                          <span className="text-[10px] font-medium text-gray-400">
                                             {reviewDateFormatter.format(
                                               new Date(comment.created_at)
                                             )}
@@ -1671,10 +1645,10 @@ const reviewFormRef = useRef(null);
                                               ...
                                             </button>
                                             {commentMenus === commentId ? (
-                                              <div className="absolute right-0 z-10 w-32 mt-1 text-xs bg-white border rounded-lg shadow border-slate-200">
+                                              <div className="absolute right-0 z-10 w-32 mt-1 text-xs bg-white border border-gray-100 shadow-lg rounded-xl">
                                                 <button
                                                   type="button"
-                                                  className="w-full px-3 py-2 text-left hover:bg-slate-50"
+                                                  className="w-full px-4 py-2 text-left font-medium hover:bg-gray-50 transition-colors first:rounded-t-xl"
                                                   onClick={() =>
                                                     handleStartEditComment(
                                                       reviewId,
@@ -1682,7 +1656,7 @@ const reviewFormRef = useRef(null);
                                                     )
                                                   }
                                                 >
-                                                  Sửa
+                                                  Cập nhật
                                                 </button>
                                                 <button
                                                   type="button"
@@ -1716,20 +1690,19 @@ const reviewFormRef = useRef(null);
                                                 },
                                               }))
                                             }
-                                            className="w-full px-3 py-2 text-xs border rounded-lg border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                                            className="w-full px-4 py-3 text-xs bg-white border border-gray-200 text-slate-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
                                           />
                                           {comment.media_urls?.length ? (
                                             <div className="flex flex-wrap gap-2">
                                               {comment.media_urls.map((url) => (
                                                 <label
                                                   key={url}
-                                                  className={`flex items-center gap-1 px-2 py-1 text-[10px] border rounded-full ${
-                                                    editState.retainMedia?.includes(
-                                                      url
-                                                    )
-                                                      ? "bg-blue-50 text-blue-700 border-blue-200"
-                                                      : "border-slate-200 text-slate-500"
-                                                  }`}
+                                                  className={`flex items-center gap-1 px-2 py-1 text-[10px] border rounded-full ${editState.retainMedia?.includes(
+                                                    url
+                                                  )
+                                                    ? "bg-blue-50 text-blue-700 border-blue-200"
+                                                    : "border-slate-200 text-slate-500"
+                                                    }`}
                                                 >
                                                   <input
                                                     type="checkbox"
@@ -1878,11 +1851,10 @@ const reviewFormRef = useRef(null);
                                 >
                                   {expanded
                                     ? "Thu gọn bình luận"
-                                    : `Xem thêm bình luận${
-                                        hiddenComments
-                                          ? ` (${hiddenComments}+)`
-                                          : ""
-                                      }`}
+                                    : `Xem thêm bình luận${hiddenComments
+                                      ? ` (${hiddenComments}+)`
+                                      : ""
+                                    }`}
                                 </button>
                               </div>
                             ) : null}
@@ -1969,14 +1941,15 @@ const reviewFormRef = useRef(null);
                     return (
                       <article
                         key={reviewId}
-                        className="transition bg-white border-2 p-7 rounded-3xl border-slate-200 hover:border-blue-400 hover:shadow-lg"
+                        className="p-6 transition-all duration-300 bg-white border border-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:shadow-[0_10px_40px_rgba(0,0,0,0.06)] hover:-translate-y-1"
+                        style={{ borderRadius: "var(--card-radius)" }}
                       >
                         <div className="flex flex-wrap items-start justify-between gap-4">
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-4">
                             {renderAvatar(
                               review.avatar_url,
                               review.display_name,
-                              "w-14 h-14 text-lg"
+                              "w-12 h-12 md:w-14 md:h-14 shadow-sm ring-2 ring-white"
                             )}
                             <div>
                               <p className="text-base font-semibold text-slate-900">
@@ -1994,8 +1967,8 @@ const reviewFormRef = useRef(null);
                               )}
                             </div>
                             {user &&
-                            (user.user_id === review.user_id ||
-                              isCurrentUserAdmin) ? (
+                              (user.user_id === review.user_id ||
+                                isCurrentUserAdmin) ? (
                               <div className="relative">
                                 <button
                                   type="button"
@@ -2091,7 +2064,7 @@ const reviewFormRef = useRef(null);
                             {review.tags.map((tag) => (
                               <span
                                 key={`${review.review_id}-${tag}`}
-                                className="px-3 py-1 text-xs font-semibold rounded-full text-slate-600 bg-slate-100"
+                                className="px-3 py-1 text-[11px] font-bold uppercase tracking-wider rounded-full text-slate-600 bg-gray-100 border border-gray-200 shadow-sm"
                               >
                                 #{tag}
                               </span>
@@ -2105,22 +2078,19 @@ const reviewFormRef = useRef(null);
                               type="button"
                               onClick={() => handleToggleHelpful(review)}
                               disabled={helpfulLoading[review.review_id]}
-                              className={`flex items-center gap-1 text-sm px-3 py-1.5 border rounded-full transition ${
-                                review.userVote
-                                  ? "text-blue-600 border-blue-200 bg-blue-50"
-                                  : "text-slate-600 border-slate-200 hover:border-blue-200"
-                              } ${
-                                helpfulLoading[review.review_id]
+                              className={`flex items-center gap-1 text-sm px-3 py-1.5 border rounded-full transition ${review.userVote
+                                ? "text-blue-600 border-blue-200 bg-blue-50"
+                                : "text-slate-600 border-slate-200 hover:border-blue-200"
+                                } ${helpfulLoading[review.review_id]
                                   ? "opacity-60"
                                   : ""
-                              }`}
+                                }`}
                             >
                               <ThumbsUp
-                                className={`w-4 h-4 ${
-                                  review.userVote
-                                    ? "text-blue-600"
-                                    : "text-slate-500"
-                                }`}
+                                className={`w-4 h-4 ${review.userVote
+                                  ? "text-blue-600"
+                                  : "text-slate-500"
+                                  }`}
                               />
                               {review.userVote ? "Đã hữu ích" : "Hữu ích"}
                               <span className="ml-1">
@@ -2320,3 +2290,5 @@ const reviewFormRef = useRef(null);
     </div>
   );
 }
+
+

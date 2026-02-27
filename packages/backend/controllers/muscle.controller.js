@@ -3,13 +3,15 @@ import MuscleGroup from "../models/muscleGroup.model.js";
 export const getAllMuscles = async(req, res) => {
     try {
         const muscles = await MuscleGroup.findAll({
-            attributes: ['muscle_group_id', 'name', 'name_en'],
+            attributes: ['muscle_group_id', 'name', 'name_en', 'slug', 'parent_id'],
             order: [['name', 'ASC']],
         });
 
         const data = muscles.map( m => ({
             id: m.muscle_group_id,
-            name: `${m.name} (${m.name_en})`
+            name: `${m.name} (${m.name_en})`,
+            slug: m.slug,
+            parent_id: m.parent_id
         }));
 
         res.json({success: true, data});

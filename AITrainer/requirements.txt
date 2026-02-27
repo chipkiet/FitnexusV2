@@ -1,8 +1,8 @@
 fastapi
-uvicorn[standard]
+uvicorn
+groq
 python-multipart
-ultralytics
-google-generativeai
-Pillow
-numpy
+mediapipe==0.10.14
 opencv-python
+pillow
+numpy

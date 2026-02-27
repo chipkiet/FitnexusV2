@@ -3,10 +3,8 @@ services:
     image: postgres:16
     container_name: fitnexus-postgres
     restart: unless-stopped
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-fitnexus_user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fitnexus_pass}
-      POSTGRES_DB: ${POSTGRES_DB:-fitnexus_db}
+    env_file:
+      - ../packages/backend/.env
     ports:
       - "${POSTGRES_PORT:-5433}:5432"
     volumes:
@@ -26,69 +24,10 @@ services:
     networks:
       - fitnexus
 
-  backend:
-    build:
-      context: ../packages/backend
-      dockerfile: Dockerfile
-    container_name: fitnexus-backend
-    depends_on:
-      - db
-      - redis
-      - ai-trainer
-    environment:
-      NODE_ENV: development
-      PORT: 3001
-      # Override hostnames for in-network services
-      POSTGRES_HOST: db
-      POSTGRES_PORT: 5432
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      AI_API_URL: http://ai-trainer:8000/analyze-image/
-      # For OAuth redirects in dev
-      FRONTEND_URL: http://localhost:5173
-    env_file:
-      - ../packages/backend/.env
-    ports:
-      - "3001:3001"
-    volumes:
-      - ../packages/backend:/app
-      - /app/node_modules
-    networks:
-      - fitnexus
-
-  ai-trainer:
-    build:
-      context: ../AITrainer
-      dockerfile: Dockerfile
-    container_name: fitnexus-ai
-    ports:
-      - "8000:8000"
-    volumes:
-      - ../AITrainer:/app
-    networks:
-      - fitnexus
-
-  frontend:
-    build:
-      context: ../packages/frontend
-      dockerfile: Dockerfile
-    container_name: fitnexus-frontend
-    environment:
-      # Vite injects this into the client bundle; use host URL so the browser can reach backend
-      VITE_BACKEND_URL: http://localhost:3001
-    depends_on:
-      - backend
-    ports:
-      - "5173:5173"
-    volumes:
-      - ../packages/frontend:/app
-      - /app/node_modules
-    networks:
-      - fitnexus
-
 volumes:
   pgdata:
   redisdata:
+
 
 networks:
   fitnexus:

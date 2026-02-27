@@ -5,8 +5,7 @@ import json
 import sys
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
-from ultralytics import YOLO
-import google.generativeai as genai
+import groq
 import uvicorn
 import shutil
 
@@ -18,8 +17,8 @@ from typing import Optional
 
 # Import module pose_analyzer
 from core.pose_analyzer import (
-    load_yolo_model,
-    analyze_pose_with_yolo,
+    load_pose_model,
+    analyze_pose_with_model,
     draw_measurements_on_image
 )
 
@@ -38,39 +37,47 @@ app.add_middleware(
 from dotenv import load_dotenv
 load_dotenv(override=True)
 
-# !!! QUAN TRỌNG: Dán khóa API hợp lệ của bạn vào .env (`GEMINI_API_KEY=...`)
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+# !!! QUAN TRỌNG: Lấy khóa API GROQ miễn phí tại https://console.groq.com/keys
+# Xóa placeholder và dán khóa thật của bạn vào đây (bắt đầu bằng gsk_) !!!
+GROQ_API_KEY = os.getenv("GROQ_API_KEY") or "PASTE GROQ API KEY HERE"
 
-if not GEMINI_API_KEY or GEMINI_API_KEY == "DÁN_KHÓA_API_HỢP_LỆ_CỦA_BẠN_VÀO_ĐÂY" or GEMINI_API_KEY == "AIzaSyCBHEa4eJfTwEMCoJkKr8POz4_lNwomPrU":
-    print("LỖI: Bạn chưa cấu hình khóa API hợp lệ cho Gemini. Vui lòng cập nhật GEMINI_API_KEY trong file .env")
+if not GROQ_API_KEY or GROQ_API_KEY == "gsk_VUI_LONG_THAY_KHOA_CUA_BAN":
+    print("LỖI: Bạn chưa cấu hình khóa API cho GROQ trong file api.py (hoặc .env).")
+    print("Truy cập https://console.groq.com/keys để lấy một API key miễn phí!")
     sys.exit(1)
 
-genai.configure(api_key=GEMINI_API_KEY)
-print("Khởi tạo cấu hình Gemini API...")
+groq_client = groq.Groq(api_key=GROQ_API_KEY)
+print("Khởi tạo cấu hình Groq API (Llama models)...")
 
-# Chuẩn bị danh sách model fallback
-GEMINI_MODELS = [
-    os.getenv("GEMINI_MODEL") or "gemini-2.0-flash-lite",
+# Chuẩn bị danh sách model fallback trên Groq
+GROQ_MODELS = [
+    os.getenv("GROQ_MODEL") or "llama3-8b-8192",
+    "llama3-70b-8192",
+    "llama-3.1-8b-instant"
 ]
 
-def _gemini_generate_json(prompt: str, timeout_sec: int = 120):
+def _groq_generate_json(prompt: str, timeout_sec: int = 120):
     last_err = None
-    for model_name in GEMINI_MODELS:
+    for model_name in GROQ_MODELS:
         try:
-            print(f"[Gemini] Trying model: {model_name}")
-            model = genai.GenerativeModel(model_name)
-            resp = model.generate_content(prompt, request_options={'timeout': timeout_sec})
-            return resp
+            print(f"[Groq] Trying model: {model_name}")
+            chat_completion = groq_client.chat.completions.create(
+                messages=[{"role": "user", "content": prompt}],
+                model=model_name,
+                response_format={"type": "json_object"},
+                timeout=timeout_sec
+            )
+            return chat_completion.choices[0].message.content
         except Exception as e:
-            print(f"[Gemini] model {model_name} failed: {e}")
+            print(f"[Groq] model {model_name} failed: {e}")
             last_err = e
             continue
-    raise last_err if last_err else RuntimeError("Gemini API call failed for all models")
+    raise last_err if last_err else RuntimeError("Groq API call failed for all models")
 
-# Sử dụng hàm load_yolo_model từ pose_analyzer
-yolo_model = load_yolo_model('yolov8n-pose.pt')
-if yolo_model is None:
-    print("LỖI: Không thể tải YOLO model.")
+# Khởi tạo MediaPipe Pose Model
+pose_model = load_pose_model()
+if pose_model is None:
+    print("LỖI: Không thể tải MediaPipe Pose model.")
     sys.exit(1)
 
 FONT_PATH = "arial.ttf"
@@ -82,9 +89,9 @@ app.mount("/processed", StaticFiles(directory="processed_images"), name="process
 
 # --- CÁC HÀM XỬ LÝ ---
 
-def get_gemini_recommendations(measurements_data):
+def get_ai_recommendations(measurements_data):
     """
-    Gọi Gemini API với dữ liệu đo lường chi tiết.
+    Gọi Groq API (Llama) với dữ liệu đo lường chi tiết.
     
     Args:
         measurements_data: Dictionary chứa các số đo từ pose_analyzer
@@ -134,8 +141,7 @@ def get_gemini_recommendations(measurements_data):
     """
     
     try:
-        response = _gemini_generate_json(prompt, timeout_sec=120)
-        text_response = getattr(response, 'text', None) or ''
+        text_response = _groq_generate_json(prompt, timeout_sec=120)
         
         # Tìm và parse JSON
         json_start = text_response.find('{')
@@ -151,11 +157,11 @@ def get_gemini_recommendations(measurements_data):
             
             return recommendations
         else:
-            raise ValueError(f"Gemini không trả về JSON hợp lệ: {text_response}")
+            raise ValueError(f"AI không trả về JSON hợp lệ: {text_response}")
             
     except Exception as e:
-        print(f"Lỗi khi gọi Gemini API: {e}")
-        raise HTTPException(status_code=500, detail=f"Lỗi khi gọi Gemini API: {e}")
+        print(f"Lỗi khi gọi Groq API: {e}")
+        raise HTTPException(status_code=500, detail=f"Lỗi khi gọi Groq API: {e}")
 
 # --- ENDPOINT API ---
 
@@ -165,7 +171,7 @@ async def analyze_image(
     known_height_cm: Optional[float] = Form(None)
 ):
     """
-    Phân tích ảnh tư thế và trả về các số đo cơ thể kèm gợi ý từ Gemini AI.
+    Phân tích ảnh tư thế và trả về các số đo cơ thể kèm gợi ý từ AI.
     
     Args:
         file: File ảnh upload
@@ -173,7 +179,7 @@ async def analyze_image(
     
     Returns:
         JSON chứa:
-        - analysis_data: Phân tích từ Gemini
+        - analysis_data: Phân tích từ AI
         - measurements: Các số đo chi tiết (px và cm nếu có)
         - processed_image_url: URL ảnh đã xử lý
     """
@@ -191,15 +197,15 @@ async def analyze_image(
         print(f"Chiều cao thực tế: {known_height_cm} cm")
     print(f"{'='*60}\n")
     
-    # Phân tích tư thế với YOLO (bọc try để không rơi 500 chung chung)
+    # Phân tích tư thế với MediaPipe Pose
     try:
-        annotated_image, ratio, measurements = analyze_pose_with_yolo(
-            yolo_model,
+        annotated_image, ratio, measurements = analyze_pose_with_model(
+            pose_model,
             image,
             known_height_cm=known_height_cm,
         )
     except Exception as e:
-        print(f"✗ Lỗi khi chạy YOLO/pose analyzer: {e}")
+        print(f"✗ Lỗi khi chạy MediaPipe pose analyzer: {e}")
         raise HTTPException(status_code=500, detail=f"Pose analysis failed: {e}")
     
     # Khởi tạo response mặc định
@@ -235,29 +241,29 @@ async def analyze_image(
             if measurements['cm_measurements']:
                 print(f"✓ Số đo cm: {measurements['cm_measurements']}")
             
-            # Gọi Gemini để phân tích
+            # Gọi Groq để phân tích
             try:
-                gemini_recommendations = get_gemini_recommendations(measurements)
+                ai_recommendations = get_ai_recommendations(measurements)
 
                 # Bổ sung phân loại từ module đo lường (nếu có)
                 cls = measurements.get("classifications") or {}
                 if cls.get("shape_type"):
-                    gemini_recommendations["shape_type"] = cls["shape_type"]
+                    ai_recommendations["shape_type"] = cls["shape_type"]
                 if cls.get("somatotype"):
-                    gemini_recommendations["somatotype"] = cls["somatotype"]
+                    ai_recommendations["somatotype"] = cls["somatotype"]
 
                 # Chuẩn hóa trường advice cho FE (fallback từ các trường khác)
-                if "advice" not in gemini_recommendations:
-                    gemini_recommendations["advice"] = (
-                        gemini_recommendations.get("general_advice")
-                        or gemini_recommendations.get("nutrition_advice")
+                if "advice" not in ai_recommendations:
+                    ai_recommendations["advice"] = (
+                        ai_recommendations.get("general_advice")
+                        or ai_recommendations.get("nutrition_advice")
                         or ""
                     )
 
                 response_data = {
                     "success": True,
                     "message": "Phân tích thành công",
-                    "analysis_data": gemini_recommendations,
+                    "analysis_data": ai_recommendations,
                     "measurements": {
                         "pixel_measurements": measurements["pixel_measurements"],
                         "cm_measurements": measurements["cm_measurements"],
@@ -268,10 +274,10 @@ async def analyze_image(
                     "processed_image_url": None  # Sẽ cập nhật bên dưới
                 }
 
-                print("✓ Đã nhận phân tích từ Gemini AI")
+                print("✓ Đã nhận phân tích từ Groq AI (Llama)")
                 
             except Exception as e:
-                print(f"✗ Lỗi khi gọi Gemini: {e}")
+                print(f"✗ Lỗi khi gọi AI: {e}")
                 response_data["message"] = f"Phát hiện cơ thể nhưng lỗi phân tích AI: {str(e)}"
                 response_data["measurements"] = {
                     "pixel_measurements": measurements["pixel_measurements"],
@@ -320,9 +326,9 @@ async def root():
         "service": "Fitnexus AI Trainer API",
         "version": "2.0",
         "features": [
-            "YOLOv8 Pose Detection",
+            "MediaPipe Pose Detection",
             "Body Measurements (px and cm)",
-            "Gemini AI Analysis",
+            "Groq AI Analysis (Llama)",
             "Personalized Workout Recommendations"
         ]
     }
@@ -331,8 +337,8 @@ async def root():
 async def health_check():
     """Kiểm tra trạng thái của các services"""
     return {
-        "yolo_model": "loaded" if yolo_model else "failed",
-        "gemini_api": "configured" if GEMINI_API_KEY else "not_configured",
+        "pose_model": "loaded" if pose_model else "failed",
+        "groq_api": "configured" if GROQ_API_KEY else "not_configured",
         "processed_images_dir": os.path.exists("processed_images")
     }
 

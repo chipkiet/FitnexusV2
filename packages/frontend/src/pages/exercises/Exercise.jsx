@@ -4,6 +4,7 @@ import axios from "axios";
 import { addExerciseToPlanApi, getPlanByIdApi } from "../../lib/api.js";
 import HeaderLogin from "../../components/header/HeaderLogin.jsx";
 import { useMuscleTree } from "../../hooks/muscleTree.js";
+import StartWorkoutButton from "../../components/workout/StartWorkoutButton.jsx";
 
 import {
   Search,
@@ -64,10 +65,9 @@ const MuscleAccordion = ({ parent, selectedId, onSelect }) => {
         className={`
           w-full flex items-center justify-between px-4 py-3 rounded-lg
           transition-all duration-200 group relative overflow-hidden select-none
-          ${
-            isParentActive
-              ? "bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/30 scale-[1.02]"
-              : hasChildActive
+          ${isParentActive
+            ? "bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/30 scale-[1.02]"
+            : hasChildActive
               ? "bg-blue-50 text-blue-700 border-2 border-blue-200"
               : "bg-white border border-gray-200 text-gray-700 hover:border-blue-300 hover:shadow-md"
           }
@@ -83,20 +83,18 @@ const MuscleAccordion = ({ parent, selectedId, onSelect }) => {
           <div
             className={`
             w-2 h-2 rounded-full transition-all shrink-0
-            ${
-              isParentActive
+            ${isParentActive
                 ? "bg-white scale-125"
                 : hasChildActive
-                ? "bg-blue-500"
-                : "bg-gray-300 group-hover:bg-blue-400"
-            }
+                  ? "bg-blue-500"
+                  : "bg-gray-300 group-hover:bg-blue-400"
+              }
           `}
           />
 
           <span
-            className={`font-bold text-sm truncate ${
-              isParentActive ? "text-white" : "text-gray-800"
-            }`}
+            className={`font-bold text-sm truncate ${isParentActive ? "text-white" : "text-gray-800"
+              }`}
           >
             {parent.name}
           </span>
@@ -107,11 +105,10 @@ const MuscleAccordion = ({ parent, selectedId, onSelect }) => {
           {hasChildren && (
             <span
               className={`text-[10px] font-bold px-2 py-0.5 rounded-full transition-colors
-              ${
-                isParentActive
+              ${isParentActive
                   ? "bg-white/20 text-white"
                   : "bg-gray-100 text-gray-500 group-hover:bg-blue-50 group-hover:text-blue-600"
-              }`}
+                }`}
             >
               {parent.children.length}
             </span>
@@ -153,10 +150,9 @@ const MuscleAccordion = ({ parent, selectedId, onSelect }) => {
                     w-full text-left px-3 py-2 rounded-md text-sm
                     transition-all duration-200 flex items-center justify-between
                     group/child relative overflow-hidden
-                    ${
-                      isChildActive
-                        ? "bg-blue-600 text-white shadow-md shadow-blue-500/20 font-bold translate-x-1"
-                        : "text-gray-600 hover:text-blue-700 hover:bg-blue-50 hover:translate-x-1"
+                    ${isChildActive
+                      ? "bg-blue-600 text-white shadow-md shadow-blue-500/20 font-bold translate-x-1"
+                      : "text-gray-600 hover:text-blue-700 hover:bg-blue-50 hover:translate-x-1"
                     }
                   `}
                 >
@@ -304,7 +300,7 @@ export default function Exercise() {
         );
         setPlanItemsSet(ids);
       })
-      .catch(() => {});
+      .catch(() => { });
   }, [currentPlan]);
 
   return (
@@ -331,11 +327,10 @@ export default function Exercise() {
           <aside
             className={`
             fixed inset-y-0 left-0 z-50 w-80 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 lg:w-[280px] lg:bg-transparent lg:border-none lg:h-auto lg:block
-            ${
-              showMobileFilter
+            ${showMobileFilter
                 ? "translate-x-0 shadow-2xl"
                 : "-translate-x-full lg:shadow-none"
-            }
+              }
           `}
           >
             <div className="h-full p-5 overflow-y-auto lg:overflow-visible lg:p-0">
@@ -354,11 +349,10 @@ export default function Exercise() {
               <div className="mb-8 space-y-4">
                 {/* Plan Context */}
                 <div
-                  className={`p-4 rounded-xl border shadow-sm transition-all ${
-                    currentPlan
+                  className={`p-4 rounded-xl border shadow-sm transition-all ${currentPlan
                       ? "bg-gradient-to-br from-blue-50 to-white border-blue-100"
                       : "bg-white border-gray-200"
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center justify-between mb-2">
                     <span className="flex items-center gap-1 text-xs font-extrabold tracking-widest text-gray-400 uppercase">
@@ -439,12 +433,12 @@ export default function Exercise() {
                           </div>
                         ))}
                       </div>
-                      <button
-                        onClick={() => navigate("/workout/start")}
+                      <StartWorkoutButton
+                        exercises={todayList}
                         className="w-full py-2 text-xs font-bold text-white bg-orange-600 rounded-lg shadow-sm hover:bg-orange-700 shadow-orange-200"
                       >
                         Bắt đầu tập
-                      </button>
+                      </StartWorkoutButton>
                     </div>
                   )}
                 </div>
@@ -540,10 +534,9 @@ export default function Exercise() {
                   className={`
                     w-full mb-3 px-4 py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2
                     transition-all duration-200 shadow-sm
-                    ${
-                      !selectedMuscle
-                        ? "bg-zinc-900 text-white shadow-lg shadow-zinc-900/20 transform -translate-y-0.5"
-                        : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300"
+                    ${!selectedMuscle
+                      ? "bg-zinc-900 text-white shadow-lg shadow-zinc-900/20 transform -translate-y-0.5"
+                      : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300"
                     }
                   `}
                 >
@@ -642,11 +635,10 @@ export default function Exercise() {
                                 addToPlan(ex);
                               }}
                               className={`w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-lg transform hover:scale-110
-                                 ${
-                                   isAdded
-                                     ? "bg-green-500 text-white"
-                                     : "bg-white text-zinc-800 hover:bg-blue-600 hover:text-white"
-                                 }`}
+                                 ${isAdded
+                                  ? "bg-green-500 text-white"
+                                  : "bg-white text-zinc-800 hover:bg-blue-600 hover:text-white"
+                                }`}
                               title="Thêm vào Plan"
                             >
                               {isAdded ? (
@@ -660,13 +652,12 @@ export default function Exercise() {
                           {/* Difficulty Badge */}
                           <div
                             className={`absolute top-2 left-2 px-2 py-0.5 text-[10px] font-bold text-white uppercase rounded shadow-sm tracking-wider
-                            ${
-                              ex.difficulty === "beginner"
+                            ${ex.difficulty === "beginner"
                                 ? "bg-green-500/90"
                                 : ex.difficulty === "advanced"
-                                ? "bg-red-500/90"
-                                : "bg-amber-500/90"
-                            }
+                                  ? "bg-red-500/90"
+                                  : "bg-amber-500/90"
+                              }
                           `}
                           >
                             {ex.difficulty || "N/A"}
@@ -678,9 +669,8 @@ export default function Exercise() {
                               e.stopPropagation();
                               addToPlan(ex);
                             }}
-                            className={`lg:hidden absolute bottom-2 right-2 w-8 h-8 rounded-full flex items-center justify-center shadow-md text-white active:scale-95 transition ${
-                              isAdded ? "bg-green-500" : "bg-blue-600"
-                            }`}
+                            className={`lg:hidden absolute bottom-2 right-2 w-8 h-8 rounded-full flex items-center justify-center shadow-md text-white active:scale-95 transition ${isAdded ? "bg-green-500" : "bg-blue-600"
+                              }`}
                           >
                             {isAdded ? (
                               <Check className="w-4 h-4" />

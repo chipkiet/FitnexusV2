@@ -267,143 +267,153 @@ const AiTrainer = () => {
 
           {/* Results Section */}
           {(isLoading || analysisResult) && (
-            <div className="flex gap-8 mt-10">
-              {/* Original Image - 30% */}
-              <div className="w-[30%] p-6 bg-white border border-blue-100 shadow-lg rounded-2xl flex-shrink-0">
-                <h3 className="mb-4 text-2xl font-extrabold text-rose-600">
-                  Ảnh gốc
-                </h3>
-                {previewImage && (
-                  <img
-                    src={previewImage}
-                    alt="Preview"
-                    className="w-full rounded-lg shadow"
-                  />
-                )}
-              </div>
+            <div className="flex flex-col mt-10 gap-8">
+              {/* Images Row */}
+              <div className="flex flex-col md:flex-row gap-8">
+                {/* Original Image */}
+                <div className="flex-1 p-6 bg-white border border-blue-100 shadow-lg rounded-2xl flex flex-col">
+                  <h3 className="mb-4 text-2xl font-extrabold text-rose-600 text-center">
+                    Ảnh gốc
+                  </h3>
+                  {previewImage && (
+                    <div className="flex-1 flex items-center justify-center bg-slate-50 rounded-lg p-2 border border-slate-100 overflow-hidden">
+                      <img
+                        src={previewImage}
+                        alt="Preview"
+                        className="max-w-full max-h-[600px] object-contain rounded-lg shadow-sm"
+                      />
+                    </div>
+                  )}
+                </div>
 
-              {/* Processed Image & Analysis - 60% */}
-              <div className="flex-1 p-6 bg-white border border-blue-100 shadow-lg rounded-2xl">
-                <h3 className="mb-4 text-2xl font-extrabold text-rose-600">
-                  Kết quả phân tích
-                </h3>
-                {isLoading && (
-                  <div className="flex items-center justify-center h-full">
-                    <div className="w-16 h-16 border-8 rounded-full border-rose-200 border-t-rose-500 animate-spin"></div>
-                  </div>
-                )}
-                {analysisResult && (
-                  <div className="space-y-6">
-                    <div className="flex gap-6">
-                      {/* Processed image - same size as original */}
-                      <div className="w-[50%] flex-shrink-0">
+                {/* Processed Image */}
+                <div className="flex-1 p-6 bg-white border border-blue-100 shadow-lg rounded-2xl flex flex-col relative">
+                  <h3 className="mb-4 text-2xl font-extrabold text-rose-600 text-center">
+                    Kết quả định hướng cơ thể
+                  </h3>
+                  
+                  {isLoading ? (
+                    <div className="flex-1 flex items-center justify-center min-h-[300px] bg-slate-50/50 rounded-lg">
+                      <div className="w-16 h-16 border-8 rounded-full border-rose-200 border-t-rose-500 animate-spin"></div>
+                    </div>
+                  ) : (
+                    analysisResult?.processed_image_url && (
+                      <div className="flex-1 flex items-center justify-center bg-slate-50 rounded-lg p-2 border border-slate-100 overflow-hidden">
                         <img
                           src={analysisResult.processed_image_url}
                           alt="Processed"
-                          className="w-full rounded-lg shadow"
+                          className="max-w-full max-h-[600px] object-contain rounded-lg shadow-sm"
                         />
                       </div>
+                    )
+                  )}
+                </div>
+              </div>
 
-                      {/* Metrics beside image */}
-                      <div className="flex-1">
-                        <MetricsPanel
-                          analysisResult={analysisResult}
-                          heightCm={heightCm}
-                        />
-                      </div>
-                    </div>
+              {/* Analysis & Metrics */}
+              {analysisResult && (
+                <div className="space-y-8">
+                  {/* Metrics Full Width */}
+                  <div className="bg-white border border-blue-100 shadow-lg rounded-2xl overflow-hidden">
+                    <MetricsPanel
+                      analysisResult={analysisResult}
+                      heightCm={heightCm}
+                    />
+                  </div>
 
-                    {/* Textual analysis and exercise suggestions - full width */}
-                    <div className="grid grid-cols-2 gap-6">
-                      {/* Textual analysis */}
-                      <div className="p-4 border rounded-lg bg-rose-50 border-rose-200">
-                        <h4 className="mb-2 text-lg font-extrabold text-rose-600">
-                          Phân tích chi tiết
-                        </h4>
+                  {/* Textual analysis and exercise suggestions */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    {/* Textual analysis */}
+                    <div className="p-6 border shadow-lg rounded-2xl bg-rose-50/50 border-rose-200">
+                      <h4 className="mb-4 text-xl font-extrabold text-rose-600 border-b border-rose-200 pb-2">
+                        Phân tích chi tiết từ AI
+                      </h4>
+                      <div className="space-y-4 text-slate-700">
                         {analysisResult.analysis_data?.body_type && (
-                          <p className="mb-1">
-                            <strong className="text-rose-700">Dáng:</strong>{" "}
-                            {analysisResult.analysis_data.body_type}
+                          <p>
+                            <strong className="text-rose-700 block mb-1">Dáng người:</strong>
+                            <span className="bg-rose-100 px-3 py-1 rounded-md text-rose-800 font-medium inline-block">{analysisResult.analysis_data.body_type}</span>
                           </p>
                         )}
                         {analysisResult.analysis_data?.body_analysis && (
-                          <p className="mb-2 whitespace-pre-line text-slate-700">
-                            {analysisResult.analysis_data.body_analysis}
-                          </p>
+                          <div>
+                            <strong className="text-rose-700 block mb-1">Đánh giá chung:</strong>
+                            <p className="whitespace-pre-line bg-white/60 p-3 rounded-lg border border-rose-100">{analysisResult.analysis_data.body_analysis}</p>
+                          </div>
                         )}
                         {analysisResult.analysis_data?.nutrition_advice && (
-                          <p className="mb-1">
-                            <strong className="text-blue-700">
-                              Dinh dưỡng:
-                            </strong>{" "}
-                            {analysisResult.analysis_data.nutrition_advice}
-                          </p>
+                          <div>
+                            <strong className="text-blue-700 block mb-1">Dinh dưỡng:</strong>
+                            <p className="bg-white/60 p-3 rounded-lg border border-rose-100">{analysisResult.analysis_data.nutrition_advice}</p>
+                          </div>
                         )}
                         {analysisResult.analysis_data?.lifestyle_tips && (
-                          <p className="mb-1">
-                            <strong className="text-blue-700">Lối sống:</strong>{" "}
-                            {analysisResult.analysis_data.lifestyle_tips}
-                          </p>
+                          <div>
+                            <strong className="text-blue-700 block mb-1">Lối sống:</strong>
+                            <p className="bg-white/60 p-3 rounded-lg border border-rose-100">{analysisResult.analysis_data.lifestyle_tips}</p>
+                          </div>
                         )}
                         {analysisResult.analysis_data?.estimated_timeline && (
-                          <p className="mb-1">
-                            <strong className="text-blue-700">
-                              Lộ trình ước tính:
-                            </strong>{" "}
-                            {analysisResult.analysis_data.estimated_timeline}
-                          </p>
+                          <div>
+                            <strong className="text-blue-700 block mb-1">Lộ trình ước tính:</strong>
+                            <p className="bg-white/60 p-3 rounded-lg border border-rose-100">{analysisResult.analysis_data.estimated_timeline}</p>
+                          </div>
                         )}
                         {analysisResult.analysis_data?.advice && (
-                          <p className="mt-2">
-                            <strong className="text-blue-700">
-                              Lời khuyên:
-                            </strong>{" "}
-                            {analysisResult.analysis_data.advice}
-                          </p>
+                          <div>
+                            <strong className="text-blue-700 block mb-1">Lời khuyên:</strong>
+                            <p className="bg-white/60 p-3 rounded-lg border border-rose-100 font-medium">{analysisResult.analysis_data.advice}</p>
+                          </div>
                         )}
                       </div>
+                    </div>
 
-                      {/* Exercise suggestions + create plan */}
-                      <div className="p-4 border border-blue-200 rounded-lg bg-blue-50">
-                        <h4 className="mb-2 text-lg font-extrabold text-blue-700">
-                          Đề xuất bài tập
-                        </h4>
-                        {Array.isArray(
-                          analysisResult.analysis_data?.exercises
-                        ) &&
+                    {/* Exercise suggestions + create plan */}
+                    <div className="flex flex-col p-6 border shadow-lg border-blue-200 rounded-2xl bg-blue-50/50">
+                      <h4 className="mb-4 text-xl font-extrabold text-blue-700 border-b border-blue-200 pb-2">
+                        Đề xuất bài tập
+                      </h4>
+                      <div className="flex-1">
+                        {Array.isArray(analysisResult.analysis_data?.exercises) &&
                         analysisResult.analysis_data.exercises.length > 0 ? (
-                          <ul className="mb-3 space-y-1 list-disc list-inside text-slate-800">
-                            {analysisResult.analysis_data.exercises.map(
-                              (ex, i) => (
-                                <li key={i}>{ex}</li>
-                              )
-                            )}
+                          <ul className="mb-6 space-y-3 list-disc list-inside text-slate-800 bg-white/60 p-5 rounded-xl border border-blue-100">
+                            {analysisResult.analysis_data.exercises.map((ex, i) => (
+                              <li key={i} className="leading-relaxed border-b border-blue-50 pb-2 last:border-0">{ex}</li>
+                            ))}
                           </ul>
                         ) : (
-                          <p className="mb-3 text-slate-700">
-                            Chưa có danh sách bài tập gợi ý.
-                          </p>
+                          <div className="mb-6 p-4 bg-white/60 rounded-xl border border-blue-100 text-slate-700">
+                            Chưa có danh sách bài tập gợi ý chi tiết.
+                          </div>
                         )}
+                      </div>
+                      
+                      <div className="pt-4 mt-auto border-t border-blue-200/50">
                         <button
                           type="button"
                           onClick={handleCreatePlanFromAI}
                           disabled={isCreatingPlan}
-                          className="px-5 py-2 font-semibold text-white rounded-lg bg-rose-500 hover:bg-rose-600 disabled:bg-rose-200"
+                          className="w-full py-3 px-5 text-lg font-bold text-white transition-all duration-300 rounded-xl bg-orange-500 shadow-md shadow-orange-200 hover:bg-orange-600 hover:shadow-lg disabled:bg-slate-300 disabled:shadow-none disabled:cursor-not-allowed"
                         >
-                          {isCreatingPlan
-                            ? "Đang tạo plan..."
-                            : "Tạo plan từ gợi ý"}
+                          {isCreatingPlan ? (
+                            <span className="flex items-center justify-center gap-2">
+                              <div className="w-5 h-5 border-4 rounded-full border-white/30 border-t-white animate-spin"></div>
+                              Đang tạo kế hoạch...
+                            </span>
+                          ) : (
+                            "⚡ TẠO KẾ HOẠCH TẬP LÀM THEO GỢI Ý NÀY"
+                          )}
                         </button>
                         {planCreateMsg && (
-                          <p className="mt-2 text-sm text-rose-700">
+                          <p className="mt-3 text-center font-medium text-rose-600 bg-rose-50 py-2 rounded-lg">
                             {planCreateMsg}
                           </p>
                         )}
                       </div>
                     </div>
                   </div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           )}
         </main>
@@ -445,37 +455,41 @@ function MetricsPanel({ analysisResult, heightCm }) {
   })();
 
   return (
-    <div className="p-4 border border-blue-200 rounded-lg bg-blue-50">
-      <h4 className="mb-3 text-lg font-extrabold text-rose-600">
-        Chỉ số cơ thể
+    <div className="p-6 bg-blue-50">
+      <h4 className="mb-4 text-xl font-extrabold text-rose-600 border-b border-rose-200 pb-2">
+        Số đo cơ thể (Pixels & Cm)
       </h4>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <Metric label="Shoulder width" value={fmt("shoulder_width")} />
-        <Metric label="Waist width" value={fmt("waist_width")} />
-        <Metric label="Hip width" value={fmt("hip_width")} />
-        <Metric label="Height estimate" value={fmt("height")} />
-        <Metric label="Leg length" value={fmt("leg_length")} />
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
+        <Metric label="Chiều ngang vai" value={fmt("shoulder_width")} />
+        <Metric label="Chiều ngang eo" value={fmt("waist_width")} />
+        <Metric label="Chiều ngang hông" value={fmt("hip_width")} />
+        <Metric label="Ước tính chiều cao" value={fmt("height")} />
+        <Metric label="Độ dài chân" value={fmt("leg_length")} />
         <Metric
-          label="Shoulder/Hip ratio"
+          label="Tỷ lệ Vai/Hông"
           value={ratio("shoulder_hip_ratio")}
         />
-        <Metric label="Waist/Hip ratio" value={ratio("waist_hip_ratio")} />
-        <Metric label="Leg/Height ratio" value={legToHeight} />
+        <Metric label="Tỷ lệ Eo/Hông" value={ratio("waist_hip_ratio")} />
+        <Metric label="Tỷ lệ Chân/Cao" value={legToHeight} />
       </div>
       {(analysisResult.analysis_data?.shape_type ||
         analysisResult.analysis_data?.somatotype) && (
-        <div className="pt-3 mt-3 border-t border-rose-200">
+        <div className="flex gap-6 pt-4 mt-6 border-t border-rose-200/50">
           {analysisResult.analysis_data.shape_type && (
-            <p className="font-semibold text-rose-700">
-              <strong className="text-rose-700">Kiểu hình:</strong>{" "}
-              {analysisResult.analysis_data.shape_type}
-            </p>
+            <div className="bg-white px-4 py-2 rounded-lg border border-rose-100 flex-1 text-center">
+              <span className="block text-sm font-semibold text-slate-500 mb-1">Kiểu hình (Body Shape)</span>
+              <span className="text-lg font-bold text-rose-700">
+                {analysisResult.analysis_data.shape_type}
+              </span>
+            </div>
           )}
           {analysisResult.analysis_data.somatotype && (
-            <p className="font-semibold text-blue-700">
-              <strong className="text-blue-700">Cơ địa:</strong>{" "}
-              {analysisResult.analysis_data.somatotype}
-            </p>
+            <div className="bg-white px-4 py-2 rounded-lg border border-blue-100 flex-1 text-center">
+               <span className="block text-sm font-semibold text-slate-500 mb-1">Cơ địa (Somatotype)</span>
+               <span className="text-lg font-bold text-blue-700">
+                {analysisResult.analysis_data.somatotype}
+               </span>
+            </div>
           )}
         </div>
       )}

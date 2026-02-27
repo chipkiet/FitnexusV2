@@ -11,14 +11,18 @@ const transporter = nodemailer.createTransport({
 });
 
 export async function sendMail({ to, subject, html, text }) {
-  const info = await transporter.sendMail({
-    from: `"FitNexus" <${process.env.SMTP_USER}>`,
-    to,
-    subject,
-    text,
-    html,
-  });
-  return info;
+  console.log(`\n================================`);
+  console.log(`[MOCK EMAIL] To: ${to}`);
+  console.log(`[MOCK EMAIL] Subject: ${subject}`);
+  console.log(`[MOCK EMAIL] OTP/Content:\n${text || html?.replace(/<[^>]+>/g, '')}`);
+  console.log(`================================\n`);
+  //   to,
+  //   subject,
+  //   text,
+  //   html,
+  // });
+  // return info;
+  return { messageId: "mocked-email-id-123" };
 }
 // mẫu email
 export function lockEmailTemplate({ fullName, reason }) {
