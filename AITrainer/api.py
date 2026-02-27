@@ -38,7 +38,7 @@ app.add_middleware(
 
 # !!! QUAN TRỌNG: Lấy khóa API GROQ miễn phí tại https://console.groq.com/keys
 # Xóa placeholder và dán khóa thật của bạn vào đây (bắt đầu bằng gsk_) !!!
-GROQ_API_KEY = os.getenv("GROQ_API_KEY") or "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"
+GROQ_API_KEY = os.getenv("GROQ_API_KEY") or "PASTE GROQ API KEY HERE"
 
 if not GROQ_API_KEY or GROQ_API_KEY == "gsk_VUI_LONG_THAY_KHOA_CUA_BAN":
     print("LỖI: Bạn chưa cấu hình khóa API cho GROQ trong file api.py (hoặc .env).")
