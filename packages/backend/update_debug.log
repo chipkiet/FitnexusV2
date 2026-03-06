@@ -1,0 +1,488 @@
+[2026-03-06T02:34:53.484Z] ID: 67
+BODY: {
+  "name": "Đẩy Cáp Tay Sau V-Bar",
+  "name_en": "Machine Cable V Bar Push Downs",
+  "slug": "cable-v-bar-push-down",
+  "description": "Bài tập cô lập cơ tam đầu với máy cáp.",
+  "difficulty_level": "beginner",
+  "exercise_type": "isolation",
+  "equipment_needed": "machine",
+  "popularity_score": "92",
+  "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-cable-push-downs-front.mp4",
+  "source_name": "MuscleWiki",
+  "source_url": "",
+  "instructions": "[{\"step_number\":1,\"instruction_text\":\"Nắm thanh V-bar với lòng bàn tay hướng xuống.\"},{\"step_number\":2,\"instruction_text\":\"Đứng thẳng, hơi nghiêng người về phía trước. Đẩy thanh cáp xuống cho đến khi cánh tay duỗi thẳng hoàn toàn.\"},{\"step_number\":3,\"instruction_text\":\"Dừng lại một chút rồi từ từ đưa thanh cáp trở lại vị trí bắt đầu.\"}]",
+  "muscles": "[{\"id\":23,\"name\":\"Bắp tay sau\",\"impact\":\"primary\"}]",
+  "gallery_items_keep": "[]"
+}
+FILES: thumbnail
+[2026-03-06T02:35:36.234Z] ID: 67
+BODY: {
+  "name": "Đẩy Cáp Tay Sau V-Bar",
+  "name_en": "Machine Cable V Bar Push Downs",
+  "slug": "cable-v-bar-push-down",
+  "description": "Bài tập cô lập cơ tam đầu với máy cáp.",
+  "difficulty_level": "beginner",
+  "exercise_type": "isolation",
+  "equipment_needed": "machine",
+  "popularity_score": "92",
+  "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-cable-push-downs-front.mp4",
+  "source_name": "MuscleWiki",
+  "source_url": "",
+  "instructions": "[{\"step_number\":1,\"instruction_text\":\"Nắm thanh V-bar với lòng bàn tay hướng xuống.\"},{\"step_number\":2,\"instruction_text\":\"Đứng thẳng, hơi nghiêng người về phía trước. Đẩy thanh cáp xuống cho đến khi cánh tay duỗi thẳng hoàn toàn.\"},{\"step_number\":3,\"instruction_text\":\"Dừng lại một chút rồi từ từ đưa thanh cáp trở lại vị trí bắt đầu.\"}]",
+  "muscles": "[{\"id\":23,\"name\":\"Bắp tay sau\",\"impact\":\"primary\"}]",
+  "gallery_items_keep": "[]"
+}
+FILES: thumbnail
+[2026-03-06T10:17:46.664Z] ID: 67
+BODY: {
+  "name": "Đẩy Cáp Tay Sau V-Bar",
+  "name_en": "Machine Cable V Bar Push Downs",
+  "slug": "cable-v-bar-push-down",
+  "description": "Bài tập cô lập cơ tam đầu với máy cáp.",
+  "difficulty_level": "beginner",
+  "exercise_type": "isolation",
+  "equipment_needed": "machine",
+  "popularity_score": "92",
+  "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-cable-push-downs-front.mp4",
+  "source_name": "MuscleWiki",
+  "source_url": "",
+  "instructions": "[{\"step_number\":1,\"instruction_text\":\"Nắm thanh V-bar với lòng bàn tay hướng xuống.\"},{\"step_number\":2,\"instruction_text\":\"Đứng thẳng, hơi nghiêng người về phía trước. Đẩy thanh cáp xuống cho đến khi cánh tay duỗi thẳng hoàn toàn.\"},{\"step_number\":3,\"instruction_text\":\"Dừng lại một chút rồi từ từ đưa thanh cáp trở lại vị trí bắt đầu.\"}]",
+  "muscles": "[{\"id\":23,\"name\":\"Bắp tay sau\",\"impact\":\"primary\"}]",
+  "gallery_items_keep": "[]"
+}
+FILES: thumbnail
+[2026-03-06T10:27:29.663Z] ID: 94
+BODY: {
+  "name": "Đẩy Ngực Dốc Lên Thanh Đòn",
+  "name_en": "Incline Barbell Bench Press",
+  "slug": "incline-barbell-bench-press",
+  "description": "Bài tập tập trung vào phần ngực trên và cơ vai trước.",
+  "difficulty_level": "intermediate",
+  "exercise_type": "compound",
+  "equipment_needed": "barbell, bench",
+  "popularity_score": "92",
+  "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-barbell-incline-bench-press-front.mp4",
+  "source_name": "MuscleWiki",
+  "source_url": "",
+  "instructions": "[{\"step_number\":1,\"instruction_text\":\"Nằm trên ghế dốc lên, chân đặt chắc chắn trên sàn. Cầm thanh đòn với lòng bàn tay hướng về phía trước.\"},{\"step_number\":2,\"instruction_text\":\"Hạ thanh đòn xuống ngực trên, giữ khuỷu tay gần cơ thể.\"},{\"step_number\":3,\"instruction_text\":\"Đẩy thanh đòn trở lại vị trí bắt đầu và thở ra.\"}]",
+  "muscles": "[{\"id\":7,\"name\":\"Ngực trên\",\"impact\":\"primary\"},{\"id\":15,\"name\":\"Vai trước\",\"impact\":\"secondary\"}]",
+  "gallery_items_keep": "[]"
+}
+FILES: thumbnail
+[2026-03-06T10:34:13.321Z] ID: 133
+BODY: {
+  "name": "Cuốn Chân Nằm Với Máy",
+  "name_en": "Machine Lying Leg Curl",
+  "slug": "machine-lying-leg-curl",
+  "description": "Bài tập cô lập chính cho nhóm cơ đùi sau (hamstrings).",
+  "difficulty_level": "beginner",
+  "exercise_type": "isolation",
+  "equipment_needed": "machine",
+  "popularity_score": "90",
+  "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-machine-lying-leg-curl-side.mp4",
+  "source_name": "MuscleWiki",
+  "source_url": "",
+  "instructions": "[{\"step_number\":1,\"instruction_text\":\"Nằm sấp trên máy cuốn chân, đặt gót chân dưới đệm chân.\"},{\"step_number\":2,\"instruction_text\":\"Cuốn chân lên phía mông bằng cách sử dụng cơ đùi sau.\"},{\"step_number\":3,\"instruction_text\":\"Hạ chân xuống từ từ về vị trí ban đầu.\"}]",
+  "muscles": "[{\"id\":30,\"name\":\"Đùi sau\",\"impact\":\"primary\"}]",
+  "gallery_items_keep": "[]"
+}
+FILES: thumbnail
+[2026-03-06T10:38:55.337Z] ID: 136
+BODY: {
+  "name": "Treo Người Nhấc Chân",
+  "name_en": "Bodyweight Hanging Leg Raise",
+  "slug": "bodyweight-hanging-leg-raise",
+  "description": "Bài tập nâng cao cho cơ bụng dưới và cơ gấp hông.",
+  "difficulty_level": "advanced",
+  "exercise_type": "isolation",
+  "equipment_needed": "body-weight",
+  "popularity_score": "90",
+  "primary_video_url": "https://www.pexels.com/video/a-topless-man-exercising-8520192/",
+  "source_name": "MuscleWiki",
+  "source_url": "",
+  "instructions": "[{\"step_number\":1,\"instruction_text\":\"Treo người trên thanh xà đơn, giữ thẳng tay.\"},{\"step_number\":2,\"instruction_text\":\"Nâng hai chân lên (có thể duỗi thẳng hoặc gập gối) cho đến khi hông gập hoàn toàn.\"},{\"step_number\":3,\"instruction_text\":\"Hạ chân xuống từ từ, cố gắng không để cơ thể bị đung đưa.\"}]",
+  "muscles": "[{\"id\":26,\"name\":\"Cơ bụng\",\"impact\":\"primary\"}]",
+  "gallery_items_keep": "[]"
+}
+FILES: thumbnail,video
+[2026-03-06T10:43:50.079Z] ID: 135
+BODY: {
+  "name": "Lunge Bước Đi",
+  "name_en": "Bodyweight Walking Lunges",
+  "slug": "bodyweight-walking-lunges",
+  "description": "Bài tập phát triển sức mạnh đùi, mông và khả năng thăng bằng.",
+  "difficulty_level": "beginner",
+  "exercise_type": "compound",
+  "equipment_needed": "body-weight",
+  "popularity_score": "88",
+  "primary_video_url": "https://www.pexels.com/video/man-performing-lunges-with-dumbbells-in-gym-35585590/",
+  "source_name": "MuscleWiki",
+  "source_url": "",
+  "instructions": "[{\"step_number\":1,\"instruction_text\":\"Đứng thẳng với hai chân chụm lại.\"},{\"step_number\":2,\"instruction_text\":\"Bước một chân lên xa phía trước, hạ thấp hông cho đến khi cả hai đầu gối gập một góc khoảng 90 độ.\"},{\"step_number\":3,\"instruction_text\":\"Đứng dậy và bước chân sau lên phía trước và lặp lại động tác lunge với chân kia.\"}]",
+  "muscles": "[{\"id\":29,\"name\":\"Đùi trước\",\"impact\":\"primary\"},{\"id\":31,\"name\":\"Cơ Mông\",\"impact\":\"primary\"}]",
+  "gallery_items_keep": "[]",
+  "gallery_titles_new": "Góc quay khác"
+}
+FILES: thumbnail,video,gallery_videos
+[2026-03-06T10:45:41.235Z] ID: 132
+BODY: {
+  "name": "Nhún Cầu Vai Thanh Đòn",
+  "name_en": "Barbell Shrugs",
+  "slug": "barbell-shrugs",
+  "description": "Bài tập phát triển sức mạnh và kích thước cho nhóm cơ cầu vai (traps).",
+  "difficulty_level": "beginner",
+  "exercise_type": "isolation",
+  "equipment_needed": "barbell",
+  "popularity_score": "88",
+  "primary_video_url": "https://www.pexels.com/video/side-view-of-a-man-doing-barbell-squats-5319759/",
+  "source_name": "MuscleWiki",
+  "source_url": "",
+  "instructions": "[{\"step_number\":1,\"instruction_text\":\"Đứng thẳng, cầm thanh tạ đòn ở ngang đùi với lòng bàn tay hướng về phía cơ thể.\"},{\"step_number\":2,\"instruction_text\":\"Nhún vai lên cao hết mức có thể về phía tai mặt (không xoay vai).\"},{\"step_number\":3,\"instruction_text\":\"Dừng lại một chút ở điểm cao nhất rồi từ từ hạ xuống.\"}]",
+  "muscles": "[{\"id\":11,\"name\":\"Cầu vai\",\"impact\":\"primary\"}]",
+  "gallery_items_keep": "[]"
+}
+FILES: thumbnail,video
+[2026-03-06T10:48:11.780Z] ID: 134
+BODY: {
+  "name": "Đẩy Ngực Dốc Xuống Thanh Đòn",
+  "name_en": "Barbell Decline Bench Press",
+  "slug": "barbell-decline-bench-press",
+  "description": "Bài tập tập trung vào phần ngực dưới và cơ tam đầu.",
+  "difficulty_level": "intermediate",
+  "exercise_type": "compound",
+  "equipment_needed": "barbell, bench",
+  "popularity_score": "85",
+  "primary_video_url": "https://www.pexels.com/video/a-person-doing-bench-press-exercise-5320001/",
+  "source_name": "MuscleWiki",
+  "source_url": "",
+  "instructions": "[{\"step_number\":1,\"instruction_text\":\"Nằm trên ghế dốc xuống, móc chân vào giá đỡ của ghế. Nhấc thanh tạ ra khỏi giá.\"},{\"step_number\":2,\"instruction_text\":\"Hạ thanh tạ xuống phần ngực dưới của bạn.\"},{\"step_number\":3,\"instruction_text\":\"Đẩy thanh tạ lên cho đến khi tay duỗi thẳng hoàn toàn.\"}]",
+  "muscles": "[{\"id\":9,\"name\":\"Ngực dưới\",\"impact\":\"primary\"},{\"id\":23,\"name\":\"Bắp tay sau\",\"impact\":\"secondary\"}]",
+  "gallery_items_keep": "[]",
+  "gallery_titles_new": "Góc quay khác"
+}
+FILES: thumbnail,video,gallery_videos
+[2026-03-06T10:49:42.741Z] ID: 69
+BODY: {
+  "name": "Plank Với Bóng",
+  "name_en": "Medicine Ball Plank",
+  "slug": "medicine-ball-plank",
+  "description": "Bài tập ổn định cơ trọng tâm (core) nâng cao với bóng tập.",
+  "difficulty_level": "intermediate",
+  "exercise_type": "isolation",
+  "equipment_needed": "medicine-ball",
+  "popularity_score": "85",
+  "primary_video_url": "https://www.pexels.com/video/man-working-out-at-the-gym-4745626/",
+  "source_name": "MuscleWiki",
+  "source_url": "",
+  "instructions": "[{\"step_number\":1,\"instruction_text\":\"Đặt bóng tập trên sàn.\"},{\"step_number\":2,\"instruction_text\":\"Đặt hai tay lên bóng và duỗi chân ra sau tư thế chống đẩy.\"},{\"step_number\":3,\"instruction_text\":\"Giữ lưng thẳng và gồng cơ bụng. Giữ tư thế trong thời gian yêu cầu.\"}]",
+  "muscles": "[{\"id\":26,\"name\":\"Cơ bụng\",\"impact\":\"primary\"}]",
+  "gallery_items_keep": "[]"
+}
+FILES: thumbnail,video
+[2026-03-06T10:55:01.789Z] ID: 198
+BODY: {
+  "name": "Chống Xà Kép Tập Tay Sau",
+  "name_en": "Tricep Dips",
+  "slug": "tricep-dips",
+  "description": "Bài tập sức mạnh thân trên tập trung tối đa vào cơ tam đầu.",
+  "difficulty_level": "intermediate",
+  "exercise_type": "compound",
+  "equipment_needed": "body-weight",
+  "popularity_score": "0",
+  "primary_video_url": "",
+  "source_name": "",
+  "source_url": "",
+  "instructions": "[{\"step_number\":1,\"instruction_text\":\"Chống hai tay lên xà kép, giữ thân người thẳng đứng (không nghiêng như tập ngực).\"},{\"step_number\":2,\"instruction_text\":\"Hạ thấp người xuống bằng cách gập khuỷu tay cho đến khi bắp tay song song với sàn.\"},{\"step_number\":3,\"instruction_text\":\"Đẩy mạnh người lên trở lại vị trí cũ.\"}]",
+  "muscles": "[{\"id\":23,\"name\":\"Bắp tay sau\",\"impact\":\"primary\"}]",
+  "gallery_items_keep": "[]"
+}
+FILES: thumbnail,video
+[2026-03-06T10:56:02.863Z] ID: 269
+BODY: {
+  "name": "Burpees (Nhảy Hít Đất)",
+  "name_en": "Burpees",
+  "slug": "burpees",
+  "description": "Bài tập toàn thân đốt mỡ đỉnh cao, kết hợp giữa hít đất và bật nhảy.",
+  "difficulty_level": "advanced",
+  "exercise_type": "compound",
+  "equipment_needed": "body-weight",
+  "popularity_score": "0",
+  "primary_video_url": "",
+  "source_name": "",
+  "source_url": "",
+  "instructions": "[{\"step_number\":1,\"instruction_text\":\"Từ tư thế đứng, hạ người xuống tư thế squat và đặt hai tay xuống sàn.\"},{\"step_number\":2,\"instruction_text\":\"Bật hai chân ra sau về tư thế chống đẩy, thực hiện một lần hít đất.\"},{\"step_number\":3,\"instruction_text\":\"Bật chân trở lại tư thế squat và nhảy cao lên, đưa tay qua đầu.\"}]",
+  "muscles": "[{\"id\":1,\"name\":\"Ngực\",\"impact\":\"secondary\"},{\"id\":26,\"name\":\"Cơ bụng\",\"impact\":\"primary\"},{\"id\":29,\"name\":\"Đùi trước\",\"impact\":\"primary\"}]",
+  "gallery_items_keep": "[]"
+}
+FILES: thumbnail
+[2026-03-06T10:57:40.356Z] ID: 185
+BODY: {
+  "name": "Cuốn Tạ Tập Trung (Concentration Curl)",
+  "name_en": "Concentration Curl",
+  "slug": "concentration-curl",
+  "description": "Bài tập cô lập đỉnh cao cho cơ nhị đầu, giúp tạo độ cao cho 'đỉnh' bắp tay.",
+  "difficulty_level": "intermediate",
+  "exercise_type": "isolation",
+  "equipment_needed": "dumbbell",
+  "popularity_score": "0",
+  "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Dumbbells-dumbbell-concentration-curl-front.mp4",
+  "source_name": "MuscleWiki",
+  "source_url": "",
+  "instructions": "[{\"step_number\":1,\"instruction_text\":\"Ngồi trên ghế, hơi cúi người. Tựa khuỷu tay của tay cầm tạ vào mặt trong của đùi cùng bên.\"},{\"step_number\":2,\"instruction_text\":\"Cuốn tạ lên phía vai mà không di chuyển khuỷu tay khỏi đùi.\"},{\"step_number\":3,\"instruction_text\":\"Siết chặt bắp tay ở điểm cao nhất rồi từ từ hạ xuống.\"}]",
+  "muscles": "[{\"id\":20,\"name\":\"Bắp tay trước\",\"impact\":\"primary\"}]",
+  "gallery_items_keep": "[]"
+}
+FILES: thumbnail,video
+[2026-03-06T10:58:57.367Z] ID: 197
+BODY: {
+  "name": "Cuốn Tay Trước Với Cáp",
+  "name_en": "Cable Bicep Curl",
+  "slug": "cable-bicep-curl",
+  "description": "Duy trì áp lực liên tục lên cơ nhị đầu trong suốt biên độ chuyển động.",
+  "difficulty_level": "beginner",
+  "exercise_type": "isolation",
+  "equipment_needed": "machine",
+  "popularity_score": "0",
+  "primary_video_url": "",
+  "source_name": "",
+  "source_url": "",
+  "instructions": "[{\"step_number\":1,\"instruction_text\":\"Nắm thanh xà của máy cáp, đặt ở vị trí thấp.\"},{\"step_number\":2,\"instruction_text\":\"Cuốn thanh xà lên về phía ngực, giữ khuỷu tay sát sườn.\"},{\"step_number\":3,\"instruction_text\":\"Hạ xuống từ từ có kiểm soát.\"}]",
+  "muscles": "[{\"id\":20,\"name\":\"Bắp tay trước\",\"impact\":\"primary\"}]",
+  "gallery_items_keep": "[]"
+}
+FILES: thumbnail,video
+[2026-03-06T11:01:55.702Z] ID: 272
+BODY: {
+  "name": "Đá Chân Sang Bên (Fire Hydrant)",
+  "name_en": "Fire Hydrant",
+  "slug": "bodyweight-fire-hydrants",
+  "description": "Bài tập tuyệt vời để tác động vào cơ mông nhỡ và mông nhỏ.",
+  "difficulty_level": "beginner",
+  "exercise_type": "isolation",
+  "equipment_needed": "body-weight",
+  "popularity_score": "0",
+  "primary_video_url": "",
+  "source_name": "",
+  "source_url": "",
+  "instructions": "[{\"step_number\":1,\"instruction_text\":\"Bắt đầu ở tư thế quỳ bằng hai tay và hai đầu gối.\"},{\"step_number\":2,\"instruction_text\":\"Nâng một chân sang bên cạnh trong khi vẫn giữ đầu gối gập 90 độ.\"},{\"step_number\":3,\"instruction_text\":\"Hạ chân xuống và lặp lại.\"}]",
+  "muscles": "[{\"id\":31,\"name\":\"Cơ Mông\",\"impact\":\"primary\"}]",
+  "gallery_items_keep": "[]"
+}
+FILES: thumbnail
+[2026-03-06T11:05:08.118Z] ID: 415
+BODY: {
+  "name": "Dang Tạ Tay Ngược (Reverse Fly)",
+  "name_en": "Dumbbell Reverse Fly",
+  "slug": "dumbbell-reverse-fly",
+  "description": "Bài tập cô lập tốt nhất cho cơ vai sau, giúp vai tròn trịa và cải thiện tư thế.",
+  "difficulty_level": "beginner",
+  "exercise_type": "isolation",
+  "equipment_needed": "dumbbell",
+  "popularity_score": "0",
+  "primary_video_url": "",
+  "source_name": "",
+  "source_url": "",
+  "instructions": "[{\"step_number\":1,\"instruction_text\":\"Cúi người về phía trước, lưng thẳng, mỗi tay cầm một quả tạ đơn treo tự nhiên.\"},{\"step_number\":2,\"instruction_text\":\"Mở rộng cánh tay sang hai bên (như sải cánh) cho đến khi ngang vai, ép chặt xương bả vai.\"},{\"step_number\":3,\"instruction_text\":\"Từ từ hạ tạ về vị trí ban đầu.\"}]",
+  "muscles": "[{\"id\":17,\"name\":\"Vai sau\",\"impact\":\"primary\"}]",
+  "gallery_items_keep": "[]"
+}
+FILES: thumbnail,video
+[2026-03-06T11:06:33.170Z] ID: 184
+BODY: {
+  "name": "Đá Tạ Tay Sau (Dumbbell Kickback)",
+  "name_en": "Dumbbell Kickback",
+  "slug": "dumbbell-kickback",
+  "description": "Bài tập cô lập giúp định hình và làm săn chắc cơ tam đầu (triceps).",
+  "difficulty_level": "beginner",
+  "exercise_type": "isolation",
+  "equipment_needed": "dumbbell",
+  "popularity_score": "0",
+  "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Dumbbells-dumbbell-kickback-side.mp4",
+  "source_name": "MuscleWiki",
+  "source_url": "",
+  "instructions": "[{\"step_number\":1,\"instruction_text\":\"Cầm tạ bằng một tay, cúi người về phía trước, tay kia tựa lên ghế hoặc đầu gối. Giữ cánh tay trên song song với thân người.\"},{\"step_number\":2,\"instruction_text\":\"Chỉ di chuyển cẳng tay, đá tạ ra phía sau cho đến khi cánh tay duỗi thẳng hoàn toàn.\"},{\"step_number\":3,\"instruction_text\":\"Dừng lại một chút rồi từ từ đưa tạ về vị trí cũ.\"}]",
+  "muscles": "[{\"id\":23,\"name\":\"Bắp tay sau\",\"impact\":\"primary\"}]",
+  "gallery_items_keep": "[]"
+}
+FILES: thumbnail
+[2026-03-06T11:09:08.816Z] ID: 417
+BODY: {
+  "name": "Ép Cáp Từ Cao Đến Thấp",
+  "name_en": "High-to-Low Cable Fly",
+  "slug": "high-to-low-cable-fly",
+  "description": "Bài tập tuyệt vời để nhắm vào sợi cơ ngực dưới.",
+  "difficulty_level": "intermediate",
+  "exercise_type": "isolation",
+  "equipment_needed": "machine",
+  "popularity_score": "0",
+  "primary_video_url": "",
+  "source_name": "",
+  "source_url": "",
+  "instructions": "[{\"step_number\":1,\"instruction_text\":\"Đứng giữa hai máy cáp, tay cầm đặt ở vị trí cao hơn vai.\"},{\"step_number\":2,\"instruction_text\":\"Ép hai tay xuống và vào nhau ở phía trước bụng dưới.\"},{\"step_number\":3,\"instruction_text\":\"Từ từ mở tay ra để cảm nhận sự kéo giãn của cơ ngực dưới.\"}]",
+  "muscles": "[{\"id\":9,\"name\":\"Ngực dưới\",\"impact\":\"primary\"}]",
+  "gallery_items_keep": "[]"
+}
+FILES: thumbnail,video
+[2026-03-06T11:10:00.464Z] ID: 413
+BODY: {
+  "name": "Gập Bụng Đạp Xe (Bicycle Crunches)",
+  "name_en": "Bicycle Crunches",
+  "slug": "bicycle-crunches",
+  "description": "Bài tập tuyệt vời tác động đồng thời vào cơ bụng thẳng và cơ liên sườn.",
+  "difficulty_level": "beginner",
+  "exercise_type": "isolation",
+  "equipment_needed": "body-weight",
+  "popularity_score": "0",
+  "primary_video_url": "",
+  "source_name": "",
+  "source_url": "",
+  "instructions": "[{\"step_number\":1,\"instruction_text\":\"Nằm ngửa, tay đặt sau đầu, nhấc vai và chân lên khỏi sàn.\"},{\"step_number\":2,\"instruction_text\":\"Co một gối về phía ngực đồng thời xoay người để khuỷu tay đối diện chạm vào gối đó.\"},{\"step_number\":3,\"instruction_text\":\"Đổi bên liên tục như đang đạp xe.\"}]",
+  "muscles": "[{\"id\":26,\"name\":\"Cơ bụng\",\"impact\":\"primary\"},{\"id\":27,\"name\":\"Cơ liên sườn\",\"impact\":\"primary\"}]",
+  "gallery_items_keep": "[]"
+}
+FILES: thumbnail
+[2026-03-06T11:11:01.393Z] ID: 416
+BODY: {
+  "name": "Hít Đất Chân Cao (Decline Push-up)",
+  "name_en": "Decline Push-ups",
+  "slug": "decline-push-ups",
+  "description": "Biến thể hít đất tập trung áp lực vào phần ngực trên và vai trước.",
+  "difficulty_level": "intermediate",
+  "exercise_type": "compound",
+  "equipment_needed": "body-weight, bench",
+  "popularity_score": "0",
+  "primary_video_url": "",
+  "source_name": "",
+  "source_url": "",
+  "instructions": "[{\"step_number\":1,\"instruction_text\":\"Đặt hai bàn chân lên ghế hoặc bục cao, hai tay chống dưới sàn ở tư thế hít đất.\"},{\"step_number\":2,\"instruction_text\":\"Hạ thấp ngực xuống gần sàn, giữ cơ thể thẳng.\"},{\"step_number\":3,\"instruction_text\":\"Đẩy người ngược lên trở lại vị trí cũ.\"}]",
+  "muscles": "[{\"id\":7,\"name\":\"Ngực trên\",\"impact\":\"primary\"},{\"id\":15,\"name\":\"Vai trước\",\"impact\":\"secondary\"}]",
+  "gallery_items_keep": "[]"
+}
+FILES: thumbnail
+[2026-03-06T11:12:30.280Z] ID: 414
+BODY: {
+  "name": "Kéo Cáp Chặt Gỗ (Cable Woodchop)",
+  "name_en": "Cable Woodchop",
+  "slug": "cable-woodchop",
+  "description": "Bài tập xoay người mạnh mẽ giúp định hình cơ liên sườn và tăng sức mạnh bùng nổ.",
+  "difficulty_level": "intermediate",
+  "exercise_type": "isolation",
+  "equipment_needed": "machine",
+  "popularity_score": "0",
+  "primary_video_url": "",
+  "source_name": "",
+  "source_url": "",
+  "instructions": "[{\"step_number\":1,\"instruction_text\":\"Đứng cạnh máy cáp, hai tay nắm tay cầm ở vị trí cao.\"},{\"step_number\":2,\"instruction_text\":\"Dùng cơ bụng xoay người kéo cáp xuống theo đường chéo về phía đầu gối đối diện.\"},{\"step_number\":3,\"instruction_text\":\"Từ từ đưa cáp trở lại vị trí cũ và lặp lại.\"}]",
+  "muscles": "[{\"id\":27,\"name\":\"Cơ liên sườn\",\"impact\":\"primary\"}]",
+  "gallery_items_keep": "[]"
+}
+FILES: thumbnail,video
+[2026-03-06T11:13:51.268Z] ID: 201
+BODY: {
+  "name": "Kéo Cáp Ngồi (Seated Cable Row)",
+  "name_en": "Seated Cable Row",
+  "slug": "seated-cable-row",
+  "description": "Bài tập tuyệt vời để xây dựng độ dày cho lưng giữa.",
+  "difficulty_level": "beginner",
+  "exercise_type": "compound",
+  "equipment_needed": "machine",
+  "popularity_score": "0",
+  "primary_video_url": "",
+  "source_name": "",
+  "source_url": "",
+  "instructions": "[{\"step_number\":1,\"instruction_text\":\"Ngồi vào máy, đặt chân lên bục và nắm tay cầm chữ V.\"},{\"step_number\":2,\"instruction_text\":\"Kéo tay cầm về phía bụng dưới, ép chặt xương bả vai lại với nhau.\"},{\"step_number\":3,\"instruction_text\":\"Từ từ đưa tay về trí ban đầu, cảm nhận sự kéo giãn của cơ lưng.\"}]",
+  "muscles": "[{\"id\":10,\"name\":\"Cơ xô / Lưng rộng\",\"impact\":\"primary\"}]",
+  "gallery_items_keep": "[]"
+}
+FILES: thumbnail,video
+[2026-03-06T11:14:53.560Z] ID: 180
+BODY: {
+  "name": "Nằm Dang Tạ Tay Tập Ngực",
+  "name_en": "Dumbbell Fly",
+  "slug": "dumbbell-fly",
+  "description": "Bài tập kéo giãn cơ ngực, giúp mở rộng lồng ngực và tạo độ sâu cho rãnh ngực.",
+  "difficulty_level": "intermediate",
+  "exercise_type": "isolation",
+  "equipment_needed": "dumbbell, bench",
+  "popularity_score": "0",
+  "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Dumbbells-dumbbell-fly-front.mp4",
+  "source_name": "MuscleWiki",
+  "source_url": "",
+  "instructions": "[{\"step_number\":1,\"instruction_text\":\"Nằm trên ghế phẳng, cầm hai quả tạ hướng lên trên ngực.\"},{\"step_number\":2,\"instruction_test\":\"Từ từ hạ tạ sang hai bên theo hình vòng cung cho đến khi cảm thấy ngực căng.\"},{\"step_number\":3,\"instruction_text\":\"Dùng cơ ngực kéo tạ trở lại vị trí ban đầu như đang ôm một vòng tay lớn.\"}]",
+  "muscles": "[{\"id\":8,\"name\":\"Ngực giữa\",\"impact\":\"primary\"}]",
+  "gallery_items_keep": "[]"
+}
+FILES: thumbnail
+[2026-03-06T11:16:20.719Z] ID: 192
+BODY: {
+  "name": "Nằm Đẩy Tạ Đòn Sau Đầu (Skull Crusher)",
+  "name_en": "Barbell Skull Crusher",
+  "slug": "barbell-skull-crusher",
+  "description": "Một trong những bài tập tốt nhất để xây dựng kích thước cho cơ tam đầu (triceps).",
+  "difficulty_level": "intermediate",
+  "exercise_type": "isolation",
+  "equipment_needed": "barbell",
+  "popularity_score": "0",
+  "primary_video_url": "",
+  "source_name": "",
+  "source_url": "",
+  "instructions": "[{\"step_number\":1,\"instruction_text\":\"Nằm trên ghế phẳng, cầm thanh tạ đòn (thường là thanh EZ) thẳng trên ngực.\"},{\"step_number\":2,\"instruction_text\":\"Giữ bắp tay cố định, gập khuỷu tay để hạ thanh tạ về phía trán.\"},{\"step_number\":3,\"instruction_text\":\"Dùng cơ tay sau đẩy thanh tạ trở lại vị trí ban đầu.\"}]",
+  "muscles": "[{\"id\":23,\"name\":\"Bắp tay sau\",\"impact\":\"primary\"}]",
+  "gallery_items_keep": "[]"
+}
+FILES: thumbnail
+[2026-03-06T11:17:01.237Z] ID: 270
+BODY: {
+  "name": "Siêu Nhân (Superman)",
+  "name_en": "Superman",
+  "slug": "superman",
+  "description": "Bài tập tuyệt vời cho lưng dưới và mông mà không cần thiết bị.",
+  "difficulty_level": "beginner",
+  "exercise_type": "isolation",
+  "equipment_needed": "body-weight",
+  "popularity_score": "0",
+  "primary_video_url": "",
+  "source_name": "",
+  "source_url": "",
+  "instructions": "[{\"step_number\":1,\"instruction_text\":\"Nằm sấp trên sàn, hai tay duỗi thẳng về phía trước.\"},{\"step_number\":2,\"instruction_text\":\"Đồng thời nhấc tay, ngực và chân lên khỏi sàn cao nhất có thể.\"},{\"step_number\":3,\"instruction_text\":\"Giữ trong 2-3 giây rồi từ từ hạ xuống.\"}]",
+  "muscles": "[{\"id\":13,\"name\":\"Lưng dưới\",\"impact\":\"primary\"},{\"id\":31,\"name\":\"Cơ Mông\",\"impact\":\"secondary\"}]",
+  "gallery_items_keep": "[]"
+}
+FILES: thumbnail
+[2026-03-06T11:18:06.779Z] ID: 181
+BODY: {
+  "name": "Xà Kép Tập Ngực (Chest Dips)",
+  "name_en": "Chest Dips",
+  "slug": "chest-dips",
+  "description": "Bài tập bodyweight mạnh mẽ tập trung vào phần ngực dưới và cơ vai.",
+  "difficulty_level": "advanced",
+  "exercise_type": "compound",
+  "equipment_needed": "body-weight",
+  "popularity_score": "0",
+  "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-bodyweight-chest-dip-front.mp4",
+  "source_name": "MuscleWiki",
+  "source_url": "",
+  "instructions": "[{\"step_number\":1,\"instruction_text\":\"Chống tay lên xà kép, hơi nghiêng người về phía trước để tập trung vào cơ ngực.\"},{\"step_number\":2,\"instruction_text\":\"Hạ thấp người xuống cho đến khi cánh tay gập một góc khoảng 90 độ.\"},{\"step_number\":3,\"instruction_text\":\"Đẩy mạnh tay để nâng người trở lại vị trí ban đầu.\"}]",
+  "muscles": "[{\"id\":9,\"name\":\"Ngực dưới\",\"impact\":\"primary\"},{\"id\":15,\"name\":\"Vai trước\",\"impact\":\"secondary\"},{\"id\":23,\"name\":\"Bắp tay sau\",\"impact\":\"secondary\"}]",
+  "gallery_items_keep": "[]"
+}
+FILES: thumbnail
+[2026-03-06T11:21:37.134Z] ID: 97
+BODY: {
+  "name": "Ép Ngực Với Cáp",
+  "name_en": "Cable Pec Fly",
+  "slug": "cable-pec-fly",
+  "description": "Bài tập cô lập giúp tạo nét và cảm nhận cơ ngực tốt nhất.",
+  "difficulty_level": "beginner",
+  "exercise_type": "isolation",
+  "equipment_needed": "machine",
+  "popularity_score": "88",
+  "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-cable-pec-fly-front.mp4",
+  "source_name": "MuscleWiki",
+  "source_url": "",
+  "instructions": "[{\"step_number\":1,\"instruction_text\":\"Đứng giữa hai máy cáp, cầm tay nắm cáp ở độ cao ngang ngực.\"},{\"step_number\":2,\"instruction_text\":\"Bước một chân lên trước để tạo sự ổn định, hơi gập khuỷu tay.\"},{\"step_number\":3,\"instruction_text\":\"Ép hai tay lại với nhau ở trước mặt, cảm nhận sự co bóp của cơ ngực.\"}]",
+  "muscles": "[{\"id\":8,\"name\":\"Ngực giữa\",\"impact\":\"primary\"}]",
+  "gallery_items_keep": "[]"
+}
+FILES: thumbnail
