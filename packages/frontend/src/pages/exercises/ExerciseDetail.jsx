@@ -32,9 +32,8 @@ function Badge({ children, tone = "gray" }) {
   };
   return (
     <span
-      className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide border ${
-        tones[tone] || tones.gray
-      }`}
+      className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide border ${tones[tone] || tones.gray
+        }`}
     >
       {children}
     </span>
@@ -73,7 +72,7 @@ export default function ExerciseDetail() {
   useEffect(() => {
     try {
       window.scrollTo({ top: 0, behavior: "auto" });
-    } catch {}
+    } catch { }
   }, [idOrSlug]);
 
   // --- Fetch Detail ---
@@ -185,7 +184,7 @@ export default function ExerciseDetail() {
           setFavoriteCount(Number(res.data.favorite_count || 0));
         }
       })
-      .catch(() => {});
+      .catch(() => { });
 
     axios
       .get(`/api/exercises/id/${exercise.exercise_id}/related`, {
@@ -194,7 +193,7 @@ export default function ExerciseDetail() {
       .then((res) => {
         if (alive && res.data?.success) setRelated(res.data.data || []);
       })
-      .catch(() => {});
+      .catch(() => { });
 
     (async () => {
       try {
@@ -284,25 +283,21 @@ export default function ExerciseDetail() {
                   </span>
                 )}
                 <Badge tone="blue">{exercise.equipment || "Basic"}</Badge>
-                {exercise.difficulty && (
-                  <Badge tone="amber">{exercise.difficulty}</Badge>
-                )}
+
               </div>
             </div>
 
             <div className="flex items-center gap-2">
               <button
                 onClick={handleToggleFavorite}
-                className={`flex items-center justify-center px-3 py-2 text-xs font-semibold border rounded-md transition-colors ${
-                  favorited
+                className={`flex items-center justify-center px-3 py-2 text-xs font-semibold border rounded-md transition-colors ${favorited
                     ? "border-red-200 bg-red-50 text-red-600"
                     : "border-gray-200 text-gray-600 hover:bg-gray-100"
-                }`}
+                  }`}
               >
                 <Heart
-                  className={`w-4 h-4 mr-1.5 ${
-                    favorited ? "fill-current" : ""
-                  }`}
+                  className={`w-4 h-4 mr-1.5 ${favorited ? "fill-current" : ""
+                    }`}
                 />
                 {favoriteCount > 0 ? favoriteCount : "Lưu"}
               </button>
@@ -350,11 +345,10 @@ export default function ExerciseDetail() {
                   <button
                     key={idx}
                     onClick={() => setCurrentVideo(vid)}
-                    className={`flex-shrink-0 flex items-center px-3 py-2 rounded-lg text-xs font-medium border transition-all ${
-                      currentVideo?.url === vid.url
+                    className={`flex-shrink-0 flex items-center px-3 py-2 rounded-lg text-xs font-medium border transition-all ${currentVideo?.url === vid.url
                         ? "bg-gray-900 text-white border-gray-900"
                         : "bg-white text-gray-700 border-gray-200 hover:border-gray-400"
-                    }`}
+                      }`}
                   >
                     <Play className="w-3 h-3 mr-1.5" />
                     {vid.title}
@@ -530,52 +524,52 @@ export default function ExerciseDetail() {
             {(exercise.ref_video ||
               exercise.source_name ||
               exercise.source_url) && (
-              <div className="p-3 bg-gray-100 border border-gray-200 rounded-lg shadow-inner">
-                <SectionTitle icon={LinkIcon}>Nguồn tham khảo</SectionTitle>
+                <div className="p-3 bg-gray-100 border border-gray-200 rounded-lg shadow-inner">
+                  <SectionTitle icon={LinkIcon}>Nguồn tham khảo</SectionTitle>
 
-                <div className="mt-2 space-y-2">
-                  {/* Link Youtube */}
-                  {exercise.ref_video && (
-                    <a
-                      href={exercise.ref_video}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center p-2 transition bg-white border border-gray-200 rounded hover:border-red-300 hover:text-red-600 group"
-                    >
-                      <Youtube className="w-4 h-4 mr-2 text-red-500 transition group-hover:scale-110" />
-                      <span className="text-xs font-medium text-gray-700 group-hover:text-red-600">
-                        Xem video gốc trên Youtube
-                      </span>
-                      <ExternalLink className="w-3 h-3 ml-auto text-gray-400" />
-                    </a>
-                  )}
-
-                  {/* Text Credits / Source Link */}
-                  {(exercise.source_name || exercise.source_url) && (
-                    <div className="flex items-start pt-2 mt-2 text-xs text-gray-500 border-t border-gray-200">
-                      <Copyright className="w-3.5 h-3.5 mr-1.5 mt-0.5 flex-shrink-0" />
-                      <div className="flex flex-col">
-                        <span className="font-semibold text-gray-600">
-                          Credit nội dung:
+                  <div className="mt-2 space-y-2">
+                    {/* Link Youtube */}
+                    {exercise.ref_video && (
+                      <a
+                        href={exercise.ref_video}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center p-2 transition bg-white border border-gray-200 rounded hover:border-red-300 hover:text-red-600 group"
+                      >
+                        <Youtube className="w-4 h-4 mr-2 text-red-500 transition group-hover:scale-110" />
+                        <span className="text-xs font-medium text-gray-700 group-hover:text-red-600">
+                          Xem video gốc trên Youtube
                         </span>
-                        {exercise.source_url ? (
-                          <a
-                            href={exercise.source_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="italic text-blue-600 truncate hover:underline max-w-[200px]"
-                          >
-                            {exercise.source_name || exercise.source_url}
-                          </a>
-                        ) : (
-                          <span className="italic">{exercise.source_name}</span>
-                        )}
+                        <ExternalLink className="w-3 h-3 ml-auto text-gray-400" />
+                      </a>
+                    )}
+
+                    {/* Text Credits / Source Link */}
+                    {(exercise.source_name || exercise.source_url) && (
+                      <div className="flex items-start pt-2 mt-2 text-xs text-gray-500 border-t border-gray-200">
+                        <Copyright className="w-3.5 h-3.5 mr-1.5 mt-0.5 flex-shrink-0" />
+                        <div className="flex flex-col">
+                          <span className="font-semibold text-gray-600">
+                            Credit nội dung:
+                          </span>
+                          {exercise.source_url ? (
+                            <a
+                              href={exercise.source_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="italic text-blue-600 truncate hover:underline max-w-[200px]"
+                            >
+                              {exercise.source_name || exercise.source_url}
+                            </a>
+                          ) : (
+                            <span className="italic">{exercise.source_name}</span>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
           </div>
         </div>
       </div>

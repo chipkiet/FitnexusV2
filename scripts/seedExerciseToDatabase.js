@@ -93,8 +93,20 @@ async function main() {
         `,
         {
           replacements: {
+            is_public: true,
+            is_featured: false,
+            is_verified: false,
+            popularity_score: 0,
             ...exData,
-            instructions: JSON.stringify(exData.instructions),
+            instructions: JSON.stringify(exData.instructions || []),
+            primary_video_url: exData.primary_video_url || null,
+            thumbnail_url: exData.thumbnail_url || null,
+            gif_demo_url: exData.gif_demo_url || null,
+            video_url: exData.video_url || null,
+            description: exData.description || null,
+            duration_minutes: exData.duration_minutes || null,
+            calories_per_rep: exData.calories_per_rep || null,
+            source_name: exData.source_name || null,
           },
           transaction: t,
         }

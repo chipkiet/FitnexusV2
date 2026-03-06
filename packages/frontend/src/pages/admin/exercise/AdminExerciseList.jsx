@@ -22,9 +22,8 @@ function Badge({ children, color = "blue" }) {
   };
   return (
     <span
-      className={`px-2 py-1 rounded text-xs font-semibold ${
-        colors[color] || colors.gray
-      }`}
+      className={`px-2 py-1 rounded text-xs font-semibold ${colors[color] || colors.gray
+        }`}
     >
       {children}
     </span>
@@ -53,7 +52,7 @@ export default function AdminExerciseList() {
     setLoading(true);
     try {
       const res = await axios.get("/api/exercises", {
-        params: { page, pageSize: 10, q: debouncedSearch },
+        params: { page, pageSize: 10, q: debouncedSearch, _t: Date.now() },
       });
       if (res.data?.success) {
         setExercises(res.data.data || []);
@@ -176,8 +175,8 @@ export default function AdminExerciseList() {
                           ex.difficulty === "beginner"
                             ? "green"
                             : ex.difficulty === "advanced"
-                            ? "red"
-                            : "yellow"
+                              ? "red"
+                              : "yellow"
                         }
                       >
                         {ex.difficulty || "N/A"}

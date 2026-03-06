@@ -1,0 +1,138 @@
+[
+    {
+        "slug": "barbell-squat",
+        "name": "Squat Với Tạ Đòn",
+        "name_en": "Barbell Squat",
+        "description": "Bài tập nền tảng cho đùi trước và mông.",
+        "difficulty_level": "intermediate",
+        "exercise_type": "compound",
+        "equipment_needed": "barbell",
+        "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Barbell-barbell-squat-front.mp4",
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Barbell-barbell-squat-front.mp4",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Barbell-barbell-squat-front.mp4",
+        "extra_videos": [
+            {
+                "file": "https://media.musclewiki.com/media/uploads/videos/branded/male-Barbell-barbell-squat-side.mp4",
+                "title": "Góc nhìn ngang"
+            }
+        ],
+        "popularity_score": 100,
+        "is_public": true,
+        "source_name": "MuscleWiki",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Đứng chân rộng bằng vai, giữ lưng thẳng tự nhiên."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Hạ thấp trọng lượng cho đến khi hông thấp hơn đầu gối."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Nâng thanh đòn trở lại vị trí bắt đầu."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 29,
+                "slug_hint": "quadriceps",
+                "impact_level": "primary"
+            },
+            {
+                "muscle_group_id": 31,
+                "slug_hint": "gluteus-maximus",
+                "impact_level": "primary"
+            }
+        ]
+    },
+    {
+        "slug": "barbell-romanian-deadlift",
+        "name": "Romanian Deadlift Với Tạ Đòn",
+        "name_en": "Barbell Romanian Deadlift",
+        "description": "Bài tập tốt nhất cho đùi sau.",
+        "difficulty_level": "intermediate",
+        "exercise_type": "compound",
+        "equipment_needed": "barbell",
+        "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Barbell-barbell-romanian-deadlift-front.mp4",
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Barbell-barbell-romanian-deadlift-front.mp4",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Barbell-barbell-romanian-deadlift-front.mp4",
+        "extra_videos": [
+            {
+                "file": "https://media.musclewiki.com/media/uploads/videos/branded/male-Barbell-barbell-romanian-deadlift-side_dnNh5UH.mp4",
+                "title": "Góc nhìn ngang"
+            }
+        ],
+        "popularity_score": 95,
+        "is_public": true,
+        "source_name": "MuscleWiki",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Cầm thanh đòn rộng bằng vai."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Đẩy hông ra sau trong khi giữ đầu gối gần thẳng."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Trở lại tư thế đứng."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 30,
+                "slug_hint": "hamstrings",
+                "impact_level": "primary"
+            },
+            {
+                "muscle_group_id": 31,
+                "slug_hint": "gluteus-maximus",
+                "impact_level": "primary"
+            }
+        ]
+    },
+    {
+        "slug": "barbell-hip-thrust",
+        "name": "Hip Thrust Với Tạ Đòn",
+        "name_en": "Barbell Hip Thrust",
+        "description": "Bài tập cô lập hiệu quả nhất cho nhóm cơ mông.",
+        "difficulty_level": "beginner",
+        "exercise_type": "isolation",
+        "equipment_needed": "barbell, bench",
+        "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Barbell-barbell-hip-thrust-front.mp4",
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Barbell-barbell-hip-thrust-front.mp4",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Barbell-barbell-hip-thrust-front.mp4",
+        "extra_videos": [
+            {
+                "file": "https://media.musclewiki.com/media/uploads/videos/branded/male-Barbell-barbell-hip-thrust-side.mp4",
+                "title": "Góc nhìn ngang"
+            }
+        ],
+        "popularity_score": 98,
+        "is_public": true,
+        "source_name": "MuscleWiki",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Ngồi cạnh ghế, đặt tạ lên hông."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Nâng hông lên cho đến khi cơ thể tạo đường thẳng."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Hạ hông xuống có kiểm soát."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 31,
+                "slug_hint": "gluteus-maximus",
+                "impact_level": "primary"
+            }
+        ]
+    }
+]

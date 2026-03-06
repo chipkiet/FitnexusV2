@@ -264,17 +264,18 @@ export default function AdminExerciseRight() {
 
       const method = isEditMode ? "put" : "post";
 
+      console.log("Submitting to:", url, "Method:", method);
       const res = await axios({
         method: method,
         url: url,
         data: data,
         headers: {
-          "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${token}`,
         },
       });
 
       if (res.data.success) {
+        console.log("Cập nhật thành công. Response:", res.data);
         alert(isEditMode ? "Cập nhật thành công!" : "Thêm mới thành công!");
         navigate("/admin/content/exercises");
       }
@@ -544,11 +545,10 @@ export default function AdminExerciseRight() {
                     <button
                       type="button"
                       onClick={() => toggleImpact(m.id)}
-                      className={`text-xs px-2 py-1 rounded border capitalize w-24 text-center ${
-                        m.impact === "primary"
-                          ? "bg-blue-100 text-blue-700 border-blue-200 font-bold"
-                          : "bg-green-100 text-green-700 border-green-200"
-                      }`}
+                      className={`text-xs px-2 py-1 rounded border capitalize w-24 text-center ${m.impact === "primary"
+                        ? "bg-blue-100 text-blue-700 border-blue-200 font-bold"
+                        : "bg-green-100 text-green-700 border-green-200"
+                        }`}
                     >
                       {m.impact}
                     </button>
