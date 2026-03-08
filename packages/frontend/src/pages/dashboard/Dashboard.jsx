@@ -3,7 +3,35 @@ import { useAuth } from "../../context/auth.context.jsx";
 import { useNavigate } from "react-router-dom";
 import HeaderLogin from "../../components/header/HeaderLogin.jsx";
 import ChatWidget from "../../components/common/ChatWidget.jsx";
-import { Flame, MessageCircle, Star, ThumbsUp } from "lucide-react";
+import { Flame, MessageCircle, Star, ThumbsUp, Activity, Trophy } from "lucide-react";
+
+const CircularProgress = ({ value, max, colorClass, size = 90, strokeWidth = 8, children }) => {
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const safeMax = max > 0 ? max : 1;
+  const clampedValue = Math.min(Math.max(value, 0), safeMax);
+  const strokeDashoffset = circumference - (clampedValue / safeMax) * circumference;
+
+  return (
+    <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
+      <svg className="w-full h-full transform -rotate-90" viewBox={`0 0 ${size} ${size}`}>
+        <circle cx={size / 2} cy={size / 2} r={radius} className="stroke-slate-100 fill-none" strokeWidth={strokeWidth} />
+        <circle
+          cx={size / 2} cy={size / 2} r={radius}
+          className={`fill-none ${colorClass}`}
+          strokeWidth={strokeWidth}
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={strokeDashoffset}
+          style={{ transition: 'stroke-dashoffset 1s ease-in-out' }}
+        />
+      </svg>
+      <div className="absolute flex flex-col items-center justify-center">
+        {children}
+      </div>
+    </div>
+  );
+};
 
 import DashboardHero from "../../pages/dashboard/DashboardHero.jsx"
 
@@ -853,457 +881,275 @@ export default function Dashboard() {
         isPremiumOrAdmin={isPremiumOrAdmin}
       />
 
-      {/* MAIN CONTENT: 30% Achievements / 70% Navigation */}
-      <section className="px-8 py-12 bg-white md:px-20">
-        <div className="grid gap-6 md:grid-cols-10">
-          {/* Left 30%: Thành tựu / Kế hoạch / Streak */}
-          <aside className="space-y-5 md:col-span-3">
+      {/* HORIZONTAL STATS BAR (Immediately below Hero) */}
+      <section className="px-6 py-10 bg-slate-50 border-b border-slate-200">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
 
-            <div className="p-5 border rounded-xl border-slate-200 bg-slate-50">
-              <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-slate-900">
-                  Thành tựu hôm nay
-                </h3>
-                <span className="text-[11px] text-slate-500">
-                  7 ngày gần đây
-                </span>
-              </div>
-
-              <div className="mt-4">
-                <div className="text-4xl font-extrabold tracking-tight text-slate-900">
-                  {weeklySummary ? weeklySummary.todayCount : "—"}
+            {/* 1. Today's Achievement */}
+            <div className="flex items-center p-6 space-x-5 bg-white border border-slate-200 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-lg transition-transform hover:-translate-y-1">
+              <CircularProgress
+                value={weeklySummary?.totalWeek || 0}
+                max={5}
+                colorClass="stroke-blue-500"
+              >
+                <Activity className="w-8 h-8 text-blue-500 mb-1" />
+              </CircularProgress>
+              <div className="flex-1">
+                <p className="text-sm font-bold tracking-wider text-slate-500 uppercase">Thành tựu hôm nay</p>
+                <div className="flex items-baseline mt-1 space-x-2">
+                  <span className="text-4xl font-black text-slate-900">{weeklySummary?.todayCount || 0}</span>
+                  <span className="text-sm font-medium text-slate-500">buổi</span>
                 </div>
-
-                <div className="mt-2 text-xs text-slate-500">
+                <p className="mt-1 text-xs text-slate-500">
                   {weeklySummary ? (
-                    weeklySummary.diff === 0 ? (
-                      <>Tương đương hôm qua</>
-                    ) : weeklySummary.diff > 0 ? (
-                      <>Cao hơn hôm qua {weeklySummary.diff} buổi</>
-                    ) : (
-                      <>Thấp hơn hôm qua {Math.abs(weeklySummary.diff)} buổi</>
-                    )
-                  ) : (
-                    <>So với hôm qua: —</>
-                  )}
-                </div>
-
-                {/* Biểu đồ cột + đường line */}
-                <div className="relative mt-4">
-                  {weeklyChart && weeklyChart.length > 0 ? (
-                    <>
-                      <div className="flex items-end h-24 gap-1.5">
-                        {weeklyChart.map((d) => {
-                          const max = weeklySummary?.maxCount || 0;
-                          const ratio = max > 0 ? d.count / max : 0;
-                          const barHeight = ratio > 0 ? ratio * 100 : 4; // tối thiểu 4% để còn thấy cột
-
-                          const dayLabel = weekdayFormatter.format(d.date); // T2, T3,...
-                          return (
-                            <div
-                              key={d.key}
-                              className="flex flex-col items-center justify-end flex-1"
-                            >
-                              <div
-                                className="w-full rounded-t-md bg-gradient-to-t from-blue-500 to-indigo-400"
-                                style={{ height: `${barHeight}%` }}
-                              ></div>
-                              <span className="mt-1 text-[10px] text-slate-500">
-                                {dayLabel}
-                              </span>
-                            </div>
-                          );
-                        })}
-                      </div>
-
-                      {/* Line chart overlay */}
-                      {weeklySummary?.points && (
-                        <svg
-                          viewBox="0 0 100 100"
-                          preserveAspectRatio="none"
-                          className="absolute inset-x-0 w-full h-16 pointer-events-none bottom-7"
-                        >
-                          <polyline
-                            fill="none"
-                            stroke="rgba(59,130,246,0.9)"
-                            strokeWidth="1.5"
-                            points={weeklySummary.points}
-                          />
-                        </svg>
-                      )}
-                    </>
-                  ) : (
-                    <div className="flex items-center justify-center h-24 text-xs text-slate-500">
-                      Chưa có buổi tập hoàn thành trong 7 ngày gần đây.
-                    </div>
-                  )}
-                </div>
-
-                {/* Progress bar theo tổng tuần / mục tiêu 5 buổi */}
-                <div className="mt-4 h-1.5 w-full rounded-full bg-slate-200 overflow-hidden">
-                  <div
-                    className="h-1.5 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all"
-                    style={{
-                      width: weeklySummary
-                        ? `${weeklySummary.progress}%`
-                        : "0%",
-                    }}
-                  ></div>
-                </div>
-                <div className="mt-2 text-[11px] text-slate-500">
-                  {weeklySummary ? (
-                    <>
-                      Tuần này: {weeklySummary.totalWeek} buổi · Mục tiêu 5 buổi
-                      /tuần
-                    </>
-                  ) : (
-                    <>Tiến độ đạt mục tiêu: —%</>
-                  )}
-                </div>
+                    weeklySummary.diff === 0 ? "Tương đương hôm qua" :
+                      weeklySummary.diff > 0 ? `Cao hơn hôm qua ${weeklySummary.diff} buổi` :
+                        `Thấp hơn hôm qua ${Math.abs(weeklySummary.diff)} buổi`
+                  ) : "So với hôm qua: —"}
+                </p>
               </div>
             </div>
 
-            {/* Kế hoạch đã hoàn thành */}
-            <div className="p-5 bg-white border rounded-xl border-slate-200">
-              <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-slate-900">
-                  Kế hoạch đã hoàn thành
-                </h3>
-                <button
-                  onClick={() => navigate("/plans/select")}
-                  className="text-xs font-semibold text-blue-600 hover:underline"
-                >
-                  Xem tất cả
-                </button>
-              </div>
-              <div className="mt-3">
-                {plansError && (
-                  <div className="text-[12px] text-red-600 bg-red-50 border border-red-100 rounded p-2">
-                    {plansError.message}
-                  </div>
-                )}
-                {plansLoading ? (
-                  <div className="text-xs text-slate-500">
-                    Đang tải kế hoạch...
-                  </div>
-                ) : (
-                  (() => {
-                    const completed = (plans || []).filter((p) =>
-                      completedPlanIds.has(p.plan_id)
-                    );
-                    if (completed.length === 0)
-                      return (
-                        <div className="text-xs text-slate-500">
-                          Chưa có kế hoạch hoàn thành
-                        </div>
-                      );
-                    return (
-                      <ul className="space-y-2.5">
-                        {completed.slice(0, 3).map((p) => (
-                          <li
-                            key={p.plan_id}
-                            className="p-3 border rounded-lg border-slate-200"
-                          >
-                            <div className="flex items-start justify-between gap-3">
-                              <div className="min-w-0">
-                                <div className="text-sm font-medium truncate text-slate-800">
-                                  {p.name || "(Không có tên)"}
-                                </div>
-                                {p.description && (
-                                  <div className="text-[11px] text-slate-600 truncate">
-                                    {p.description}
-                                  </div>
-                                )}
-                                {p.difficulty_level && (
-                                  <div className="text-[11px] text-slate-500">
-                                    Độ khó: {p.difficulty_level}
-                                  </div>
-                                )}
-                                <div className="mt-1 text-[11px] text-green-600">
-                                  Đã hoàn thành
-                                </div>
-                              </div>
-                              <button
-                                type="button"
-                                className="shrink-0 px-2.5 py-1 text-[11px] text-blue-600 border border-blue-200 rounded hover:bg-blue-50"
-                                onClick={() => navigate(`/plans/${p.plan_id}`)}
-                              >
-                                Xem chi tiết
-                              </button>
-                            </div>
-                          </li>
-                        ))}
-                      </ul>
-                    );
-                  })()
-                )}
-              </div>
-            </div>
-
-            {/* Streak */}
-            <div className="p-5 bg-white border rounded-xl border-slate-200">
-              <div className="flex items-start justify-between">
-                <div>
-                  <h3 className="font-semibold text-slate-900">
-                    Chuỗi ngày (Streak)
-                  </h3>
-                  <p className="mt-1 text-xs text-slate-500">
-                    Hiện tại:{" "}
-                    <span className="font-semibold text-slate-900">
-                      {streakState.data?.currentStreak ?? 0} ngày
-                    </span>{" "}
-                    · Kỷ lục:{" "}
-                    <span className="font-semibold text-slate-900">
-                      {streakState.data?.bestStreak ?? 0} ngày
-                    </span>
-                  </p>
-                </div>
-                <div className="flex items-center gap-1 text-amber-500">
-                  <Flame className="w-5 h-5" />
-                  <span className="text-3xl font-bold text-slate-900">
-                    {streakState.data?.currentStreak ?? 0}
-                  </span>
-                </div>
-              </div>
-              <div className="mt-4">
-                {streakState.loading ? (
-                  <div className="grid grid-cols-10 gap-1.5 animate-pulse">
-                    {Array.from({ length: 10 }).map((_, i) => (
-                      <div
-                        key={i}
-                        className="h-16 border rounded-2xl bg-slate-100 border-slate-200"
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-10 gap-1.5">
-                    {(streakState.data?.timeline?.length
-                      ? streakState.data.timeline
-                      : timelineFallback
-                    ).map((day, idx) => {
-                      const dateObj = day.date ? new Date(day.date) : null;
-                      const dayLabel = dateObj
-                        ? weekdayFormatter.format(dateObj)
-                        : "--";
-                      const dateLabel = dateObj
-                        ? dateFormatter.format(dateObj)
-                        : "--";
-                      return (
-                        <div
-                          key={day.date || `empty-${idx}`}
-                          className={`flex flex-col items-center justify-center rounded-2xl border px-2 py-3 text-center ${day.active
-                            ? "border-transparent bg-gradient-to-br from-amber-100 to-orange-200 text-amber-900 shadow"
-                            : "border-dashed border-slate-200 bg-slate-50 text-slate-400"
-                            }`}
-                        >
-                          <span className="text-[10px] uppercase tracking-wide">
-                            {dayLabel}
-                          </span>
-                          <span className="text-sm font-semibold">
-                            {dateLabel}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-              {streakState.error ? (
-                <div className="mt-3 text-xs text-rose-500">
-                  {streakState.error}
-                </div>
-              ) : (
-                <div className="mt-2 text-[11px] text-slate-500">
-                  Luyện tập mỗi ngày để duy trì chuỗi streak và mở khoá huy
-                  hiệu.
-                </div>
-              )}
-            </div>
-          </aside>
-
-          {/* Right 70%: Điều hướng tính năng + ảnh */}
-          <main className="space-y-5 md:col-span-7">
-            <div>
-              <h2 className="text-2xl font-extrabold text-slate-900">
-                Khám phá các tính năng nổi bật của Fitnexus
-              </h2>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              {/* AI Trainer */}
-              <button
-                type="button"
-                onClick={() => vxpGo("ai", navigate)}
-                className="overflow-hidden text-left transition bg-white border shadow-sm group rounded-xl border-slate-200 hover:border-blue-400"
+            {/* 2. Completed Plans */}
+            <div className="flex items-center p-6 space-x-5 bg-white border border-slate-200 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-lg transition-transform hover:-translate-y-1">
+              <CircularProgress
+                value={completedPlanIds.size}
+                max={plans?.length > 0 ? plans.length : 1}
+                colorClass="stroke-emerald-500"
               >
-                <div className="p-4">
-                  <div className="font-semibold text-slate-900">AI Trainer</div>
-                  <div className="mt-1 text-xs text-slate-600">
-                    Trợ lý luyện tập phân tích và hướng dẫn kỹ thuật.
-                  </div>
+                <Trophy className="w-8 h-8 text-emerald-500 mb-1" />
+              </CircularProgress>
+              <div className="flex-1">
+                <p className="text-sm font-bold tracking-wider text-slate-500 uppercase">Kế hoạch hoàn thành</p>
+                <div className="flex items-baseline mt-1 space-x-2">
+                  <span className="text-4xl font-black text-slate-900">{completedPlanIds.size}</span>
+                  <span className="text-sm font-medium text-slate-500">kế hoạch</span>
                 </div>
-                <div className="flex items-center justify-center p-0 bg-white border-t h-72 md:h-[28rem] border-slate-200">
-                  <img
-                    src={ImgAI}
-                    alt="AI Trainer"
-                    className="object-contain w-full h-full"
-                  />
-                </div>
-              </button>
-
-              {/* Luyện tập */}
-              <button
-                type="button"
-                onClick={() => vxpGo("workout", navigate)}
-                className="overflow-hidden text-left transition bg-white border shadow-sm group rounded-xl border-slate-200 hover:border-blue-400"
-              >
-                <div className="p-4">
-                  <div className="font-semibold text-slate-900">Luyện tập</div>
-                  <div className="mt-1 text-xs text-slate-600">
-                    Chương trình phù hợp từng nhóm cơ và cấp độ.
-                  </div>
-                </div>
-                <div className="flex items-center justify-center p-0 bg-white border-t h-72 md:h-[28rem] border-slate-200">
-                  <img
-                    src={ImgExercise}
-                    alt="Luyện tập"
-                    className="object-contain w-full h-full"
-                  />
-                </div>
-              </button>
-
-              {/* Mô hình hoá */}
-              <button
-                type="button"
-                onClick={() => vxpGo("modeling", navigate)}
-                className="overflow-hidden text-left transition bg-white border shadow-sm group rounded-xl border-slate-200 hover:border-blue-400"
-              >
-                <div className="p-4">
-                  <div className="font-semibold text-slate-900">
-                    Mô hình hoá
-                  </div>
-                  <div className="mt-1 text-xs text-slate-600">
-                    Phân tích chuyển động 3D để tối ưu hiệu quả.
-                  </div>
-                </div>
-                <div className="flex items-center justify-center p-0 bg-white border-t h-72 md:h-[28rem] border-slate-200">
-                  <img
-                    src={ImgModel}
-                    alt="Mô hình hoá"
-                    className="object-contain w-full h-full"
-                  />
-                </div>
-              </button>
-
-              {/* Dinh dưỡng */}
-              <button
-                type="button"
-                onClick={() => vxpGo("nutrition", navigate)}
-                className="overflow-hidden text-left transition bg-white border shadow-sm group rounded-xl border-slate-200 hover:border-blue-400"
-              >
-                <div className="p-4">
-                  <div className="font-semibold text-slate-900">Dinh dưỡng</div>
-                  <div className="mt-1 text-xs text-slate-600">
-                    Theo dõi khẩu phần và gợi ý bữa ăn theo mục tiêu.
-                  </div>
-                </div>
-                <div className="flex items-center justify-center p-0 bg-white border-t h-72 md:h-[28rem] border-slate-200">
-                  <img
-                    src={ImgNutrition}
-                    alt="Dinh dưỡng"
-                    className="object-contain w-full h-full"
-                  />
-                </div>
-              </button>
-
-              {/* Cộng đồng */}
-              <div className="overflow-hidden text-left transition bg-white border shadow-sm group rounded-xl border-slate-200 hover:border-blue-400 md:col-span-2">
-                <div className="p-4">
-                  <div className="font-semibold text-slate-900">Cộng đồng</div>
-                  <div className="mt-1 text-xs text-slate-600">
-                    Kết nối, chia sẻ kinh nghiệm và tham gia thử thách.
-                  </div>
-                </div>
+                <p className="mt-1 text-xs text-emerald-600 font-medium cursor-pointer hover:underline" onClick={() => navigate("/plans/select")}>
+                  Xem chi tiết &rarr;
+                </p>
               </div>
             </div>
-          </main>
+
+            {/* 3. Streak */}
+            <div className="flex items-center p-6 space-x-5 bg-white border border-slate-200 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-lg transition-transform hover:-translate-y-1">
+              <CircularProgress
+                value={streakState.data?.currentStreak || 0}
+                max={streakState.data?.bestStreak > 0 ? streakState.data.bestStreak : 1}
+                colorClass="stroke-amber-500"
+              >
+                <Flame className="w-8 h-8 text-amber-500 mb-1" />
+              </CircularProgress>
+              <div className="flex-1">
+                <p className="text-sm font-bold tracking-wider text-slate-500 uppercase">Chuỗi ngày 🔥</p>
+                <div className="flex items-baseline mt-1 space-x-2">
+                  <span className="text-4xl font-black text-slate-900">{streakState.data?.currentStreak || 0}</span>
+                  <span className="text-sm font-medium text-slate-500">ngày</span>
+                </div>
+                <p className="mt-1 text-xs text-slate-500 flex items-center gap-1">
+                  Kỷ lục: <span className="font-bold text-slate-700">{streakState.data?.bestStreak || 0} ngày</span>
+                </p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* MAIN CONTENT: Navigation */}
+      <section className="px-6 py-12 bg-white md:px-12">
+        <div className="max-w-7xl mx-auto space-y-8">
+          <div>
+            <h2 className="text-2xl font-extrabold text-slate-900 md:text-3xl">
+              Khám phá các tính năng nổi bật của Fitnexus
+            </h2>
+          </div>
+
+          <div className="grid gap-8 md:grid-cols-2">
+            {/* AI Trainer */}
+            <button
+              type="button"
+              onClick={() => vxpGo("ai", navigate)}
+              className="relative overflow-hidden text-left transition-all duration-300 group rounded-[2rem] bg-white/60 backdrop-blur-xl border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgba(59,130,246,0.15)] hover:-translate-y-1 hover:border-blue-300/60 flex flex-col h-full"
+            >
+              <div className="relative w-full aspect-[4/3] md:aspect-[16/10] overflow-hidden bg-slate-950 rounded-t-[2rem] flex items-center justify-center">
+                <div className="absolute inset-0 bg-cover bg-center blur-2xl opacity-50 scale-125 group-hover:opacity-70 transition-opacity duration-700" style={{ backgroundImage: `url(${ImgAI})` }}></div>
+                <img
+                  src={ImgAI}
+                  alt="AI Trainer"
+                  className="relative z-10 object-contain w-full h-full transition-transform duration-700 group-hover:scale-105 drop-shadow-2xl"
+                />
+                <div className="absolute inset-0 z-20 bg-gradient-to-t from-black/90 via-black/20 to-transparent"></div>
+                <div className="absolute z-30 text-white bottom-6 left-6 right-6">
+                  <div className="text-2xl font-black tracking-tight drop-shadow-md">AI Trainer</div>
+                  <div className="text-sm font-semibold text-blue-300 drop-shadow-sm mt-1">Trợ lý ảo cá nhân hóa</div>
+                </div>
+              </div>
+              <div className="flex flex-col p-6 flex-1 bg-gradient-to-br from-white/80 to-white/40">
+                <p className="text-sm leading-relaxed text-slate-600">
+                  Công nghệ AI tiên tiến phân tích từng chuyển động của bạn, cung cấp hướng dẫn kỹ thuật theo thời gian thực để ngăn ngừa chấn thương.
+                </p>
+                <div className="mt-auto pt-4 text-sm font-semibold text-blue-600 flex items-center gap-1 group-hover:gap-2 transition-all">
+                  Khám phá ngay <span>&rarr;</span>
+                </div>
+              </div>
+            </button>
+
+            {/* Luyện tập */}
+            <button
+              type="button"
+              onClick={() => vxpGo("workout", navigate)}
+              className="relative overflow-hidden text-left transition-all duration-300 group rounded-[2rem] bg-white/60 backdrop-blur-xl border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgba(59,130,246,0.15)] hover:-translate-y-1 hover:border-emerald-300/60 flex flex-col h-full"
+            >
+              <div className="relative w-full aspect-[4/3] md:aspect-[16/10] overflow-hidden bg-slate-950 rounded-t-[2rem] flex items-center justify-center">
+                <div className="absolute inset-0 bg-cover bg-center blur-2xl opacity-50 scale-125 group-hover:opacity-70 transition-opacity duration-700" style={{ backgroundImage: `url(${ImgExercise})` }}></div>
+                <img
+                  src={ImgExercise}
+                  alt="Luyện tập"
+                  className="relative z-10 object-contain w-full h-full transition-transform duration-700 group-hover:scale-105 drop-shadow-2xl"
+                />
+                <div className="absolute inset-0 z-20 bg-gradient-to-t from-black/90 via-black/20 to-transparent"></div>
+                <div className="absolute z-30 text-white bottom-6 left-6 right-6">
+                  <div className="text-2xl font-black tracking-tight drop-shadow-md">Luyện Tập</div>
+                  <div className="text-sm font-semibold text-emerald-300 drop-shadow-sm mt-1">Chương trình chuyên sâu</div>
+                </div>
+              </div>
+              <div className="flex flex-col p-6 flex-1 bg-gradient-to-br from-white/80 to-white/40">
+                <p className="text-sm leading-relaxed text-slate-600">
+                  Hệ thống bài tập phong phú được thiết kế khoa học phù hợp với từng cấp độ, nhóm cơ và mục tiêu phát triển thể hình của bạn.
+                </p>
+                <div className="mt-auto pt-4 text-sm font-semibold text-emerald-600 flex items-center gap-1 group-hover:gap-2 transition-all">
+                  Bắt đầu tập luyện <span>&rarr;</span>
+                </div>
+              </div>
+            </button>
+
+            {/* Mô hình hoá */}
+            <button
+              type="button"
+              onClick={() => vxpGo("modeling", navigate)}
+              className="relative overflow-hidden text-left transition-all duration-300 group rounded-[2rem] bg-white/60 backdrop-blur-xl border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgba(59,130,246,0.15)] hover:-translate-y-1 hover:border-purple-300/60 flex flex-col h-full"
+            >
+              <div className="relative w-full aspect-[4/3] md:aspect-[16/10] overflow-hidden bg-slate-950 rounded-t-[2rem] flex items-center justify-center">
+                <div className="absolute inset-0 bg-cover bg-center blur-2xl opacity-50 scale-125 group-hover:opacity-70 transition-opacity duration-700" style={{ backgroundImage: `url(${ImgModel})` }}></div>
+                <img
+                  src={ImgModel}
+                  alt="Mô hình hoá"
+                  className="relative z-10 object-contain w-full h-full transition-transform duration-700 group-hover:scale-105 drop-shadow-2xl"
+                />
+                <div className="absolute inset-0 z-20 bg-gradient-to-t from-black/90 via-black/20 to-transparent"></div>
+                <div className="absolute z-30 text-white bottom-6 left-6 right-6">
+                  <div className="text-2xl font-black tracking-tight drop-shadow-md">Mô Hình Hoá 3D</div>
+                  <div className="text-sm font-semibold text-purple-300 drop-shadow-sm mt-1">Phân tích đa chiều</div>
+                </div>
+              </div>
+              <div className="flex flex-col p-6 flex-1 bg-gradient-to-br from-white/80 to-white/40">
+                <p className="text-sm leading-relaxed text-slate-600">
+                  Trải nghiệm góc nhìn 3D trực quan sinh động. Tối ưu hoá phạm vi chuyển động và góc nghiêng để kích thích cơ bắp tối đa.
+                </p>
+                <div className="mt-auto pt-4 text-sm font-semibold text-purple-600 flex items-center gap-1 group-hover:gap-2 transition-all">
+                  Trải nghiệm 3D <span>&rarr;</span>
+                </div>
+              </div>
+            </button>
+
+            {/* Dinh dưỡng */}
+            <button
+              type="button"
+              onClick={() => vxpGo("nutrition", navigate)}
+              className="relative overflow-hidden text-left transition-all duration-300 group rounded-[2rem] bg-white/60 backdrop-blur-xl border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgba(59,130,246,0.15)] hover:-translate-y-1 hover:border-orange-300/60 flex flex-col h-full"
+            >
+              <div className="relative w-full aspect-[4/3] md:aspect-[16/10] overflow-hidden bg-slate-950 rounded-t-[2rem] flex items-center justify-center">
+                <div className="absolute inset-0 bg-cover bg-center blur-2xl opacity-50 scale-125 group-hover:opacity-70 transition-opacity duration-700" style={{ backgroundImage: `url(${ImgNutrition})` }}></div>
+                <img
+                  src={ImgNutrition}
+                  alt="Dinh dưỡng"
+                  className="relative z-10 object-contain w-full h-full transition-transform duration-700 group-hover:scale-105 drop-shadow-2xl"
+                />
+                <div className="absolute inset-0 z-20 bg-gradient-to-t from-black/90 via-black/20 to-transparent"></div>
+                <div className="absolute z-30 text-white bottom-6 left-6 right-6">
+                  <div className="text-2xl font-black tracking-tight drop-shadow-md">Dinh Dưỡng</div>
+                  <div className="text-sm font-semibold text-orange-300 drop-shadow-sm mt-1">Gợi ý thông minh</div>
+                </div>
+              </div>
+              <div className="flex flex-col p-6 flex-1 bg-gradient-to-br from-white/80 to-white/40">
+                <p className="text-sm leading-relaxed text-slate-600">
+                  Xây dựng thực đơn cân bằng hoàn hảo. Theo dõi calo, macronutrients và vi chất để đảm bảo năng lượng tối ưu cho mọi mục tiêu.
+                </p>
+                <div className="mt-auto pt-4 text-sm font-semibold text-orange-600 flex items-center gap-1 group-hover:gap-2 transition-all">
+                  Theo dõi khẩu phần <span>&rarr;</span>
+                </div>
+              </div>
+            </button>
+          </div>
         </div>
       </section>
 
       {/* COMMUNITY REVIEWS */}
-      <section className="px-8 py-16 bg-white md:px-20">
-        <div className="mx-auto space-y-8 max-w-7xl">
-          <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-            <div>
-              <p className="text-xs font-semibold tracking-[0.28em] uppercase text-slate-500">
-                cộng đồng fitnexus
-              </p>
-              <h2 className="mt-2 text-3xl font-extrabold text-slate-900">
-                Đánh giá & cảm nhận từ chính bạn
+      <section className="px-6 py-20 bg-slate-50 md:px-12">
+        <div className="mx-auto space-y-12 max-w-7xl">
+          <div className="text-center md:text-left md:flex justify-between items-end">
+            <div className="max-w-2xl">
+              <span className="inline-block px-3 py-1.5 mb-4 text-xs font-bold tracking-wider text-blue-700 uppercase bg-blue-100 rounded-full">
+                Cộng đồng Fitnexus
+              </span>
+              <h2 className="text-3xl font-black text-slate-900 md:text-4xl">
+                Đánh giá & Cảm nhận
               </h2>
-              <p className="mt-1 text-sm text-slate-500">
-                Mọi chỉ số bên dưới được tính hoàn toàn từ những đánh giá mà
-                cộng đồng của bạn gửi lên, không có dữ liệu mẫu.
+              <p className="mt-4 text-base text-slate-600 leading-relaxed">
+                Hàng ngàn người dùng đã trải nghiệm và thay đổi bản thân cùng Fitnexus. Đọc những chia sẻ thực tế và tham gia cùng chúng tôi.
               </p>
-            </div>
-            <div className="flex flex-wrap items-center gap-3">
-              <button
-                type="button"
-                className="px-5 py-2 text-sm font-semibold text-blue-600 border border-blue-200 rounded-full hover:bg-blue-50"
-                onClick={scrollToReviewForm}
-              >
-                Viết đánh giá
-              </button>
             </div>
           </div>
 
           {/* Anchor: Tổng quan Đánh Giá */}
-          <div className="flex flex-col gap-8 p-10 bg-white border border-gray-100 shadow-[0_10px_40px_rgba(0,0,0,0.04)] text-center md:flex-row md:items-center md:text-left justify-center md:justify-start" style={{ borderRadius: "var(--card-radius)" }}>
-            <div className="flex flex-col items-center flex-1 md:items-start md:border-r border-gray-100 md:pr-10">
-              <div className="text-xs font-bold tracking-[0.2em] text-gray-400 uppercase">
+          <div className="flex flex-col gap-8 p-8 bg-white border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-[2rem] md:flex-row md:items-center">
+            <div className="flex flex-col items-center flex-1 md:items-start md:border-r border-slate-100 md:pr-10">
+              <div className="text-sm font-bold tracking-widest text-slate-400 uppercase">
                 Điểm trung bình
               </div>
-              <div className="flex items-end gap-3 mt-4">
-                <div className="text-6xl font-black tracking-tight text-slate-900 md:text-7xl">
+              <div className="flex items-baseline gap-2 mt-4">
+                <div className="text-6xl font-black tracking-tighter text-slate-900 md:text-7xl">
                   {reviewStats.averageRating.toFixed(1)}
-                  <span className="text-3xl text-gray-300 md:text-4xl">/5</span>
                 </div>
+                <div className="text-2xl font-bold text-slate-300">/5</div>
               </div>
               <div className="mt-4">
                 {renderStars(reviewStats.averageRating)}
               </div>
-              <div className="mt-3 text-sm font-medium text-gray-500">
-                Dựa trên {numberFormatter.format(reviewStats.totalReviews)} lượt đánh giá
+              <div className="mt-3 text-sm font-medium text-slate-500">
+                Dựa trên <span className="font-bold text-slate-900">{numberFormatter.format(reviewStats.totalReviews)}</span> lượt đánh giá
               </div>
             </div>
 
-            <div className="flex-1 w-full max-w-sm mx-auto space-y-3 md:pl-10">
+            <div className="flex-1 w-full max-w-md mx-auto space-y-3 md:pl-10">
               {ratingBreakdown.map((item) => (
                 <button
                   key={item.star}
                   type="button"
                   onClick={() => toggleRatingFilter(item.star)}
-                  className={`flex items-center gap-4 px-4 py-2 rounded-xl transition w-full ${ratingFilter === item.star
-                    ? "bg-blue-50 text-slate-900"
-                    : "bg-transparent hover:bg-gray-50 text-slate-600"
+                  className={`flex items-center gap-4 px-4 py-2.5 rounded-xl transition-all w-full ${ratingFilter === item.star
+                    ? "bg-blue-50 ring-1 ring-blue-200"
+                    : "bg-transparent hover:bg-slate-50"
                     }`}
                 >
-                  <span className="text-sm font-bold w-9 text-left">
-                    {item.star}★
+                  <span className="text-sm font-bold w-10 text-left text-slate-700">
+                    {item.star} <span className="text-amber-400">★</span>
                   </span>
-                  <div className="flex-1 h-2 overflow-hidden bg-gray-100 rounded-full">
+                  <div className="flex-1 h-2.5 overflow-hidden bg-slate-100 rounded-full">
                     <div
-                      className="h-full bg-amber-400 rounded-full"
+                      className="h-full bg-amber-400 rounded-full transition-all duration-1000"
                       style={{ width: `${item.percentage}%` }}
                     />
                   </div>
-                  <span className="text-sm font-medium w-12 text-right">{item.percentage}%</span>
+                  <span className="text-sm font-bold w-12 text-right text-slate-600">{item.percentage}%</span>
                 </button>
               ))}
               {ratingFilter !== 0 && (
                 <button
                   type="button"
-                  className="w-full px-4 py-2 mt-2 text-sm font-semibold text-blue-600 hover:underline"
+                  className="w-full px-4 py-2 mt-2 text-sm font-bold text-blue-600 hover:text-blue-700 transition-colors"
                   onClick={() => setRatingFilter(0)}
                 >
                   Xóa bộ lọc sao
@@ -1312,38 +1158,43 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="grid gap-8 lg:grid-cols-[60%,1fr]">
+          <div className="grid gap-10 lg:grid-cols-[1fr,400px]">
             {/* Review Form Column (Right on Desktop, order 2) */}
-            <div className="flex flex-col order-2 space-y-8">
-              <div className="sticky p-8 border border-gray-100 bg-white shadow-[0_4px_20px_rgba(0,0,0,0.02)] top-32" style={{ borderRadius: "var(--card-radius)" }}>
-                <p className="text-xs font-bold tracking-[0.2em] text-gray-500 uppercase">
-                  Viết đánh giá của bạn
-                </p>
-                <h3 className="mt-2 text-xl font-bold text-slate-900">
-                  Chia sẻ trải nghiệm với cộng đồng
-                </h3>
+            <div className="flex flex-col order-1 lg:order-2 space-y-8">
+              <div className="sticky p-8 bg-white border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-[2rem] top-32">
+                <div className="mb-8">
+                  <h3 className="text-2xl font-black text-slate-900 tracking-tight">
+                    Chia sẻ trải nghiệm
+                  </h3>
+                  <p className="mt-2 text-sm text-slate-500 leading-relaxed">
+                    Đánh giá của bạn giúp cộng đồng Fitnexus ngày càng phát triển.
+                  </p>
+                </div>
+
                 <form
                   ref={reviewFormRef}
-                  className="mt-4 space-y-3 text-sm"
+                  className="space-y-5"
                   onSubmit={handleReviewSubmit}
                 >
                   {editingReviewId ? (
-                    <div className="flex items-center justify-between px-3 py-2 text-xs text-white/80 bg-white/10 rounded-2xl">
-                      <span>Đang chỉnh sửa đánh giá hiện có</span>
+                    <div className="flex items-center justify-between px-4 py-3 text-sm font-medium text-blue-800 bg-blue-50 rounded-xl">
+                      <span>Đang chỉnh sửa đánh giá</span>
                       <button
                         type="button"
                         onClick={handleCancelEditReview}
-                        className="underline hover:text-white"
+                        className="text-blue-600 hover:text-blue-800 underline"
                       >
                         Hủy
                       </button>
                     </div>
                   ) : null}
+
+                  {/* Rating selection */}
                   <div>
-                    <label className="text-[11px] uppercase tracking-wide text-white/70">
-                      Chấm điểm ({reviewForm.rating}★)
+                    <label className="block text-xs font-bold tracking-widest text-slate-400 uppercase mb-3">
+                      Chấm điểm
                     </label>
-                    <div className="flex items-center gap-1 mt-1">
+                    <div className="flex items-center gap-2">
                       {Array.from({ length: 5 }).map((_, idx) => {
                         const starValue = idx + 1;
                         const active = starValue <= Number(reviewForm.rating);
@@ -1351,103 +1202,99 @@ export default function Dashboard() {
                           <button
                             key={starValue}
                             type="button"
-                            onClick={() =>
-                              handleReviewFieldChange("rating", starValue)
-                            }
-                            className={`w-10 h-10 rounded-full border font-bold transition-colors ${active
-                              ? "bg-amber-50 border-amber-300 text-amber-600 shadow-sm"
-                              : "border-gray-200 text-gray-400 hover:border-gray-300 hover:bg-gray-50"
+                            onClick={() => handleReviewFieldChange("rating", starValue)}
+                            className={`w-12 h-12 rounded-xl text-lg font-black transition-all duration-200 flex items-center justify-center ${active
+                              ? "bg-amber-400 text-white shadow-lg shadow-amber-200 scale-110"
+                              : "bg-slate-50 text-slate-300 hover:bg-slate-100 hover:text-slate-400"
                               }`}
                           >
-                            {starValue}
+                            ★
                           </button>
                         );
                       })}
                     </div>
                   </div>
-                  <div className="grid gap-3 md:grid-cols-2">
-                    <div>
-                      <label className="text-xs font-semibold tracking-wide text-gray-600 uppercase">
-                        Tiêu đề
-                      </label>
-                      <input
-                        type="text"
-                        maxLength={80}
-                        value={reviewForm.headline}
-                        onChange={(e) =>
-                          handleReviewFieldChange("headline", e.target.value)
-                        }
-                        className="w-full px-4 py-3 mt-2 text-sm bg-white border border-gray-200 text-slate-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="Ví dụ: AI Trainer quá hữu ích"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs font-semibold tracking-wide text-gray-600 uppercase">
-                        Chương trình
-                      </label>
-                      <input
-                        type="text"
-                        maxLength={80}
-                        value={reviewForm.program}
-                        onChange={(e) =>
-                          handleReviewFieldChange("program", e.target.value)
-                        }
-                        className="w-full px-4 py-3 mt-2 text-sm bg-white border border-gray-200 text-slate-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="AI Trainer · Hybrid Strength"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="text-xs font-semibold tracking-wide text-gray-600 uppercase">
-                      Tag (phân cách bằng dấu ,)
-                    </label>
+
+                  {/* Floating labels inputs */}
+                  <div className="relative">
                     <input
                       type="text"
+                      id="review_headline"
+                      maxLength={80}
+                      value={reviewForm.headline}
+                      onChange={(e) => handleReviewFieldChange("headline", e.target.value)}
+                      className="block px-5 pb-3 pt-7 w-full text-sm font-medium text-slate-900 bg-slate-50 border border-slate-200 rounded-xl appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 peer transition-all"
+                      placeholder=" "
+                    />
+                    <label htmlFor="review_headline" className="absolute text-[13px] text-slate-400 duration-300 transform -translate-y-3 scale-75 top-5 z-10 origin-[0] start-5 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 font-semibold peer-focus:text-blue-600">
+                      Tiêu đề đánh giá
+                    </label>
+                  </div>
+
+                  <div className="relative">
+                    <input
+                      type="text"
+                      id="review_program"
+                      maxLength={80}
+                      value={reviewForm.program}
+                      onChange={(e) => handleReviewFieldChange("program", e.target.value)}
+                      className="block px-5 pb-3 pt-7 w-full text-sm font-medium text-slate-900 bg-slate-50 border border-slate-200 rounded-xl appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 peer transition-all"
+                      placeholder=" "
+                    />
+                    <label htmlFor="review_program" className="absolute text-[13px] text-slate-400 duration-300 transform -translate-y-3 scale-75 top-5 z-10 origin-[0] start-5 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 font-semibold peer-focus:text-blue-600">
+                      Chương trình / Gói tập
+                    </label>
+                  </div>
+
+                  <div className="relative">
+                    <input
+                      type="text"
+                      id="review_tags"
                       value={reviewForm.tags}
-                      onChange={(e) =>
-                        handleReviewFieldChange("tags", e.target.value)
-                      }
-                      className="w-full px-4 py-3 mt-2 text-sm bg-white border border-gray-200 text-slate-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="AI Trainer, Nutrition"
+                      onChange={(e) => handleReviewFieldChange("tags", e.target.value)}
+                      className="block px-5 pb-3 pt-7 w-full text-sm font-medium text-slate-900 bg-slate-50 border border-slate-200 rounded-xl appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 peer transition-all"
+                      placeholder=" "
                     />
-                  </div>
-                  <div>
-                    <label className="text-xs font-semibold tracking-wide text-gray-600 uppercase">
-                      Nội dung đánh giá
+                    <label htmlFor="review_tags" className="absolute text-[13px] text-slate-400 duration-300 transform -translate-y-3 scale-75 top-5 z-10 origin-[0] start-5 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 font-semibold peer-focus:text-blue-600">
+                      Tag (Ví dụ: Giảm cân, Tăng cơ, ...)
                     </label>
+                  </div>
+
+                  <div className="relative">
                     <textarea
-                      rows={4}
+                      id="review_comment"
+                      rows={5}
                       value={reviewForm.comment}
-                      onChange={(e) =>
-                        handleReviewFieldChange("comment", e.target.value)
-                      }
-                      className="w-full px-4 py-3 mt-2 text-sm bg-white border border-gray-200 text-slate-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Chia sẻ cảm nhận thực tế sau khi luyện tập..."
+                      onChange={(e) => handleReviewFieldChange("comment", e.target.value)}
+                      className="block px-5 pb-3 pt-7 w-full text-sm font-medium text-slate-900 bg-slate-50 border border-slate-200 rounded-xl appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 peer transition-all resize-none"
+                      placeholder=" "
                     />
-                  </div>
-                  <div>
-                    <label className="text-xs font-semibold tracking-wide text-gray-600 uppercase">
-                      Ảnh minh hoạ
+                    <label htmlFor="review_comment" className="absolute text-[13px] text-slate-400 duration-300 transform -translate-y-3 scale-75 top-5 z-10 origin-[0] start-5 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 font-semibold peer-focus:text-blue-600">
+                      Nội dung chi tiết
                     </label>
-                    <div className="flex flex-wrap items-center gap-3 mt-2">
-                      <label className="px-5 py-2.5 text-xs font-bold text-blue-700 bg-blue-50 border border-blue-100 rounded-full cursor-pointer hover:bg-blue-100 transition-colors">
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold tracking-widest text-slate-400 uppercase mb-3">
+                      Ảnh minh hoạ cụ thể
+                    </label>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <label className="px-5 py-3 text-xs font-bold text-slate-600 bg-slate-100 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-200 transition-colors flex items-center justify-center">
                         <input
                           type="file"
                           accept="image/*"
                           multiple
                           className="hidden"
-                          onChange={(e) =>
-                            handleReviewFilesChange(e.target.files)
-                          }
+                          onChange={(e) => handleReviewFilesChange(e.target.files)}
                         />
-                        + Thêm ảnh
+                        <span className="mr-1">+</span> Thêm ảnh
                       </label>
                       {reviewPreviews.length ? (
                         <div className="flex flex-wrap gap-2">
                           {reviewPreviews.map((preview) => (
                             <div
                               key={preview.url}
-                              className="w-16 h-16 overflow-hidden border border-gray-200 rounded-lg"
+                              className="w-12 h-12 overflow-hidden border border-slate-200 rounded-xl shadow-sm"
                             >
                               <img
                                 src={preview.url}
@@ -1460,34 +1307,34 @@ export default function Dashboard() {
                       ) : null}
                     </div>
                   </div>
-                  {reviewMessage.error ? (
-                    <p className="font-semibold text-red-500 text-[13px]">
+
+                  {reviewMessage.error && (
+                    <div className="p-4 text-sm font-medium text-rose-800 bg-rose-50 border border-rose-100 rounded-xl">
                       {reviewMessage.error}
-                    </p>
-                  ) : null}
-                  {reviewMessage.success ? (
-                    <p className="font-semibold text-green-600 text-[13px]">
+                    </div>
+                  )}
+                  {reviewMessage.success && (
+                    <div className="p-4 text-sm font-medium text-emerald-800 bg-emerald-50 border border-emerald-100 rounded-xl">
                       {reviewMessage.success}
-                    </p>
-                  ) : null}
-                  <button
-                    type="submit"
-                    disabled={reviewSubmitting}
-                    className="w-full px-4 py-3 text-sm font-bold text-white transition-opacity bg-blue-600 rounded-full shadow-lg hover:bg-blue-700 disabled:opacity-50 shadow-blue-900/20"
-                  >
-                    {reviewSubmitting ? "Đang gửi..." : "Gửi đánh giá"}
-                  </button>
+                    </div>
+                  )}
+
+                  <div className="pt-4">
+                    <button
+                      type="submit"
+                      disabled={reviewSubmitting}
+                      className="w-full px-8 py-4 text-sm font-black text-white uppercase tracking-widest transition-all duration-300 bg-blue-600 rounded-xl shadow-[0_8px_20px_rgba(37,99,235,0.2)] hover:bg-slate-900 hover:shadow-[0_8px_25px_rgba(15,23,42,0.3)] hover:-translate-y-1 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {reviewSubmitting ? "Đang xử lý..." : "Gửi Đánh Giá"}
+                    </button>
+                  </div>
                 </form>
-                <p className="mt-4 text-xs text-center text-gray-500">
-                  Đánh giá được lưu cục bộ và hiển thị ngay trên bảng tin của
-                  bạn.
-                </p>
               </div>
             </div>
 
             {/* Review list column (Left on Desktop, order 1) */}
-            <div className="flex flex-col order-1">
-              <div className="flex flex-wrap items-center justify-between gap-4 px-2 mb-6 border-b border-gray-100 pb-6">
+            <div className="flex flex-col order-2 lg:order-1">
+              <div className="flex flex-wrap items-center justify-between gap-4 pb-6 mb-6 border-b border-slate-200">
                 <div className="text-sm font-medium text-slate-500">
                   <span className="font-bold text-slate-900">{numberFormatter.format(reviewsTotal)} Đánh giá</span>
                   {ratingFilter > 0 && (
@@ -2121,10 +1968,10 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
-      </section>
+      </section >
 
       {/* CTA SECTION */}
-      <section className="relative py-20 px-6 md:px-20 bg-gradient-to-br from-blue-200 via-blue-400 to-indigo-400 text-white overflow-hidden rounded-t-[3rem] mt-16 mb-24">
+      {/* < section className="relative py-20 px-6 md:px-20 bg-gradient-to-br from-blue-200 via-blue-400 to-indigo-400 text-white overflow-hidden rounded-t-[3rem] mt-16 mb-24" >
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.1),transparent_70%)] pointer-events-none"></div>
         <div className="relative z-10 max-w-5xl mx-auto text-center">
           <h2 className="mb-6 text-5xl font-extrabold leading-tight md:text-6xl">
@@ -2150,10 +1997,10 @@ export default function Dashboard() {
         </div>
         <div className="absolute w-40 h-40 rounded-full -top-10 -right-10 bg-blue-400/30 blur-3xl animate-pulse"></div>
         <div className="absolute bottom-0 w-32 h-32 rounded-full left-10 bg-indigo-500/30 blur-3xl animate-pulse"></div>
-      </section>
+      </section > */}
 
       {/* FOOTER */}
-      <footer className="bg-[#0b1023] text-gray-300 py-16 px-8 md:px-20 border-t border-gray-800">
+      < footer className="bg-[#0b1023] text-gray-300 py-16 px-8 md:px-20 border-t border-gray-800" >
         <div className="grid gap-12 mx-auto max-w-7xl md:grid-cols-4">
           <div>
             <h3 className="mb-3 text-2xl font-extrabold text-white">
@@ -2249,10 +2096,10 @@ export default function Dashboard() {
         <div className="pt-6 mt-12 text-sm text-center text-gray-500 border-t border-gray-700">
           Designed by Fitnexus Team | Powered by AI & Passion
         </div>
-      </footer>
+      </footer >
 
       {/* Floating Chat Widget */}
-      <ChatWidget />
+      < ChatWidget />
 
       {showStreakModal && streakState.data?.currentStreak ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-8 bg-black/50">
@@ -2286,8 +2133,9 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
-      ) : null}
-    </div>
+      ) : null
+      }
+    </div >
   );
 }
 
