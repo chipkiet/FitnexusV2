@@ -12,6 +12,7 @@ const WorkoutSessionExercise = sequelize.define(
     target_sets: { type: DataTypes.INTEGER, allowNull: true },
     target_reps: { type: DataTypes.STRING(50), allowNull: true },
     target_rest_seconds: { type: DataTypes.INTEGER, allowNull: true },
+    target_weight_kg: { type: DataTypes.DECIMAL(8, 2), allowNull: true },
     completed_sets: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
     status: { type: DataTypes.STRING(20), allowNull: false, defaultValue: "pending" },
   },
