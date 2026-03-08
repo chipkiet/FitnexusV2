@@ -123,7 +123,7 @@ export async function listUsers(req, res) {
     const where = {};
     const iLikeOp =
       typeof sequelize?.getDialect === "function" &&
-      sequelize.getDialect() === "postgres"
+        sequelize.getDialect() === "postgres"
         ? Op.iLike
         : Op.like;
 
@@ -278,9 +278,9 @@ export async function getUsersStats(req, res) {
       success: true,
       data: {
         total: Number(total || 0),
-        role: { ADMIN: Number(admin||0), TRAINER: Number(trainer||0), USER: Number(simple_user||0) },
-        plan: { PREMIUM: Number(premium||0), FREE: Number(free||0) },
-        status: { ACTIVE: Number(active||0), INACTIVE: Math.max(0, Number(total||0) - Number(active||0)) },
+        role: { ADMIN: Number(admin || 0), TRAINER: Number(trainer || 0), USER: Number(simple_user || 0) },
+        plan: { PREMIUM: Number(premium || 0), FREE: Number(free || 0) },
+        status: { ACTIVE: Number(active || 0), INACTIVE: Math.max(0, Number(total || 0) - Number(active || 0)) },
       },
     });
   } catch (err) {
@@ -335,9 +335,10 @@ export async function getPopularExercises(req, res) {
         'name_en',
         'slug',
         'thumbnail_url',
+        'gif_demo_url',
         [fn('COUNT', col('favorites.favorite_id')), 'favorite_count'],
       ],
-      group: ['Exercise.exercise_id', 'Exercise.name', 'Exercise.name_en', 'Exercise.slug', 'Exercise.thumbnail_url'],
+      group: ['Exercise.exercise_id', 'Exercise.name', 'Exercise.name_en', 'Exercise.slug', 'Exercise.thumbnail_url', 'Exercise.gif_demo_url'],
       having: literal('COUNT(favorites.favorite_id) > 0'),
       order: [[literal('favorite_count'), 'DESC']],
       limit,
@@ -367,7 +368,7 @@ export async function getPopularExercises(req, res) {
         name: json.name,
         name_en: json.name_en,
         slug: json.slug,
-        thumbnail_url: json.thumbnail_url,
+        thumbnail_url: json.thumbnail_url || json.gif_demo_url || null,
         favorite_count: Number(json.favorite_count || 0),
       };
     });

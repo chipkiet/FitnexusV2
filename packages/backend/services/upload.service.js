@@ -13,12 +13,14 @@ const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
-  console.error(
-    "Lỗi: Không tìm thấy SUPABASE_URL hoặc SUPABASE_SERVICE_KEY trong file .env"
+  console.warn(
+    "[Env] SUPABASE_URL or SUPABASE_SERVICE_KEY missing. Supabase image upload features are disabled."
   );
 }
 
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabase = (supabaseUrl && supabaseKey)
+  ? createClient(supabaseUrl, supabaseKey)
+  : null;
 
 /**
  * Upload một file từ đường dẫn local lên Supabase
@@ -33,6 +35,12 @@ export const uploadBufferToSupabase = async (
   bucketName = "exercises_image", // Mặc định nếu không truyền
   folderName = "misc" // Mặc định thư mục con
 ) => {
+  if (!supabase) {
+    console.warn(`[Upload] Supabase client is not initialized. Falling back to Local storage for "${originalName}".`);
+    // Pass the bucketName as a root folder in local storage to keep it organized
+    return uploadBufferToLocal(fileBuffer, originalName, `${bucketName}/${folderName}`);
+  }
+
   try {
     const fileExt = path.extname(originalName);
     // Tạo tên file unique
@@ -61,10 +69,69 @@ export const uploadBufferToSupabase = async (
 
     return publicData.publicUrl;
   } catch (error) {
-    console.error(`Supabase Upload Error (${bucketName}):`, error.message);
+    console.error(`Supabase Upload Error (${bucketName}):`, error.message, "Falling back to Local Storage.");
+    return uploadBufferToLocal(fileBuffer, originalName, `${bucketName}/${folderName}`);
+  }
+};
+
+/**
+ * Upload một file buffer vào thư mục local 'uploads'
+ * @param {Buffer} fileBuffer 
+ * @param {string} originalName 
+ * @param {string} folderName 
+ * @returns {Promise<string>} - URL của file (ví dụ: /uploads/images/filename.jpg)
+ */
+export const uploadBufferToLocal = async (
+  fileBuffer,
+  originalName,
+  folderName = "misc"
+) => {
+  try {
+    const fileExt = path.extname(originalName);
+    const uniqueFileName = `${path.basename(
+      originalName,
+      fileExt
+    )}-${Date.now()}${fileExt}`;
+
+    // Tạo thư mục nếu chưa tồn tại
+    const targetDir = path.join(__dirname, "../uploads", folderName);
+    if (!fs.existsSync(targetDir)) {
+      fs.mkdirSync(targetDir, { recursive: true });
+    }
+
+    const filePath = path.join(targetDir, uniqueFileName);
+    fs.writeFileSync(filePath, fileBuffer);
+
+    // Trả về relative URL mà Express static sẽ phục vụ
+    // Ví dụ: /uploads/images/unique-file-123.jpg
+    const publicUrl = `/uploads/${folderName}/${uniqueFileName}`;
+    return publicUrl;
+  } catch (error) {
+    console.error("[Upload Local Error]:", error.message);
     return null;
   }
 };
+
+export const uploadLocalFileToSupabase = async (
+  localFilePath,
+  bucketName = "exercises_image",
+  folderName = "misc"
+) => {
+  if (!fs.existsSync(localFilePath)) {
+    console.error(`[Upload] Local file not found: ${localFilePath}`);
+    return null;
+  }
+
+  try {
+    const fileBuffer = fs.readFileSync(localFilePath);
+    const originalName = path.basename(localFilePath);
+    return await uploadBufferToSupabase(fileBuffer, originalName, bucketName, folderName);
+  } catch (error) {
+    console.error(`[Upload] Local file upload error:`, error.message);
+    return null;
+  }
+};
+
 
 
 function getContentType(ext) {

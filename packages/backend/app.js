@@ -5,6 +5,11 @@ import cors from "cors";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 import workoutRouter from "./routes/workout.routes.js";
 import helmet from "helmet";
@@ -70,15 +75,15 @@ const allowedOrigins = Array.from(
     ...(envAdditionalOrigins.length
       ? envAdditionalOrigins
       : isDev
-      ? defaultDevOrigins
-      : []),
+        ? defaultDevOrigins
+        : []),
   ])
 ).filter(Boolean);
 
 /* -------------------- IPv4 PRIORITY -------------------- */
 try {
   dns.setDefaultResultOrder?.("ipv4first");
-} catch {}
+} catch { }
 
 /* -------------------- PayOS Webhook Raw Body (phải đặt trước express.json) -------------------- */
 app.use("/api/payment/payos-webhook", bodyParser.raw({ type: "*/*" }));
@@ -87,6 +92,9 @@ app.use("/api/payment/payos-webhook", bodyParser.raw({ type: "*/*" }));
 app.use(cookieParser());
 app.use(express.json({ limit: "200kb" }));
 app.use(express.urlencoded({ extended: true, limit: "200kb" }));
+
+/* -------------------- STATICS -------------------- */
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 /* -------------------- CORS (PHẢI ĐẶT TRƯỚC ROUTES) -------------------- */
 app.use(

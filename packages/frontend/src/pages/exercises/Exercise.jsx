@@ -11,6 +11,7 @@ import {
   Filter,
   ChevronDown,
   ChevronRight,
+  ChevronLeft,
   Plus,
   Calendar,
   Play,
@@ -18,24 +19,38 @@ import {
   Check,
   X,
   Menu,
+  Heart,
+  Bookmark,
 } from "lucide-react";
 
-// --- CUSTOM CSS FOR SCROLLBAR ---
-const ScrollbarStyles = () => (
+// --- CUSTOM CSS FOR HIGH-END NEUTRAL AESTHETIC ---
+const CustomStyles = () => (
   <style>{`
+    * {
+      -webkit-tap-highlight-color: transparent;
+      outline: none !important;
+    }
     .custom-scrollbar::-webkit-scrollbar {
-      width: 6px;
+      width: 3px;
     }
     .custom-scrollbar::-webkit-scrollbar-track {
-      background: #f1f1f1;
-      border-radius: 10px;
+      background: transparent;
     }
     .custom-scrollbar::-webkit-scrollbar-thumb {
-      background: #d1d5db; /* Gray-300 */
-      border-radius: 10px;
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 20px;
     }
-    .custom-scrollbar:hover::-webkit-scrollbar-thumb {
-      background: #9ca3af; /* Gray-400 */
+    .floating-active {
+      background: #ffffff !important;
+      box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1), 0 4px 10px -2px rgba(0, 0, 0, 0.05) !important;
+      border: 1px solid rgba(0, 0, 0, 0.08) !important;
+      color: #000000 !important;
+    }
+    .card-border-hover:hover {
+      border-color: rgba(0, 0, 0, 0.1);
+    }
+    .letter-spacing-tight {
+      letter-spacing: -0.02em;
     }
   `}</style>
 );
@@ -55,7 +70,7 @@ const MuscleAccordion = ({ parent, selectedId, onSelect }) => {
   }, [selectedId, parent]);
 
   return (
-    <div className="mb-2">
+    <div className="mb-3">
       {/* PARENT BUTTON */}
       <button
         onClick={() => {
@@ -63,37 +78,19 @@ const MuscleAccordion = ({ parent, selectedId, onSelect }) => {
           if (hasChildren) setIsOpen(!isOpen);
         }}
         className={`
-          w-full flex items-center justify-between px-4 py-3 rounded-lg
-          transition-all duration-200 group relative overflow-hidden select-none
+          w-full flex items-center justify-between px-5 py-3.5 rounded-2xl
+          transition-all duration-500 group relative select-none
           ${isParentActive
-            ? "bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/30 scale-[1.02]"
+            ? "floating-active scale-[1.02]"
             : hasChildActive
-              ? "bg-blue-50 text-blue-700 border-2 border-blue-200"
-              : "bg-white border border-gray-200 text-gray-700 hover:border-blue-300 hover:shadow-md"
+              ? "text-zinc-900"
+              : "text-zinc-400 hover:text-zinc-900"
           }
         `}
       >
-        {/* Hover Effect Background */}
-        {!isParentActive && (
-          <div className="absolute inset-0 transition-opacity opacity-0 bg-gradient-to-r from-gray-50 to-transparent group-hover:opacity-100" />
-        )}
-
-        <div className="relative z-10 flex items-center flex-1 gap-3">
-          {/* Indicator Dot */}
-          <div
-            className={`
-            w-2 h-2 rounded-full transition-all shrink-0
-            ${isParentActive
-                ? "bg-white scale-125"
-                : hasChildActive
-                  ? "bg-blue-500"
-                  : "bg-gray-300 group-hover:bg-blue-400"
-              }
-          `}
-          />
-
+        <div className="relative z-10 flex items-center flex-1 gap-4">
           <span
-            className={`font-bold text-sm truncate ${isParentActive ? "text-white" : "text-gray-800"
+            className={`text-[14px] leading-none tracking-tight truncate ${isParentActive ? "font-black" : "font-bold"
               }`}
           >
             {parent.name}
@@ -101,14 +98,12 @@ const MuscleAccordion = ({ parent, selectedId, onSelect }) => {
         </div>
 
         {/* Counter & Chevron */}
-        <div className="relative z-10 flex items-center gap-2">
+        <div className="relative z-10 flex items-center gap-2.5">
           {hasChildren && (
             <span
-              className={`text-[10px] font-bold px-2 py-0.5 rounded-full transition-colors
-              ${isParentActive
-                  ? "bg-white/20 text-white"
-                  : "bg-gray-100 text-gray-500 group-hover:bg-blue-50 group-hover:text-blue-600"
-                }`}
+              className={`text-[9px] font-black px-1.5 py-0.5 rounded transition-colors
+              ${isParentActive ? "bg-zinc-100 text-zinc-600" : "bg-zinc-50 text-zinc-300"}
+            `}
             >
               {parent.children.length}
             </span>
@@ -117,12 +112,12 @@ const MuscleAccordion = ({ parent, selectedId, onSelect }) => {
           {hasChildren && (
             <div
               className={`
-              transition-transform duration-300 
+              transition-transform duration-500 
               ${isOpen ? "rotate-180" : "rotate-0"}
-              ${isParentActive ? "text-white" : "text-gray-400"}
+              ${isParentActive ? "text-zinc-900" : "text-zinc-300 group-hover:text-zinc-400"}
             `}
             >
-              <ChevronDown className="w-4 h-4" />
+              <ChevronDown className="w-3.5 h-3.5 stroke-[4px]" />
             </div>
           )}
         </div>
@@ -132,11 +127,11 @@ const MuscleAccordion = ({ parent, selectedId, onSelect }) => {
       {hasChildren && (
         <div
           className={`
-          overflow-hidden transition-all duration-300 ease-in-out
-          ${isOpen ? "max-h-[500px] opacity-100 mt-2" : "max-h-0 opacity-0"}
+          overflow-hidden transition-all duration-500 ease-in-out
+          ${isOpen ? "max-h-[1000px] opacity-100 mt-2" : "max-h-0 opacity-0"}
         `}
         >
-          <div className="pl-3 ml-3 space-y-1 border-l-2 border-gray-100">
+          <div className="ml-4 space-y-1 py-1">
             {parent.children.map((child) => {
               const isChildActive = selectedId === child.id;
               return (
@@ -147,24 +142,18 @@ const MuscleAccordion = ({ parent, selectedId, onSelect }) => {
                     onSelect(child);
                   }}
                   className={`
-                    w-full text-left px-3 py-2 rounded-md text-sm
-                    transition-all duration-200 flex items-center justify-between
-                    group/child relative overflow-hidden
+                    w-full text-left px-5 py-2.5 rounded-2xl text-[12.5px]
+                    transition-all duration-300 flex items-center justify-between
+                    group/child relative
                     ${isChildActive
-                      ? "bg-blue-600 text-white shadow-md shadow-blue-500/20 font-bold translate-x-1"
-                      : "text-gray-600 hover:text-blue-700 hover:bg-blue-50 hover:translate-x-1"
+                      ? "floating-active font-black"
+                      : "text-zinc-400 hover:text-zinc-900 font-bold"
                     }
                   `}
                 >
-                  <span className="relative z-10 flex items-center gap-2 truncate">
-                    {isChildActive && (
-                      <Check className="w-3.5 h-3.5 animate-in zoom-in-50 duration-200 shrink-0" />
-                    )}
-                    {child.name}
-                  </span>
-
+                  <span className="relative z-10 truncate">{child.name}</span>
                   {!isChildActive && (
-                    <ChevronRight className="w-3.5 h-3.5 opacity-0 group-hover/child:opacity-100 transition-opacity text-gray-400" />
+                    <ChevronRight className="w-3.5 h-3.5 opacity-0 group-hover/child:opacity-100 transition-all -translate-x-1 group-hover/child:translate-x-0" />
                   )}
                 </button>
               );
@@ -184,7 +173,7 @@ export default function Exercise() {
   const [exercises, setExercises] = useState([]);
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
-  const [showMobileFilter, setShowMobileFilter] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   // Filters
   const [q, setQ] = useState("");
@@ -219,6 +208,40 @@ export default function Exercise() {
   const [planItemsSet, setPlanItemsSet] = useState(new Set());
   const [toastMsg, setToastMsg] = useState(null);
 
+  // Favorites & Bookmarks logic
+  const [favorites, setFavorites] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("fitnexus_favorites") || "[]");
+    } catch { return []; }
+  });
+  const [bookmarks, setBookmarks] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("fitnexus_bookmarks") || "[]");
+    } catch { return []; }
+  });
+  const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem("fitnexus_favorites", JSON.stringify(favorites));
+  }, [favorites]);
+
+  useEffect(() => {
+    localStorage.setItem("fitnexus_bookmarks", JSON.stringify(bookmarks));
+  }, [bookmarks]);
+
+  const toggleFavorite = (id) => {
+    setFavorites(prev => {
+      const current = Array.isArray(prev) ? prev : [];
+      return current.includes(id) ? current.filter(i => i !== id) : [...current, id];
+    });
+  };
+  const toggleBookmark = (id) => {
+    setBookmarks(prev => {
+      const current = Array.isArray(prev) ? prev : [];
+      return current.includes(id) ? current.filter(i => i !== id) : [...current, id];
+    });
+  };
+
   // --- INIT & FETCH ---
   useEffect(() => {
     axios
@@ -248,8 +271,12 @@ export default function Exercise() {
           params: { page, pageSize, q, difficulty: level, equipment },
         });
         if (res.data?.success) {
-          setExercises(res.data.data || []);
-          setTotal(res.data.total || 0);
+          let list = res.data.data || [];
+          if (showOnlyFavorites) {
+            list = list.filter(ex => Array.isArray(favorites) && favorites.includes(ex.id));
+          }
+          setExercises(list);
+          setTotal(showOnlyFavorites ? list.length : (res.data.total || 0));
         }
       } catch (err) {
         console.error(err);
@@ -259,13 +286,13 @@ export default function Exercise() {
     };
     const t = setTimeout(fetchEx, 300);
     return () => clearTimeout(t);
-  }, [page, q, selectedMuscle, level, equipment]);
+  }, [page, q, selectedMuscle, level, equipment, showOnlyFavorites, favorites]);
 
   // --- ACTIONS ---
   const handleSelectMuscle = (muscle) => {
     setSelectedMuscle((prev) => (prev?.id === muscle.id ? null : muscle));
     setPage(1);
-    if (window.innerWidth < 1024) setShowMobileFilter(false);
+    if (window.innerWidth < 1024) setShowMobileMenu(false);
   };
 
   const addToPlan = async (ex) => {
@@ -304,120 +331,113 @@ export default function Exercise() {
   }, [currentPlan]);
 
   return (
-    <div className="min-h-screen bg-[#F9FAFB] text-zinc-900 font-sans">
-      <ScrollbarStyles />
+    <div className="min-h-screen bg-[#F5F5F5] text-zinc-900 font-sans">
+      <CustomStyles />
       <HeaderLogin />
 
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-6">
-        {/* --- MOBILE FILTER TOGGLE --- */}
-        <div className="lg:hidden flex justify-between items-center mb-4 sticky top-0 z-30 bg-[#F9FAFB] py-2">
-          <button
-            onClick={() => setShowMobileFilter(true)}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium transition bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-50"
-          >
-            <Filter className="w-4 h-4" /> Bộ lọc & Nhóm cơ
-          </button>
-          <span className="text-sm font-medium text-gray-500">
-            {total} kết quả
-          </span>
-        </div>
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-10">
+        {/* Mobile Filter Toggle */}
+        <button
+          onClick={() => setShowMobileMenu(!showMobileMenu)}
+          className="lg:hidden p-3 bg-white border border-zinc-200 rounded-2xl shadow-xl flex items-center gap-2 mb-8 group active:scale-95 transition-all w-full justify-center"
+        >
+          <Filter className="w-5 h-5 text-black group-hover:rotate-12 transition-transform" />
+          <span className="text-[11px] font-black tracking-widest uppercase">FILTERS & FAVORITES</span>
+        </button>
 
-        <div className="flex items-start gap-8">
-          {/* ================= SIDEBAR (LEFT) - 280px Fixed ================= */}
+        <div className="flex gap-12 lg:gap-16">
+          {/* ================= SIDEBAR ================= */}
           <aside
             className={`
-            fixed inset-y-0 left-0 z-50 w-80 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 lg:w-[280px] lg:bg-transparent lg:border-none lg:h-auto lg:block
-            ${showMobileFilter
-                ? "translate-x-0 shadow-2xl"
-                : "-translate-x-full lg:shadow-none"
-              }
+            fixed inset-0 z-[60] lg:static lg:z-auto lg:block w-[320px] shrink-0
+            ${showMobileMenu ? "flex" : "hidden"}
           `}
           >
-            <div className="h-full p-5 overflow-y-auto lg:overflow-visible lg:p-0">
-              {/* Mobile Close */}
-              <div className="flex items-center justify-between mb-6 lg:hidden">
-                <h2 className="text-lg font-bold text-gray-800">Bộ lọc</h2>
-                <button
-                  onClick={() => setShowMobileFilter(false)}
-                  className="p-2 bg-gray-100 rounded-full"
-                >
-                  <X className="w-5 h-5 text-gray-500" />
+            {/* Backdrop for Mobile */}
+            <div
+              className="absolute inset-0 bg-black/40 backdrop-blur-sm lg:hidden"
+              onClick={() => setShowMobileMenu(false)}
+            />
+
+            <div className="relative w-full h-full bg-[#F5F5F5] custom-scrollbar overflow-y-auto lg:h-auto lg:bg-transparent lg:sticky lg:top-[100px]">
+              {/* Sidebar Header (Mobile Only) */}
+              <div className="flex items-center justify-between p-6 lg:hidden">
+                <span className="text-xl font-black tracking-tighter">NAVIGATE</span>
+                <button onClick={() => setShowMobileMenu(false)} className="p-2 hover:bg-zinc-100 rounded-full transition-colors">
+                  <X className="w-6 h-6" />
                 </button>
               </div>
 
               {/* 1. PLAN & TODAY WIDGETS */}
-              <div className="mb-8 space-y-4">
+              <div className="mb-10 space-y-6">
                 {/* Plan Context */}
                 <div
-                  className={`p-4 rounded-xl border shadow-sm transition-all ${currentPlan
-                      ? "bg-gradient-to-br from-blue-50 to-white border-blue-100"
-                      : "bg-white border-gray-200"
+                  className={`p-6 rounded-[32px] transition-all duration-500 relative border border-transparent ${currentPlan
+                    ? "bg-white shadow-2xl shadow-zinc-200/50 border-zinc-100"
+                    : "bg-zinc-100/30 border-dashed border-zinc-200"
                     }`}
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="flex items-center gap-1 text-xs font-extrabold tracking-widest text-gray-400 uppercase">
-                      <Calendar className="w-3 h-3" /> Plan
+                  <div className="flex items-baseline justify-between mb-4">
+                    <span className="text-[10px] font-black tracking-[0.2em] text-zinc-400 uppercase">
+                      ACTIVE PLAN
                     </span>
-                    {currentPlan ? (
+                    {currentPlan && (
                       <button
                         onClick={() => {
                           sessionStorage.removeItem("current_plan_context");
                           setCurrentPlan(null);
                         }}
-                        className="text-xs font-bold text-red-500 hover:underline"
+                        className="text-[9px] font-black text-zinc-300 hover:text-red-500 transition-colors"
                       >
-                        THOÁT
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => navigate("/plans/select")}
-                        className="text-xs font-bold text-blue-600 hover:underline"
-                      >
-                        CHỌN PLAN
+                        DISMISS
                       </button>
                     )}
                   </div>
                   {currentPlan ? (
                     <div>
-                      <div className="text-sm font-bold text-gray-900 truncate">
+                      <div className="text-lg font-black text-black leading-tight mb-1 tracking-tighter">
                         {currentPlan.name}
                       </div>
-                      <div className="mt-1 text-xs text-gray-500">
-                        {planItemsSet.size} bài tập đang chọn
+                      <div className="text-[11px] font-bold text-zinc-400">
+                        {planItemsSet.size} CURATED ITEMS
                       </div>
                     </div>
                   ) : (
-                    <div className="py-1 text-xs text-gray-400">
-                      Chưa chọn kế hoạch.
-                    </div>
+                    <button
+                      onClick={() => navigate("/plans/select")}
+                      className="w-full flex items-center justify-between py-1 group"
+                    >
+                      <span className="text-sm font-black text-zinc-900">Choose a Plan</span>
+                      <ChevronRight className="w-4 h-4 text-zinc-300 group-hover:translate-x-1 transition-transform" />
+                    </button>
                   )}
                 </div>
 
-                {/* Today */}
-                <div className="p-4 bg-white border border-gray-200 shadow-sm rounded-xl">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="flex items-center gap-1 text-xs font-extrabold tracking-widest text-gray-400 uppercase">
-                      <Play className="w-3 h-3" /> Hôm nay
+                {/* Today Goals */}
+                <div className="p-6 bg-white rounded-[32px] shadow-2xl shadow-zinc-200/60 border border-zinc-100 relative group overflow-hidden">
+                  <div className="flex items-center justify-between mb-5">
+                    <span className="text-[10px] font-black tracking-[0.2em] text-zinc-400 uppercase">
+                      DAILY GOALS
                     </span>
                     {todayList.length > 0 && (
-                      <span className="text-[10px] font-bold bg-orange-100 text-orange-600 px-2 py-0.5 rounded-full">
-                        {todayList.length}
-                      </span>
+                      <div className="w-2 h-2 rounded-full bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.4)] animate-pulse" />
                     )}
                   </div>
+
                   {todayList.length === 0 ? (
-                    <div className="py-2 text-xs text-center text-gray-400 border border-gray-200 border-dashed rounded-lg">
-                      Danh sách trống
+                    <div className="py-6 text-center">
+                      <p className="text-xs font-bold text-zinc-300 mb-1">Your list is empty</p>
+                      <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Select exercises to start</p>
                     </div>
                   ) : (
-                    <div className="space-y-2">
-                      <div className="pr-1 space-y-1 overflow-y-auto max-h-24 custom-scrollbar">
+                    <div className="space-y-5">
+                      <div className="space-y-2 max-h-[160px] overflow-y-auto custom-scrollbar pr-1">
                         {todayList.map((ex, i) => (
                           <div
                             key={i}
-                            className="flex justify-between items-center text-xs text-gray-700 bg-gray-50 px-2 py-1.5 rounded group hover:bg-orange-50"
+                            className="flex justify-between items-center bg-zinc-50/50 p-3 rounded-2xl group/item hover:bg-zinc-100/50 transition-all border border-transparent hover:border-zinc-200/30"
                           >
-                            <span className="flex-1 font-medium truncate">
+                            <span className="text-xs font-black text-zinc-800 truncate pr-2">
                               {ex.name}
                             </span>
                             <button
@@ -426,18 +446,18 @@ export default function Exercise() {
                                   p.filter((_, idx) => idx !== i)
                                 )
                               }
-                              className="text-gray-300 opacity-0 hover:text-red-500 group-hover:opacity-100"
+                              className="text-zinc-300 hover:text-black transition-colors"
                             >
-                              <X className="w-3 h-3" />
+                              <X className="w-4 h-4" />
                             </button>
                           </div>
                         ))}
                       </div>
                       <StartWorkoutButton
                         exercises={todayList}
-                        className="w-full py-2 text-xs font-bold text-white bg-orange-600 rounded-lg shadow-sm hover:bg-orange-700 shadow-orange-200"
+                        className="w-full py-4 text-[11px] font-black tracking-[0.2em] text-white bg-black rounded-2xl shadow-xl hover:bg-zinc-800 hover:-translate-y-1 active:translate-y-0 transition-all uppercase"
                       >
-                        Bắt đầu tập
+                        Ignite Session
                       </StartWorkoutButton>
                     </div>
                   )}
@@ -447,62 +467,62 @@ export default function Exercise() {
               <hr className="mb-6 border-gray-200" />
 
               {/* 2. SEARCH & DROPDOWNS */}
-              <div className="mb-8 space-y-5">
+              <div className="mb-10 space-y-6 px-2">
                 <div>
-                  <label className="block mb-2 text-xs font-bold text-gray-900 uppercase">
-                    Tìm kiếm
-                  </label>
+                  <div className="flex justify-between items-end mb-3">
+                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em]">
+                      SEARCH
+                    </label>
+                    {(q || level || equipment) && (
+                      <button
+                        onClick={() => { setQ(""); setLevel(""); setEquipment(""); }}
+                        className="text-[9px] font-black text-zinc-300 hover:text-black transition-colors"
+                      >
+                        RESET ALL
+                      </button>
+                    )}
+                  </div>
                   <div className="relative group">
-                    <Search className="absolute w-4 h-4 text-gray-400 transition-colors -translate-y-1/2 left-3 top-1/2 group-focus-within:text-blue-600" />
+                    <Search className="absolute w-5 h-5 text-zinc-300 transition-all -translate-y-1/2 left-5 top-1/2 group-focus-within:text-black group-focus-within:scale-110" />
                     <input
                       value={q}
                       onChange={(e) => setQ(e.target.value)}
-                      placeholder="Tên bài tập..."
-                      className="w-full pl-9 pr-3 py-2.5 text-sm bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all shadow-sm"
+                      placeholder="Type exercise name..."
+                      className="w-full pl-14 pr-6 py-4 text-sm bg-white border border-zinc-100 shadow-2xl shadow-zinc-200/40 rounded-[20px] focus:border-black outline-none transition-all font-bold placeholder:text-zinc-200"
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 lg:grid-cols-1">
-                  <div>
-                    <label className="block mb-2 text-xs font-bold text-gray-900 uppercase">
-                      Độ khó
-                    </label>
-                    <div className="relative">
-                      <select
-                        value={level}
-                        onChange={(e) => setLevel(e.target.value)}
-                        className="w-full pl-3 pr-8 py-2.5 text-sm bg-white border border-gray-200 rounded-lg outline-none focus:border-blue-500 shadow-sm appearance-none cursor-pointer"
-                      >
-                        <option value="">Tất cả</option>
-                        {filterOptions.levels.map((l) => (
-                          <option key={l} value={l}>
-                            {l}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDown className="absolute w-4 h-4 text-gray-400 -translate-y-1/2 pointer-events-none right-3 top-1/2" />
-                    </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="relative group">
+                    <select
+                      value={level}
+                      onChange={(e) => setLevel(e.target.value)}
+                      className="w-full pl-5 pr-10 py-3.5 text-[11px] bg-white border border-zinc-100 rounded-[18px] outline-none focus:border-black shadow-xl shadow-zinc-200/30 appearance-none cursor-pointer font-black transition-all hover:bg-zinc-50 tracking-wider uppercase"
+                    >
+                      <option value="">Difficulty</option>
+                      {filterOptions.levels.map((l) => (
+                        <option key={l} value={l}>
+                          {l}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute w-4 h-4 text-zinc-300 -translate-y-1/2 pointer-events-none right-4 top-1/2 group-hover:text-black transition-colors" />
                   </div>
-                  <div>
-                    <label className="block mb-2 text-xs font-bold text-gray-900 uppercase">
-                      Dụng cụ
-                    </label>
-                    <div className="relative">
-                      <select
-                        value={equipment}
-                        onChange={(e) => setEquipment(e.target.value)}
-                        className="w-full pl-3 pr-8 py-2.5 text-sm bg-white border border-gray-200 rounded-lg outline-none focus:border-blue-500 shadow-sm appearance-none cursor-pointer"
-                      >
-                        <option value="">Tất cả</option>
-                        {filterOptions.equipments.map((l) => (
-                          <option key={l} value={l}>
-                            {l}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDown className="absolute w-4 h-4 text-gray-400 -translate-y-1/2 pointer-events-none right-3 top-1/2" />
-                    </div>
+                  <div className="relative group">
+                    <select
+                      value={equipment}
+                      onChange={(e) => setEquipment(e.target.value)}
+                      className="w-full pl-5 pr-10 py-3.5 text-[11px] bg-white border border-zinc-100 rounded-[18px] outline-none focus:border-black shadow-xl shadow-zinc-200/30 appearance-none cursor-pointer font-black transition-all hover:bg-zinc-50 tracking-wider uppercase"
+                    >
+                      <option value="">Equipment</option>
+                      {filterOptions.equipments.map((l) => (
+                        <option key={l} value={l}>
+                          {l}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute w-4 h-4 text-zinc-300 -translate-y-1/2 pointer-events-none right-4 top-1/2 group-hover:text-black transition-colors" />
                   </div>
                 </div>
               </div>
@@ -545,7 +565,7 @@ export default function Exercise() {
 
                 {/* Tree */}
                 <div className="space-y-2 max-h-[500px] overflow-y-auto custom-scrollbar pr-1">
-                  {muscleTree.map((parent) => (
+                  {muscleTree?.map((parent) => (
                     <MuscleAccordion
                       key={parent.id}
                       parent={parent}
@@ -559,24 +579,35 @@ export default function Exercise() {
           </aside>
 
           {/* Overlay for mobile */}
-          {showMobileFilter && (
+          {showMobileMenu && (
             <div
               className="fixed inset-0 z-40 bg-black/50 lg:hidden"
-              onClick={() => setShowMobileFilter(false)}
+              onClick={() => setShowMobileMenu(false)}
             />
           )}
 
           {/* ================= MAIN CONTENT (GRID) ================= */}
           <main className="flex-1 min-w-0">
             {/* Header Result */}
-            <div className="flex items-end justify-between pb-2 mb-6">
+            <div className="flex flex-col md:flex-row md:items-end justify-between pb-8 mb-12 border-b border-zinc-200/50">
               <div>
-                <h1 className="text-2xl font-bold text-gray-900 leading-none mb-1.5">
-                  {selectedMuscle ? selectedMuscle.name : "Tất cả bài tập"}
+                <nav className="flex items-center gap-2 mb-6 text-[11px] font-black text-zinc-400 uppercase tracking-[0.3em]">
+                  <span>INDEX</span>
+                  <div className="w-4 h-[1px] bg-zinc-300" />
+                  <span className="text-zinc-900">{selectedMuscle ? selectedMuscle.name : "ALL"}</span>
+                </nav>
+                <h1 className="text-5xl font-black text-black leading-none mb-4 tracking-tighter letter-spacing-tight">
+                  {selectedMuscle ? selectedMuscle.name : "Thư viện bài tập"}
                 </h1>
-                <p className="text-sm font-medium text-gray-500">
-                  Hiển thị {total} kết quả
+                <p className="text-sm font-bold text-zinc-400">
+                  <span className="text-zinc-900">{total}</span> CURATED EXERCISES
                 </p>
+              </div>
+              <div className="mt-8 md:mt-0 flex items-center gap-6">
+                <button className="flex items-center gap-3 px-6 py-2.5 bg-white border border-zinc-200 rounded-full text-[11px] font-black tracking-widest hover:border-black transition-all">
+                  <span>VOTE BEST</span>
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
               </div>
             </div>
 
@@ -594,8 +625,7 @@ export default function Exercise() {
               <>
                 <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-x-4 gap-y-8">
                   {exercises.map((ex) => {
-                    const isAdded =
-                      currentPlan?.plan_id && planItemsSet.has(String(ex.id));
+                    const isAdded = (currentPlan?.id || currentPlan?.plan_id) && planItemsSet.has(String(ex.id));
                     return (
                       <div
                         key={ex.id}
@@ -603,7 +633,7 @@ export default function Exercise() {
                         onClick={() => navigate(`/exercises/${ex.id}`)}
                       >
                         {/* Thumbnail */}
-                        <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-gray-100 mb-3 border border-gray-100 shadow-sm transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1">
+                        <div className="relative aspect-[4/3] rounded-[32px] overflow-hidden bg-[#E8E8E8] mb-6 border border-zinc-200/50 group-hover:border-black/10 group-hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.15)] transition-all duration-700 group-hover:-translate-y-4">
                           <img
                             src={
                               ex.imageUrl ||
@@ -611,12 +641,12 @@ export default function Exercise() {
                               "/placeholder.jpg"
                             }
                             alt={ex.name}
-                            className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
+                            className="object-cover w-full h-full transition-transform duration-1000 group-hover:scale-105"
                             loading="lazy"
                           />
 
-                          {/* Hover Overlay Buttons (Desktop) */}
-                          <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 backdrop-blur-[1px]">
+                          {/* Hover Overlay Buttons (Quick Add) */}
+                          <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-center">
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -624,75 +654,47 @@ export default function Exercise() {
                                   p.find((x) => x.id === ex.id) ? p : [...p, ex]
                                 );
                               }}
-                              className="flex items-center justify-center w-10 h-10 transition-all transform bg-white rounded-full shadow-lg text-zinc-800 hover:bg-orange-500 hover:text-white hover:scale-110"
-                              title="Tập ngay"
+                              className="flex items-center gap-3 px-8 py-3.5 bg-white text-zinc-900 rounded-full shadow-2xl text-[11px] font-black tracking-[0.2em] hover:bg-black hover:text-white transition-all transform hover:scale-105 active:scale-95"
                             >
-                              <Play className="w-4 h-4 fill-current ml-0.5" />
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                addToPlan(ex);
-                              }}
-                              className={`w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-lg transform hover:scale-110
-                                 ${isAdded
-                                  ? "bg-green-500 text-white"
-                                  : "bg-white text-zinc-800 hover:bg-blue-600 hover:text-white"
-                                }`}
-                              title="Thêm vào Plan"
-                            >
-                              {isAdded ? (
-                                <Check className="w-5 h-5" />
-                              ) : (
-                                <Plus className="w-5 h-5" />
-                              )}
+                              <Play className="w-4 h-4 fill-current" />
+                              START WORKOUT
                             </button>
                           </div>
 
-                          {/* Difficulty Badge */}
-                          <div
-                            className={`absolute top-2 left-2 px-2 py-0.5 text-[10px] font-bold text-white uppercase rounded shadow-sm tracking-wider
-                            ${ex.difficulty === "beginner"
-                                ? "bg-green-500/90"
-                                : ex.difficulty === "advanced"
-                                  ? "bg-red-500/90"
-                                  : "bg-amber-500/90"
-                              }
-                          `}
-                          >
-                            {ex.difficulty || "N/A"}
+                          {/* Difficulty Tag */}
+                          <div className="absolute top-6 left-6 px-4 py-1.5 bg-white/90 backdrop-blur-md text-[9px] font-black text-black rounded-full uppercase tracking-[0.2em] shadow-lg border border-white/20">
+                            {ex.difficulty || "MODERATE"}
                           </div>
-
-                          {/* Mobile Add Button */}
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              addToPlan(ex);
-                            }}
-                            className={`lg:hidden absolute bottom-2 right-2 w-8 h-8 rounded-full flex items-center justify-center shadow-md text-white active:scale-95 transition ${isAdded ? "bg-green-500" : "bg-blue-600"
-                              }`}
-                          >
-                            {isAdded ? (
-                              <Check className="w-4 h-4" />
-                            ) : (
-                              <Plus className="w-4 h-4" />
-                            )}
-                          </button>
                         </div>
 
                         {/* Content */}
-                        <div className="flex flex-col flex-1 px-1">
+                        <div className="flex flex-col flex-1 px-4">
+                          <div className="flex items-center gap-3 mb-2 opacity-50">
+                            <div className="w-4 h-[1px] bg-black" />
+                            <span className="text-[9px] font-black text-black uppercase tracking-[0.2em]">
+                              {ex.equipment || "No Equip"}
+                            </span>
+                          </div>
                           <h3
-                            className="mb-1 text-sm font-bold text-gray-900 transition-colors line-clamp-2 group-hover:text-blue-600"
+                            className="text-xl font-black text-black leading-tight tracking-tighter mb-4"
                             title={ex.name}
                           >
                             {ex.name}
                           </h3>
-                          <div className="flex items-center gap-2 mt-auto">
-                            <div className="h-4 w-[1px] bg-gray-300"></div>
-                            <span className="text-[11px] font-medium text-gray-500 uppercase tracking-wide truncate">
-                              {ex.equipment || "No Equip"}
-                            </span>
+                          <div className="mt-auto flex justify-between items-center group/more">
+                            <button
+                              onClick={() => navigate(`/exercises/${ex.id}`)}
+                              className="text-[10px] font-black text-zinc-400 group-hover/more:text-black transition-colors uppercase tracking-[0.2em] flex items-center gap-2"
+                            >
+                              EXPLORE
+                              <ChevronRight className="w-3 h-3 group-hover/more:translate-x-1 transition-transform" />
+                            </button>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); addToPlan(ex); }}
+                              className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all ${isAdded ? "bg-green-500 text-white" : "bg-zinc-100 text-zinc-400 hover:bg-zinc-900 hover:text-white"}`}
+                            >
+                              {isAdded ? <Check className="w-5 h-5 stroke-[4px]" /> : <Plus className="w-5 h-5 stroke-[4px]" />}
+                            </button>
                           </div>
                         </div>
                       </div>
@@ -702,24 +704,45 @@ export default function Exercise() {
 
                 {/* Pagination */}
                 {total > pageSize && (
-                  <div className="flex justify-center mt-12">
-                    <div className="inline-flex gap-1 p-1 bg-white border border-gray-200 rounded-lg shadow-sm">
+                  <div className="flex items-center justify-center mt-20 pb-20">
+                    <div className="flex items-center gap-2 p-2 bg-zinc-100/50 rounded-[24px] border border-zinc-200/30 shadow-inner">
                       <button
                         disabled={page === 1}
-                        onClick={() => setPage((p) => p - 1)}
-                        className="px-3 py-2 text-xs font-bold text-gray-600 transition-colors rounded-md hover:bg-gray-50 hover:text-gray-900 disabled:opacity-30"
+                        onClick={() => {
+                          setPage((p) => p - 1);
+                          window.scrollTo({ top: 0, behavior: "smooth" });
+                        }}
+                        className="w-12 h-12 flex items-center justify-center rounded-2xl text-zinc-400 hover:text-black hover:bg-white hover:shadow-xl transition-all disabled:opacity-20 active:scale-90"
                       >
-                        Prev
+                        <ChevronLeft className="w-5 h-5 stroke-[3px]" />
                       </button>
-                      <span className="px-4 py-2 text-xs font-bold text-blue-600 rounded-md shadow-inner bg-blue-50">
-                        Trang {page}
-                      </span>
+
+                      <div className="px-6 py-3 bg-white rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.06)] border border-black/5 flex items-center gap-3">
+                        <span className="text-[10px] font-black tracking-[0.2em] uppercase text-zinc-300">
+                          PAGE
+                        </span>
+                        <div className="flex items-baseline gap-1.5">
+                          <span className="text-[16px] font-black text-black leading-none">
+                            {page}
+                          </span>
+                          <span className="text-[12px] font-black text-zinc-300">
+                            /
+                          </span>
+                          <span className="text-[12px] font-black text-zinc-400">
+                            {Math.ceil(total / pageSize)}
+                          </span>
+                        </div>
+                      </div>
+
                       <button
                         disabled={page * pageSize >= total}
-                        onClick={() => setPage((p) => p + 1)}
-                        className="px-3 py-2 text-xs font-bold text-gray-600 transition-colors rounded-md hover:bg-gray-50 hover:text-gray-900 disabled:opacity-30"
+                        onClick={() => {
+                          setPage((p) => p + 1);
+                          window.scrollTo({ top: 0, behavior: "smooth" });
+                        }}
+                        className="w-12 h-12 flex items-center justify-center rounded-2xl text-zinc-400 hover:text-black hover:bg-white hover:shadow-xl transition-all disabled:opacity-20 active:scale-90"
                       >
-                        Next
+                        <ChevronRight className="w-5 h-5 stroke-[3px]" />
                       </button>
                     </div>
                   </div>
@@ -730,14 +753,16 @@ export default function Exercise() {
         </div>
       </div>
 
-      {toastMsg && (
-        <div className="fixed z-50 flex items-center gap-2 px-5 py-3 text-sm font-bold text-white -translate-x-1/2 rounded-full shadow-2xl bottom-6 left-1/2 bg-zinc-900/95 backdrop-blur animate-in slide-in-from-bottom-4">
-          <div className="bg-green-500 p-0.5 rounded-full">
-            <Check className="w-3 h-3 text-white" />
+      {
+        toastMsg && (
+          <div className="fixed z-50 flex items-center gap-2 px-5 py-3 text-sm font-bold text-white -translate-x-1/2 rounded-full shadow-2xl bottom-6 left-1/2 bg-zinc-900/95 backdrop-blur animate-in slide-in-from-bottom-4">
+            <div className="bg-green-500 p-0.5 rounded-full">
+              <Check className="w-3 h-3 text-white" />
+            </div>
+            {toastMsg}
           </div>
-          {toastMsg}
-        </div>
-      )}
+        )
+      }
     </div>
   );
 }

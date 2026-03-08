@@ -1,0 +1,2979 @@
+[
+    {
+        "slug": "barbell-bench-press",
+        "name": "Đẩy Ngực Ngang Thanh Đòn",
+        "name_en": "Barbell Bench Press",
+        "description": "Bài tập compound quan trọng nhất cho cơ ngực, vai và bắp tay sau.",
+        "difficulty_level": "intermediate",
+        "exercise_type": "compound",
+        "equipment_needed": "barbell, bench",
+        "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-barbell-bench-press-front.mp4",
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-barbell-bench-press-front.jpg",
+        "gif_demo_url": null,
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-barbell-bench-press-front.mp4",
+        "extra_videos": [
+            {
+                "file": "https://media.musclewiki.com/media/uploads/videos/branded/male-barbell-bench-press-side_KciuhbB.mp4",
+                "title": "Góc nhìn ngang"
+            },
+            {
+                "file": "https://www.youtube.com/watch?v=YzA3rsX3znQ",
+                "title": "Video hướng dẫn YouTube"
+            }
+        ],
+        "duration_minutes": null,
+        "calories_per_rep": 0.5,
+        "popularity_score": 100,
+        "is_public": true,
+        "is_featured": true,
+        "is_verified": true,
+        "source_name": "MuscleWiki",
+        "source_url": "https://musclewiki.com/exercise/barbell-bench-press",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Nằm ngửa trên ghế phẳng, chân đặt trên sàn. Nhấc thanh tạ ra khỏi giá tạ với cánh tay thẳng."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Hạ thanh tạ xuống vùng ngực giữa (mid-chest)."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Đẩy thanh tạ lên cho đến khi khóa khớp khuỷu tay và thở ra."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 8,
+                "slug_hint": "mid-chest",
+                "impact_level": "primary",
+                "intensity_percentage": 60,
+                "activation_note": "Tác động chính vào phần lớn cơ ngực"
+            },
+            {
+                "muscle_group_id": 15,
+                "slug_hint": "anterior-deltoid",
+                "impact_level": "secondary",
+                "intensity_percentage": 25,
+                "activation_note": "Hỗ trợ đẩy tạ lên"
+            },
+            {
+                "muscle_group_id": 23,
+                "slug_hint": "triceps-brachii",
+                "impact_level": "secondary",
+                "intensity_percentage": 15,
+                "activation_note": "Hỗ trợ duỗi thẳng tay ở điểm cao nhất"
+            }
+        ],
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-barbell-bench-press-front.jpg"
+    },
+    {
+        "slug": "dumbbell-bench-press",
+        "name": "Đẩy Ngực Ngang Tạ Tay",
+        "name_en": "Dumbbell Bench Press",
+        "description": "Bài tập đẩy ngực sử dụng tạ tay giúp tăng biên độ chuyển động và sự cân bằng giữa hai bên.",
+        "difficulty_level": "beginner",
+        "exercise_type": "compound",
+        "equipment_needed": "dumbbell, bench",
+        "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-dumbbell-bench-press-front_y8zKZJl.mp4",
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-dumbbell-bench-press-front_y8zKZJl.jpg",
+        "gif_demo_url": null,
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-dumbbell-bench-press-front_y8zKZJl.mp4",
+        "extra_videos": [
+            {
+                "file": "https://media.musclewiki.com/media/uploads/videos/branded/male-dumbbell-bench-press-side_rqe1iTe.mp4",
+                "title": "Góc nhìn ngang"
+            }
+        ],
+        "duration_minutes": null,
+        "calories_per_rep": 0.4,
+        "popularity_score": 90,
+        "is_public": true,
+        "is_featured": false,
+        "is_verified": true,
+        "source_name": "MuscleWiki",
+        "source_url": "https://musclewiki.com/exercise/dumbbell-bench-press",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Bắt đầu bằng cách nằm ngửa trên ghế phẳng, mỗi tay cầm một quả tạ đơn."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Giữ tạ ở ngang ngực với lòng bàn tay hướng về phía trước."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Gồng cơ bụng và đẩy tạ lên cao cho đến khi cánh tay duỗi thẳng hoàn toàn."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 8,
+                "slug_hint": "mid-chest",
+                "impact_level": "primary",
+                "intensity_percentage": 70,
+                "activation_note": "Tác động chính vào cơ ngực"
+            },
+            {
+                "muscle_group_id": 23,
+                "slug_hint": "triceps-brachii",
+                "impact_level": "secondary",
+                "intensity_percentage": 20,
+                "activation_note": "Hỗ trợ đẩy tạ"
+            },
+            {
+                "muscle_group_id": 15,
+                "slug_hint": "anterior-deltoid",
+                "impact_level": "secondary",
+                "intensity_percentage": 10,
+                "activation_note": "Hỗ trợ ổn định vai"
+            }
+        ],
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-dumbbell-bench-press-front_y8zKZJl.jpg"
+    },
+    {
+        "slug": "push-up",
+        "name": "Hít Đất",
+        "name_en": "Push Up",
+        "description": "Bài tập trọng lượng cơ thể kinh điển giúp phát triển cơ ngực, vai và tay sau.",
+        "difficulty_level": "beginner",
+        "exercise_type": "compound",
+        "equipment_needed": "body-weight",
+        "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Bodyweight-push-up-front.mp4",
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-Bodyweight-push-up-front.jpg",
+        "gif_demo_url": null,
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Bodyweight-push-up-front.mp4",
+        "extra_videos": [
+            {
+                "file": "https://media.musclewiki.com/media/uploads/videos/branded/male-Bodyweight-push-up-side.mp4",
+                "title": "Góc nhìn ngang"
+            }
+        ],
+        "duration_minutes": null,
+        "calories_per_rep": 0.3,
+        "popularity_score": 95,
+        "is_public": true,
+        "is_featured": true,
+        "is_verified": true,
+        "source_name": "MuscleWiki",
+        "source_url": "https://musclewiki.com/exercise/pushups",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Đặt hai tay chắc chắn trên sàn, ngay dưới vai."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Giữ lưng thẳng sao cho toàn bộ cơ thể tạo thành một đường thẳng và từ từ hạ thấp người xuống."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Kéo xương bả vai ra sau và xuống dưới, giữ khuỷu tay áp sát vào cơ thể."
+            },
+            {
+                "step_number": 4,
+                "instruction_text": "Thở ra khi đẩy người trở lại vị trí ban đầu."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 8,
+                "slug_hint": "mid-chest",
+                "impact_level": "primary",
+                "intensity_percentage": 50,
+                "activation_note": "Tác động chính vào cơ ngực"
+            },
+            {
+                "muscle_group_id": 15,
+                "slug_hint": "anterior-deltoid",
+                "impact_level": "secondary",
+                "intensity_percentage": 30,
+                "activation_note": "Hỗ trợ đẩy thân người"
+            },
+            {
+                "muscle_group_id": 23,
+                "slug_hint": "triceps-brachii",
+                "impact_level": "secondary",
+                "intensity_percentage": 20,
+                "activation_note": "Hỗ trợ duỗi tay"
+            }
+        ],
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-Bodyweight-push-up-front.jpg"
+    },
+    {
+        "slug": "barbell-curl",
+        "name": "Cuốn Tạ Đòn",
+        "name_en": "Barbell Curl",
+        "description": "Bài tập cơ bản tốt nhất để phát triển cơ nhị đầu (biceps).",
+        "difficulty_level": "intermediate",
+        "exercise_type": "isolation",
+        "equipment_needed": "barbell",
+        "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-barbell-curl-front.mp4",
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-Barbell-barbell-curl-front.jpg",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-barbell-curl-front.mp4",
+        "popularity_score": 95,
+        "is_public": true,
+        "source_name": "MuscleWiki",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Đứng thẳng, cầm thanh tạ đòn với lòng bàn tay hướng về phía trước."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Giữ cánh tay trên cố định, cuốn tạ lên trong khi co bóp cơ nhị đầu."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Tiếp tục nâng tạ cho đến khi cơ nhị đầu co hết mức và thanh tạ ở ngang vai."
+            },
+            {
+                "step_number": 4,
+                "instruction_text": "Từ từ hạ thanh tạ về vị trí bắt đầu."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 20,
+                "slug_hint": "biceps-brachii",
+                "impact_level": "primary"
+            }
+        ],
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-Barbell-barbell-curl-front.jpg"
+    },
+    {
+        "slug": "dumbbell-curl",
+        "name": "Cuốn Tạ Đơn",
+        "name_en": "Dumbbell Curl",
+        "description": "Bài tập linh hoạt cho cơ nhị đầu, giúp cân bằng sức mạnh hai tay.",
+        "difficulty_level": "beginner",
+        "exercise_type": "isolation",
+        "equipment_needed": "dumbbell",
+        "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-dumbbell-curl-front.mp4",
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-Dumbbells-dumbbell-curl-front.jpg",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-dumbbell-curl-front.mp4",
+        "popularity_score": 90,
+        "is_public": true,
+        "source_name": "MuscleWiki",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Đứng thẳng, mỗi tay cầm một quả tạ đơn."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Cuốn một quả tạ lên và xoay cẳng tay cho đến khi lòng bàn tay hướng về phía vai."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Hạ tạ về vị trí ban đầu và lặp lại với tay kia."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 20,
+                "slug_hint": "biceps-brachii",
+                "impact_level": "primary"
+            }
+        ],
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-Dumbbells-dumbbell-curl-front.jpg"
+    },
+    {
+        "slug": "dumbbell-seated-overhead-tricep-extension",
+        "name": "Đẩy Tạ Đơn Sau Đầu",
+        "name_en": "Dumbbell Seated Overhead Tricep Extension",
+        "description": "Bài tập hiệu quả để kéo giãn và phát triển đầu dài của cơ tam đầu (triceps).",
+        "difficulty_level": "intermediate",
+        "exercise_type": "isolation",
+        "equipment_needed": "dumbbell, bench",
+        "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Dumbbells-dumbbell-seated-overhead-tricep-extension-front.mp4",
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-Dumbbells-dumbbell-seated-overhead-tricep-extension-front.jpg",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Dumbbells-dumbbell-seated-overhead-tricep-extension-front.mp4",
+        "popularity_score": 88,
+        "is_public": true,
+        "source_name": "MuscleWiki",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Ngồi trên ghế và giữ một quả tạ bằng cả hai tay. Giơ tạ lên cao qua đầu."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Giữ khuỷu tay sát đầu, hạ tạ xuống phía sau đầu."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Đẩy tạ trở lại vị trí bắt đầu bằng cách duỗi thẳng tay."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 23,
+                "slug_hint": "triceps-brachii",
+                "impact_level": "primary"
+            }
+        ],
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-Dumbbells-dumbbell-seated-overhead-tricep-extension-front.jpg"
+    },
+    {
+        "slug": "cable-v-bar-push-down",
+        "name": "Đẩy Cáp Tay Sau V-Bar",
+        "name_en": "Machine Cable V Bar Push Downs",
+        "description": "Bài tập cô lập cơ tam đầu với máy cáp.",
+        "difficulty_level": "beginner",
+        "exercise_type": "isolation",
+        "equipment_needed": "machine",
+        "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-cable-push-downs-front.mp4",
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-cable-v-bar-push-down-front.jpg",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-cable-push-downs-front.mp4",
+        "popularity_score": 92,
+        "is_public": true,
+        "source_name": "MuscleWiki",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Nắm thanh V-bar với lòng bàn tay hướng xuống."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Đứng thẳng, hơi nghiêng người về phía trước. Đẩy thanh cáp xuống cho đến khi cánh tay duỗi thẳng hoàn toàn."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Dừng lại một chút rồi từ từ đưa thanh cáp trở lại vị trí bắt đầu."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 23,
+                "slug_hint": "triceps-brachii",
+                "impact_level": "primary"
+            }
+        ],
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-cable-v-bar-push-down-front.jpg"
+    },
+    {
+        "slug": "crunches",
+        "name": "Gập Bụng",
+        "name_en": "Crunches",
+        "description": "Bài tập cơ bản để tác động vào cơ thẳng bụng.",
+        "difficulty_level": "beginner",
+        "exercise_type": "isolation",
+        "equipment_needed": "body-weight",
+        "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-bodyweight-crunch-front.mp4",
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-bodyweight-crunch-front.jpg",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-bodyweight-crunch-front.mp4",
+        "popularity_score": 95,
+        "is_public": true,
+        "source_name": "MuscleWiki",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Nằm ngửa trên sàn, đầu gối gập và bàn chân đặt phẳng trên sàn."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Đặt nhẹ tay sau gáy hoặc thái dương."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Gồng cơ bụng và nâng đầu, vai lên khỏi sàn. Sau đó hạ xuống và lặp lại."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 26,
+                "slug_hint": "rectus-abdominis",
+                "impact_level": "primary"
+            }
+        ],
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-bodyweight-crunch-front.jpg"
+    },
+    {
+        "slug": "medicine-ball-plank",
+        "name": "Plank Với Bóng",
+        "name_en": "Medicine Ball Plank",
+        "description": "Bài tập ổn định cơ trọng tâm (core) nâng cao với bóng tập.",
+        "difficulty_level": "intermediate",
+        "exercise_type": "isolation",
+        "equipment_needed": "medicine-ball",
+        "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-medicine-ball-plank-front.mp4",
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-medicine-ball-plank-front.jpg",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-medicine-ball-plank-front.mp4",
+        "popularity_score": 85,
+        "is_public": true,
+        "source_name": "MuscleWiki",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Đặt bóng tập trên sàn."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Đặt hai tay lên bóng và duỗi chân ra sau tư thế chống đẩy."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Giữ lưng thẳng và gồng cơ bụng. Giữ tư thế trong thời gian yêu cầu."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 26,
+                "slug_hint": "rectus-abdominis",
+                "impact_level": "primary"
+            }
+        ],
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-medicine-ball-plank-front.jpg"
+    },
+    {
+        "slug": "dumbbell-wrist-curl",
+        "name": "Cuốn Cổ Tay Tạ Đơn",
+        "name_en": "Dumbbell Wrist Curl",
+        "description": "Bài tập phát triển cơ cẳng tay và sức mạnh nắm tay.",
+        "difficulty_level": "beginner",
+        "exercise_type": "isolation",
+        "equipment_needed": "dumbbell",
+        "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Dumbbells-dumbbell-wrist-curl-side.mp4",
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-Dumbbells-dumbbell-wrist-curl-side.jpg",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Dumbbells-dumbbell-wrist-curl-side.mp4",
+        "popularity_score": 80,
+        "is_public": true,
+        "source_name": "MuscleWiki",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Cầm tạ đơn với lòng bàn tay hướng lên, tựa cẳng tay lên ghế hoặc đùi."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Từ từ cuốn cổ tay lên trên."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Hạ tạ về vị trí ban đầu."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 24,
+                "slug_hint": "wrist-flexors",
+                "impact_level": "primary"
+            }
+        ],
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-Dumbbells-dumbbell-wrist-curl-side.jpg"
+    },
+    {
+        "slug": "barbell-wrist-curl",
+        "name": "Cuốn Cổ Tay Tạ Đòn",
+        "name_en": "Barbell Wrist Curl",
+        "description": "Bài tập tăng kích thước và sức bền cho cẳng tay.",
+        "difficulty_level": "beginner",
+        "exercise_type": "isolation",
+        "equipment_needed": "barbell",
+        "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-barbell-wrist-curl-side.mp4",
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-Barbell-barbell-wrist-curl-front.jpg",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-barbell-wrist-curl-side.mp4",
+        "popularity_score": 82,
+        "is_public": true,
+        "source_name": "MuscleWiki",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Nắm thanh tạ đòn với lòng bàn tay hướng lên."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Quỳ cạnh ghế, đặt cẳng tay lên ghế sao cho cổ tay ở ngoài mép ghế."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Để thanh tạ kéo cổ tay xuống, sau đó cuốn ngược lên trên."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 24,
+                "slug_hint": "wrist-flexors",
+                "impact_level": "primary"
+            }
+        ],
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-Barbell-barbell-wrist-curl-front.jpg"
+    },
+    {
+        "slug": "seated-calf-raise",
+        "name": "Nhón Bắp Chân Ngồi",
+        "name_en": "Seated Calf Raise",
+        "description": "Bài tập tập trung vào cơ dép (soleus) của bắp chân.",
+        "difficulty_level": "beginner",
+        "exercise_type": "isolation",
+        "equipment_needed": "machine",
+        "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Vitruvian-seated-calf-raise-side.mp4",
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-Vitruvian-seated-calf-raise-side.jpg",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Vitruvian-seated-calf-raise-side.mp4",
+        "popularity_score": 85,
+        "is_public": true,
+        "source_name": "MuscleWiki",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Ngồi vào máy và đặt đệm lên trên đùi."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Nhón gót chân lên cao hết mức có thể."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Hạ gót chân xuống dưới mức song song và lặp lại."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 36,
+                "slug_hint": "soleus",
+                "impact_level": "primary"
+            }
+        ],
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-Vitruvian-seated-calf-raise-side.jpg"
+    },
+    {
+        "slug": "smith-machine-calf-raise",
+        "name": "Nhón Bắp Chân Với Máy Smith",
+        "name_en": "Smith Machine Calf Raise",
+        "description": "Bài tập ổn định để phát triển cơ bắp chân lớn (gastrocnemius).",
+        "difficulty_level": "beginner",
+        "exercise_type": "isolation",
+        "equipment_needed": "machine",
+        "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Smithmachine-calf-raise-front.mp4",
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-Smithmachine-calf-raise-front.jpg",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Smithmachine-calf-raise-front.mp4",
+        "popularity_score": 87,
+        "is_public": true,
+        "source_name": "MuscleWiki",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Đặt thanh tạ của máy Smith lên phần lưng trên."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Đứng thẳng với bàn chân phẳng."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Nhón gót chân lên cao trong khi giữ đầu gối cố định."
+            },
+            {
+                "step_number": 4,
+                "instruction_text": "Từ từ hạ gót chân về vị trí cũ."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 36,
+                "slug_hint": "gastrocnemius",
+                "impact_level": "primary"
+            }
+        ],
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-Smithmachine-calf-raise-front.jpg"
+    },
+    {
+        "slug": "incline-barbell-bench-press",
+        "name": "Đẩy Ngực Dốc Lên Thanh Đòn",
+        "name_en": "Incline Barbell Bench Press",
+        "description": "Bài tập tập trung vào phần ngực trên và cơ vai trước.",
+        "difficulty_level": "intermediate",
+        "exercise_type": "compound",
+        "equipment_needed": "barbell, bench",
+        "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-barbell-incline-bench-press-front.mp4",
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-incline-barbell-bench-press-front.jpg",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-barbell-incline-bench-press-front.mp4",
+        "popularity_score": 92,
+        "is_public": true,
+        "source_name": "MuscleWiki",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Nằm trên ghế dốc lên, chân đặt chắc chắn trên sàn. Cầm thanh đòn với lòng bàn tay hướng về phía trước."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Hạ thanh đòn xuống ngực trên, giữ khuỷu tay gần cơ thể."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Đẩy thanh đòn trở lại vị trí bắt đầu và thở ra."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 7,
+                "slug_hint": "upper-chest",
+                "impact_level": "primary"
+            },
+            {
+                "muscle_group_id": 15,
+                "slug_hint": "anterior-deltoid",
+                "impact_level": "secondary"
+            }
+        ],
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-incline-barbell-bench-press-front.jpg"
+    },
+    {
+        "slug": "barbell-bent-over-row",
+        "name": "Chèo Tạ Đòn Cúi Người",
+        "name_en": "Barbell Bent Over Row",
+        "description": "Bài tập xây dựng độ dày và sức mạnh cho toàn bộ vùng lưng.",
+        "difficulty_level": "intermediate",
+        "exercise_type": "compound",
+        "equipment_needed": "barbell",
+        "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-barbell-bent-over-row-front.mp4",
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-barbell-bent-over-row-front.jpg",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-barbell-bent-over-row-front.mp4",
+        "popularity_score": 95,
+        "is_public": true,
+        "source_name": "MuscleWiki",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Cúi người gập hông, giữ lưng thẳng và song song với sàn. Cầm tạ đòn bằng cả hai tay."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Kéo thanh tạ về phía bụng (vùng rốn), ép xương bả vai lại với nhau."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Từ từ hạ tạ về vị trí bắt đầu và lặp lại."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 10,
+                "slug_hint": "latissimus-dorsi",
+                "impact_level": "primary"
+            }
+        ],
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-barbell-bent-over-row-front.jpg"
+    },
+    {
+        "slug": "barbell-deadlift",
+        "name": "Deadlift Với Tạ Đòn",
+        "name_en": "Barbell Deadlift",
+        "description": "Bài tập toàn thân kinh điển, tập trung vào xích sau (posterior chain).",
+        "difficulty_level": "advanced",
+        "exercise_type": "compound",
+        "equipment_needed": "barbell",
+        "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-barbell-deadlift-front.mp4",
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-Barbell-barbell-deadlift-front.jpg",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-barbell-deadlift-front.mp4",
+        "popularity_score": 100,
+        "is_public": true,
+        "source_name": "MuscleWiki",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Đứng hai chân rộng bằng vai, thanh tạ nằm trên giữa bàn chân."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Cúi người nắm thanh tạ, giữ lưng thẳng và hông thấp xuống."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Đứng thẳng dậy bằng cách đẩy sàn bằng chân, giữ thanh tạ sát vào ống chân và đùi."
+            },
+            {
+                "step_number": 4,
+                "instruction_text": "Hạ tạ xuống có kiểm soát bằng cách đẩy hông ra sau."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 13,
+                "slug_hint": "erector-spinae",
+                "impact_level": "primary"
+            },
+            {
+                "muscle_group_id": 31,
+                "slug_hint": "gluteus-maximus",
+                "impact_level": "primary"
+            },
+            {
+                "muscle_group_id": 30,
+                "slug_hint": "hamstrings",
+                "impact_level": "secondary"
+            }
+        ],
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-Barbell-barbell-deadlift-front.jpg"
+    },
+    {
+        "slug": "cable-pec-fly",
+        "name": "Ép Ngực Với Cáp",
+        "name_en": "Cable Pec Fly",
+        "description": "Bài tập cô lập giúp tạo nét và cảm nhận cơ ngực tốt nhất.",
+        "difficulty_level": "beginner",
+        "exercise_type": "isolation",
+        "equipment_needed": "machine",
+        "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-cable-pec-fly-front.mp4",
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-cable-pec-fly-front.jpg",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-cable-pec-fly-front.mp4",
+        "popularity_score": 88,
+        "is_public": true,
+        "source_name": "MuscleWiki",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Đứng giữa hai máy cáp, cầm tay nắm cáp ở độ cao ngang ngực."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Bước một chân lên trước để tạo sự ổn định, hơi gập khuỷu tay."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Ép hai tay lại với nhau ở trước mặt, cảm nhận sự co bóp của cơ ngực."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 8,
+                "slug_hint": "mid-chest",
+                "impact_level": "primary"
+            }
+        ],
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-cable-pec-fly-front.jpg"
+    },
+    {
+        "slug": "dumbbell-front-raise",
+        "name": "Nâng Tạ Đơn Trước Mặt",
+        "name_en": "Dumbbell Front Raise",
+        "description": "Bài tập cô lập tập trung vào cơ vai trước.",
+        "difficulty_level": "beginner",
+        "exercise_type": "isolation",
+        "equipment_needed": "dumbbell",
+        "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-dumbbell-front-raise-front.mp4",
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-Dumbbells-dumbbell-front-raise-side.jpg",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-dumbbell-front-raise-front.mp4",
+        "popularity_score": 85,
+        "is_public": true,
+        "source_name": "MuscleWiki",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Đứng thẳng, mỗi tay cầm một quả tạ đơn đặt ở trước đùi."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Nâng một tay lên trước mặt cho đến khi cánh tay song song với sàn."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Hạ tạ xuống và lặp lại với tay kia hoặc cả hai tay cùng lúc."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 15,
+                "slug_hint": "anterior-deltoid",
+                "impact_level": "primary"
+            }
+        ],
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-Dumbbells-dumbbell-front-raise-side.jpg"
+    },
+    {
+        "slug": "machine-leg-press",
+        "name": "Đạp Đùi Với Máy",
+        "name_en": "Machine Leg Press",
+        "description": "Bài tập compound an toàn và hiệu quả cho đùi trước và mông.",
+        "difficulty_level": "beginner",
+        "exercise_type": "compound",
+        "equipment_needed": "machine",
+        "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-machine-leg-press-front.mp4",
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-Machine-machine-leg-press-side.jpg",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-machine-leg-press-front.mp4",
+        "popularity_score": 94,
+        "is_public": true,
+        "source_name": "MuscleWiki",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Ngồi vào máy đạp đùi, đặt hai chân lên bàn đạp rộng bằng vai."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Đẩy bàn đạp ra để mở khóa an toàn, sau đó hạ bàn đạp xuống cho đến khi đầu gối gập một góc khoảng 90 độ."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Đẩy bàn đạp trở lại nhưng không khóa khớp gối ở điểm cuối."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 29,
+                "slug_hint": "quadriceps",
+                "impact_level": "primary"
+            },
+            {
+                "muscle_group_id": 31,
+                "slug_hint": "gluteus-maximus",
+                "impact_level": "secondary"
+            }
+        ],
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-Machine-machine-leg-press-side.jpg"
+    },
+    {
+        "slug": "machine-leg-extension",
+        "name": "Đá Đùi Với Máy",
+        "name_en": "Machine Leg Extension",
+        "description": "Bài tập cô lập tốt nhất cho cơ đùi trước (quads).",
+        "difficulty_level": "beginner",
+        "exercise_type": "isolation",
+        "equipment_needed": "machine",
+        "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-machine-leg-extension-front.mp4",
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-machine-leg-extension-front.jpg",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-machine-leg-extension-front.mp4",
+        "popularity_score": 90,
+        "is_public": true,
+        "source_name": "MuscleWiki",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Ngồi vào máy, đặt ống chân dưới đệm chân."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Dùng cơ đùi trước để nâng đệm chân lên cho đến khi chân duỗi thẳng."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Hạ đệm chân xuống từ từ về vị trí ban đầu."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 29,
+                "slug_hint": "quadriceps",
+                "impact_level": "primary"
+            }
+        ],
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-machine-leg-extension-front.jpg"
+    },
+    {
+        "slug": "bodyweight-russian-twist",
+        "name": "Vặn Người Kiểu Nga",
+        "name_en": "Bodyweight Russian Twist",
+        "description": "Bài tập tuyệt vời cho cơ bụng chéo và sức mạnh cơ trọng tâm.",
+        "difficulty_level": "beginner",
+        "exercise_type": "isolation",
+        "equipment_needed": "body-weight",
+        "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-bodyweight-russian-twist-front.mp4",
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-bodyweight-russian-twist-front.jpg",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-bodyweight-russian-twist-front.mp4",
+        "popularity_score": 85,
+        "is_public": true,
+        "source_name": "MuscleWiki",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Ngồi trên sàn với đầu gối gập, ngả người ra sau một chút và nhấc chân lên khỏi sàn."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Giữ hai tay chắp trước ngực, vặn thân người sang trái rồi sang phải."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Giữ hông cố định và tập trung vào việc xoay phần thân trên."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 27,
+                "slug_hint": "obliques",
+                "impact_level": "primary"
+            }
+        ],
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-bodyweight-russian-twist-front.jpg"
+    },
+    {
+        "slug": "machine-face-pulls",
+        "name": "Kéo Cáp Cho Vai Sau",
+        "name_en": "Machine Face Pulls",
+        "description": "Bài tập quan trọng cho sức khỏe khớp vai và cơ vai sau.",
+        "difficulty_level": "beginner",
+        "exercise_type": "isolation",
+        "equipment_needed": "machine",
+        "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-cable-face-pull-front.mp4",
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-Machine-machine-face-pulls-front.jpg",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-cable-face-pull-front.mp4",
+        "popularity_score": 82,
+        "is_public": true,
+        "source_name": "MuscleWiki",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Đứng trước máy cáp, sử dụng dây thừng (rope) ở độ cao ngang mặt."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Kéo dây thừng về phía mặt, tách hai đầu dây sang hai bên tai."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Ép mạnh cơ vai sau và cơ thang ở điểm cuối, sau đó từ từ đưa về vị trí ban đầu."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 17,
+                "slug_hint": "posterior-deltoid",
+                "impact_level": "primary"
+            },
+            {
+                "muscle_group_id": 11,
+                "slug_hint": "trapezius",
+                "impact_level": "secondary"
+            }
+        ],
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-Machine-machine-face-pulls-front.jpg"
+    },
+    {
+        "slug": "barbell-shrugs",
+        "name": "Nhún Cầu Vai Thanh Đòn",
+        "name_en": "Barbell Shrugs",
+        "description": "Bài tập phát triển sức mạnh và kích thước cho nhóm cơ cầu vai (traps).",
+        "difficulty_level": "beginner",
+        "exercise_type": "isolation",
+        "equipment_needed": "barbell",
+        "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-barbell-shrugs-front.mp4",
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-barbell-shrugs-front.jpg",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-barbell-shrugs-front.mp4",
+        "popularity_score": 88,
+        "is_public": true,
+        "source_name": "MuscleWiki",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Đứng thẳng, cầm thanh tạ đòn ở ngang đùi với lòng bàn tay hướng về phía cơ thể."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Nhún vai lên cao hết mức có thể về phía tai mặt (không xoay vai)."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Dừng lại một chút ở điểm cao nhất rồi từ từ hạ xuống."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 11,
+                "slug_hint": "trapezius",
+                "impact_level": "primary"
+            }
+        ],
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-barbell-shrugs-front.jpg"
+    },
+    {
+        "slug": "machine-lying-leg-curl",
+        "name": "Cuốn Chân Nằm Với Máy",
+        "name_en": "Machine Lying Leg Curl",
+        "description": "Bài tập cô lập chính cho nhóm cơ đùi sau (hamstrings).",
+        "difficulty_level": "beginner",
+        "exercise_type": "isolation",
+        "equipment_needed": "machine",
+        "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-machine-lying-leg-curl-side.mp4",
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-machine-lying-leg-curl-front.jpg",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-machine-lying-leg-curl-side.mp4",
+        "popularity_score": 90,
+        "is_public": true,
+        "source_name": "MuscleWiki",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Nằm sấp trên máy cuốn chân, đặt gót chân dưới đệm chân."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Cuốn chân lên phía mông bằng cách sử dụng cơ đùi sau."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Hạ chân xuống từ từ về vị trí ban đầu."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 30,
+                "slug_hint": "hamstrings",
+                "impact_level": "primary"
+            }
+        ],
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-machine-lying-leg-curl-front.jpg"
+    },
+    {
+        "slug": "barbell-decline-bench-press",
+        "name": "Đẩy Ngực Dốc Xuống Thanh Đòn",
+        "name_en": "Barbell Decline Bench Press",
+        "description": "Bài tập tập trung vào phần ngực dưới và cơ tam đầu.",
+        "difficulty_level": "intermediate",
+        "exercise_type": "compound",
+        "equipment_needed": "barbell, bench",
+        "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-barbell-decline-bench-press-front.mp4",
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-barbell-decline-bench-press-front.jpg",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-barbell-decline-bench-press-front.mp4",
+        "popularity_score": 85,
+        "is_public": true,
+        "source_name": "MuscleWiki",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Nằm trên ghế dốc xuống, móc chân vào giá đỡ của ghế. Nhấc thanh tạ ra khỏi giá."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Hạ thanh tạ xuống phần ngực dưới của bạn."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Đẩy thanh tạ lên cho đến khi tay duỗi thẳng hoàn toàn."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 9,
+                "slug_hint": "lower-chest",
+                "impact_level": "primary"
+            },
+            {
+                "muscle_group_id": 23,
+                "slug_hint": "triceps-brachii",
+                "impact_level": "secondary"
+            }
+        ],
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-barbell-decline-bench-press-front.jpg"
+    },
+    {
+        "slug": "bodyweight-walking-lunges",
+        "name": "Lunge Bước Đi",
+        "name_en": "Bodyweight Walking Lunges",
+        "description": "Bài tập phát triển sức mạnh đùi, mông và khả năng thăng bằng.",
+        "difficulty_level": "beginner",
+        "exercise_type": "compound",
+        "equipment_needed": "body-weight",
+        "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-bodyweight-walking-lunge-side.mp4",
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-bodyweight-walking-lunges-front.jpg",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-bodyweight-walking-lunge-side.mp4",
+        "popularity_score": 88,
+        "is_public": true,
+        "source_name": "MuscleWiki",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Đứng thẳng với hai chân chụm lại."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Bước một chân lên xa phía trước, hạ thấp hông cho đến khi cả hai đầu gối gập một góc khoảng 90 độ."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Đứng dậy và bước chân sau lên phía trước và lặp lại động tác lunge với chân kia."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 29,
+                "slug_hint": "quadriceps",
+                "impact_level": "primary"
+            },
+            {
+                "muscle_group_id": 31,
+                "slug_hint": "gluteus-maximus",
+                "impact_level": "primary"
+            }
+        ],
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-bodyweight-walking-lunges-front.jpg"
+    },
+    {
+        "slug": "bodyweight-hanging-leg-raise",
+        "name": "Treo Người Nhấc Chân",
+        "name_en": "Bodyweight Hanging Leg Raise",
+        "description": "Bài tập nâng cao cho cơ bụng dưới và cơ gấp hông.",
+        "difficulty_level": "advanced",
+        "exercise_type": "isolation",
+        "equipment_needed": "body-weight",
+        "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-bodyweight-hanging-leg-raise-front.mp4",
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-bodyweight-hanging-leg-raise-front.jpg",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-bodyweight-hanging-leg-raise-front.mp4",
+        "popularity_score": 90,
+        "is_public": true,
+        "source_name": "MuscleWiki",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Treo người trên thanh xà đơn, giữ thẳng tay."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Nâng hai chân lên (có thể duỗi thẳng hoặc gập gối) cho đến khi hông gập hoàn toàn."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Hạ chân xuống từ từ, cố gắng không để cơ thể bị đung đưa."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 26,
+                "slug_hint": "rectus-abdominis",
+                "impact_level": "primary"
+            }
+        ],
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-bodyweight-hanging-leg-raise-front.jpg"
+    },
+    {
+        "slug": "dumbbell-seated-overhead-press",
+        "name": "Đẩy Tạ Đơn Qua Đầu Khi Ngồi",
+        "name_en": "Dumbbell Seated Overhead Press",
+        "description": "Bài tập phát triển toàn diện cơ vai, đặc biệt là vai trước và vai giữa.",
+        "difficulty_level": "intermediate",
+        "exercise_type": "compound",
+        "equipment_needed": "dumbbell",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Dumbbells-dumbbell-overhead-press-front.mp4",
+        "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Dumbbells-dumbbell-overhead-press-front.mp4",
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-dumbbell-seated-overhead-press-front.jpg",
+        "source_name": "MuscleWiki",
+        "source_url": "https://musclewiki.com/exercise/dumbbell-seated-overhead-press",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Cầm hai quả tạ đơn và ngồi trên ghế có tựa lưng. Đảm bảo lưng tựa sát vào phần đệm."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Mở rộng khuỷu tay sang hai bên, lòng bàn tay hướng về phía trước."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Đẩy tạ lên trên cho đến khi cánh tay duỗi thẳng hoàn toàn (không khóa khớp khuỷu tay)."
+            },
+            {
+                "step_number": 4,
+                "instruction_text": "Từ từ hạ tạ xuống cho đến khi bắp tay song song với sàn hoặc tạ chạm nhẹ vào vai."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 15,
+                "slug_hint": "anterior-deltoid",
+                "impact_level": "primary"
+            },
+            {
+                "muscle_group_id": 16,
+                "slug_hint": "lateral-deltoid",
+                "impact_level": "primary"
+            },
+            {
+                "muscle_group_id": 23,
+                "slug_hint": "triceps-brachii",
+                "impact_level": "secondary"
+            }
+        ],
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-dumbbell-seated-overhead-press-front.jpg"
+    },
+    {
+        "slug": "cable-low-single-arm-lateral-raise",
+        "name": "Dang Một Tay Với Cáp Thấp",
+        "name_en": "Cable Low Single Arm Lateral Raise",
+        "description": "Bài tập cô lập giúp tạo nét và phát triển cơ vai giữa.",
+        "difficulty_level": "beginner",
+        "exercise_type": "isolation",
+        "equipment_needed": "machine",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Cables-cable-lateral-raise-front.mp4",
+        "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Cables-cable-lateral-raise-front.mp4",
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-Cables-cable-lateral-raise-front.jpg",
+        "source_name": "MuscleWiki",
+        "source_url": "https://musclewiki.com/exercise/cable-low-single-arm-lateral-raise",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Sử dụng tay cầm đơn với mức cáp được thiết lập ở vị trí thấp nhất của máy."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Đứng nghiêng người so với máy, nâng cánh tay thẳng ra phía bên ngoài."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Nâng cho đến khi cánh tay song song với sàn nhà rồi từ từ hạ về vị trí bắt đầu."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 16,
+                "slug_hint": "lateral-deltoid",
+                "impact_level": "primary"
+            }
+        ],
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-Cables-cable-lateral-raise-front.jpg"
+    },
+    {
+        "slug": "elevated-pike-press",
+        "name": "Hít Đất Pike Chân Trên Cao",
+        "name_en": "Elevated Pike Press",
+        "description": "Bài tập trọng lượng cơ thể nâng cao giúp tăng sức mạnh và độ linh hoạt cho khớp vai.",
+        "difficulty_level": "advanced",
+        "exercise_type": "compound",
+        "equipment_needed": "body-weight",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Bodyweight-elevated-pike-press-front.mp4",
+        "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Bodyweight-elevated-pike-press-front.mp4",
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-Bodyweight-elevated-pike-press-front.jpg",
+        "source_name": "MuscleWiki",
+        "source_url": "https://musclewiki.com/exercise/elevated-pike-press",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Sử dụng một chiếc ghế hoặc vật dụng để nâng cao chân của bạn."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Hạ đầu về phía sàn bằng cách gập khuỷu tay, giữ hông cao tạo thành hình chữ V ngược."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Đẩy mạnh đôi bàn tay để nâng người trở lại vị trí ban đầu."
+            },
+            {
+                "step_number": 4,
+                "instruction_text": "Lặp lại động tác."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 15,
+                "slug_hint": "anterior-deltoid",
+                "impact_level": "primary"
+            },
+            {
+                "muscle_group_id": 11,
+                "slug_hint": "trapezius",
+                "impact_level": "secondary"
+            }
+        ],
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-Bodyweight-elevated-pike-press-front.jpg"
+    },
+    {
+        "slug": "dumbbell-seated-rear-delt-fly",
+        "name": "Ép Tạ Đơn Vai Sau Khi Ngồi",
+        "name_en": "Dumbbell Seated Rear Delt Fly",
+        "description": "Bài tập cô lập hiệu quả nhất để phát triển nhóm cơ vai sau và cải thiện tư thế.",
+        "difficulty_level": "intermediate",
+        "exercise_type": "isolation",
+        "equipment_needed": "dumbbell",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Dumbbells-dumbbell-seated-rear-delt-fly-side.mp4",
+        "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Dumbbells-dumbbell-seated-rear-delt-fly-side.mp4",
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-Dumbbells-dumbbell-seated-rear-delt-fly-side.jpg",
+        "source_name": "MuscleWiki",
+        "source_url": "https://musclewiki.com/exercise/dumbbell-seated-rear-delt-fly",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Cầm tạ trong mỗi tay, ngồi trên ghế và cúi người về phía trước, ngực gần chạm đùi. Tạ để dưới đùi."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Giữ khuỷu tay hơi cong, nâng cánh tay sang hai bên cho đến khi ngang vai."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Dừng lại một chút ở điểm cao nhất để cảm nhận cơ vai sau co bóp."
+            },
+            {
+                "step_number": 4,
+                "instruction_text": "Từ từ hạ tạ về vị trí ban đầu."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 17,
+                "slug_hint": "posterior-deltoid",
+                "impact_level": "primary"
+            },
+            {
+                "muscle_group_id": 11,
+                "slug_hint": "trapezius",
+                "impact_level": "secondary"
+            }
+        ],
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-Dumbbells-dumbbell-seated-rear-delt-fly-side.jpg"
+    },
+    {
+        "slug": "cable-single-arm-lat-prayer",
+        "name": "Kéo Cáp Một Tay Tập Xô (Lat Prayer)",
+        "name_en": "Cable Single Arm Lat Prayer",
+        "description": "Bài tập tuyệt vời để cô lập và kéo giãn tối đa cơ xô, giúp phát triển độ rộng của lưng.",
+        "difficulty_level": "intermediate",
+        "exercise_type": "isolation",
+        "equipment_needed": "machine",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Cables-cable-single-arm-lat-prayer-side.mp4",
+        "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Cables-cable-single-arm-lat-prayer-side.mp4",
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-Cables-cable-single-arm-lat-prayer-side.jpg",
+        "source_name": "MuscleWiki",
+        "source_url": "https://musclewiki.com/exercise/cable-single-arm-lat-prayer",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Sử dụng tay cầm đơn, đặt cáp ở vị trí cao nhất của máy."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Cầm tay cầm và bước lùi lại. Đẩy hông ra sau, người hơi nghiêng về phía trước sao cho tai ngang với cánh tay."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Cố định khuỷu tay, dùng cơ xô kéo cáp xuống đồng thời đẩy hông về phía trước cho đến khi tay chạm hông."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 10,
+                "slug_hint": "latissimus-dorsi",
+                "impact_level": "primary"
+            }
+        ],
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-Cables-cable-single-arm-lat-prayer-side.jpg"
+    },
+    {
+        "slug": "cable-pull-through",
+        "name": "Kéo Cáp Qua Chân (Pull Through)",
+        "name_en": "Cable Pull Through",
+        "description": "Bài tập phát triển sức mạnh xích sau, tập trung vào lưng dưới, mông và đùi sau.",
+        "difficulty_level": "beginner",
+        "exercise_type": "compound",
+        "equipment_needed": "machine",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Cables-cable-pull-through-side.mp4",
+        "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Cables-cable-pull-through-side.mp4",
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-Cables-cable-pull-through-side.jpg",
+        "source_name": "MuscleWiki",
+        "source_url": "https://musclewiki.com/exercise/cable-pull-through",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Sử dụng dây thừng (rope), đặt cáp ở vị trí thấp nhất."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Đứng quay lưng lại máy, hai chân bước qua dây cáp, hai tay cầm đầu dây. Bước ra xa vài bước."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Gập người tại hông, giữ lưng thẳng và đầu gối hơi gập nhẹ."
+            },
+            {
+                "step_number": 4,
+                "instruction_text": "Đẩy hông mạnh về phía trước để trở lại tư thế đứng thẳng."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 13,
+                "slug_hint": "erector-spinae",
+                "impact_level": "primary"
+            },
+            {
+                "muscle_group_id": 31,
+                "slug_hint": "gluteus-maximus",
+                "impact_level": "primary"
+            },
+            {
+                "muscle_group_id": 30,
+                "slug_hint": "hamstrings",
+                "impact_level": "secondary"
+            }
+        ],
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-Cables-cable-pull-through-side.jpg"
+    },
+    {
+        "slug": "pull-ups",
+        "name": "Hít Xà Đơn (Pull Ups)",
+        "name_en": "Pull Ups",
+        "description": "Bài tập trọng lượng cơ thể tốt nhất để phát triển độ rộng của lưng và sức mạnh thân trên.",
+        "difficulty_level": "intermediate",
+        "exercise_type": "compound",
+        "equipment_needed": "body-weight",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-bodyweight-pullup-front.mp4",
+        "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-bodyweight-pullup-front.mp4",
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-bodyweight-pullup-front.jpg",
+        "source_name": "MuscleWiki",
+        "source_url": "https://musclewiki.com/exercise/pull-ups",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Nắm thanh xà bằng tay úp (overhand grip), độ rộng hơn vai một chút."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Kéo người lên cho đến khi cằm vượt qua thanh xà, tập trung vào việc ép xương bả vai."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Từ từ hạ người xuống vị trí bắt đầu, duỗi thẳng tay hoàn toàn."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 10,
+                "slug_hint": "latissimus-dorsi",
+                "impact_level": "primary"
+            },
+            {
+                "muscle_group_id": 20,
+                "slug_hint": "biceps-brachii",
+                "impact_level": "secondary"
+            }
+        ],
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-bodyweight-pullup-front.jpg"
+    },
+    {
+        "slug": "inverted-row",
+        "name": "Hít Xà Ngược (Inverted Row)",
+        "name_en": "Inverted Row",
+        "description": "Bài tập tuyệt vời để xây dựng độ dày cho lưng giữa và cải thiện sự ổn định của xương bả vai.",
+        "difficulty_level": "beginner",
+        "exercise_type": "compound",
+        "equipment_needed": "body-weight",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-bodyweight-reverse-row-side.mp4",
+        "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-bodyweight-reverse-row-side.mp4",
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-bodyweight-reverse-row-front.jpg",
+        "source_name": "MuscleWiki",
+        "source_url": "https://musclewiki.com/exercise/inverted-row",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Nằm dưới một thanh xà ngang cố định, nắm thanh xà bằng tay úp với độ rộng hơn vai."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Giữ cơ thể thẳng từ đầu đến gót chân, thực hiện kéo ngực sát về phía thanh xà."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Từ từ hạ người xuống cho đến khi cánh tay duỗi thẳng hoàn toàn."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 10,
+                "slug_hint": "rhomboids",
+                "impact_level": "primary"
+            },
+            {
+                "muscle_group_id": 11,
+                "slug_hint": "trapezius",
+                "impact_level": "primary"
+            }
+        ],
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-bodyweight-reverse-row-front.jpg"
+    },
+    {
+        "slug": "barbell-squat",
+        "name": "Squat Với Tạ Đòn",
+        "name_en": "Barbell Squat",
+        "description": "Bài tập nền tảng cho đùi trước và mông.",
+        "difficulty_level": "intermediate",
+        "exercise_type": "compound",
+        "equipment_needed": "barbell",
+        "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Barbell-barbell-squat-front.mp4",
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-Barbell-barbell-squat-side.jpg",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Barbell-barbell-squat-front.mp4",
+        "extra_videos": [
+            {
+                "file": "https://media.musclewiki.com/media/uploads/videos/branded/male-Barbell-barbell-squat-side.mp4",
+                "title": "Góc nhìn ngang"
+            }
+        ],
+        "popularity_score": 100,
+        "is_public": true,
+        "source_name": "MuscleWiki",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Đứng chân rộng bằng vai, giữ lưng thẳng tự nhiên."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Hạ thấp trọng lượng cho đến khi hông thấp hơn đầu gối."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Nâng thanh đòn trở lại vị trí bắt đầu."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 29,
+                "slug_hint": "quadriceps",
+                "impact_level": "primary"
+            },
+            {
+                "muscle_group_id": 31,
+                "slug_hint": "gluteus-maximus",
+                "impact_level": "primary"
+            }
+        ],
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-Barbell-barbell-squat-side.jpg"
+    },
+    {
+        "slug": "barbell-romanian-deadlift",
+        "name": "Romanian Deadlift Với Tạ Đòn",
+        "name_en": "Barbell Romanian Deadlift",
+        "description": "Bài tập tốt nhất cho đùi sau.",
+        "difficulty_level": "intermediate",
+        "exercise_type": "compound",
+        "equipment_needed": "barbell",
+        "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Barbell-barbell-romanian-deadlift-front.mp4",
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-Barbell-barbell-romanian-deadlift-side.jpg",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Barbell-barbell-romanian-deadlift-front.mp4",
+        "extra_videos": [
+            {
+                "file": "https://media.musclewiki.com/media/uploads/videos/branded/male-Barbell-barbell-romanian-deadlift-side_dnNh5UH.mp4",
+                "title": "Góc nhìn ngang"
+            }
+        ],
+        "popularity_score": 95,
+        "is_public": true,
+        "source_name": "MuscleWiki",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Cầm thanh đòn rộng bằng vai."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Đẩy hông ra sau trong khi giữ đầu gối gần thẳng."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Trở lại tư thế đứng."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 30,
+                "slug_hint": "hamstrings",
+                "impact_level": "primary"
+            },
+            {
+                "muscle_group_id": 31,
+                "slug_hint": "gluteus-maximus",
+                "impact_level": "primary"
+            }
+        ],
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-Barbell-barbell-romanian-deadlift-side.jpg"
+    },
+    {
+        "slug": "barbell-hip-thrust",
+        "name": "Hip Thrust Với Tạ Đòn",
+        "name_en": "Barbell Hip Thrust",
+        "description": "Bài tập cô lập hiệu quả nhất cho nhóm cơ mông.",
+        "difficulty_level": "beginner",
+        "exercise_type": "isolation",
+        "equipment_needed": "barbell, bench",
+        "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Barbell-barbell-hip-thrust-front.mp4",
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-Barbell-barbell-hip-thrust-front.jpg",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Barbell-barbell-hip-thrust-front.mp4",
+        "extra_videos": [
+            {
+                "file": "https://media.musclewiki.com/media/uploads/videos/branded/male-Barbell-barbell-hip-thrust-side.mp4",
+                "title": "Góc nhìn ngang"
+            }
+        ],
+        "popularity_score": 98,
+        "is_public": true,
+        "source_name": "MuscleWiki",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Ngồi cạnh ghế, đặt tạ lên hông."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Nâng hông lên cho đến khi cơ thể tạo đường thẳng."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Hạ hông xuống có kiểm soát."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 31,
+                "slug_hint": "gluteus-maximus",
+                "impact_level": "primary"
+            }
+        ],
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-Barbell-barbell-hip-thrust-front.jpg"
+    },
+    {
+        "slug": "machine-pulldown",
+        "name": "Kéo Xô Máy",
+        "name_en": "Machine Pulldown",
+        "description": "Bài tập kéo xô với máy.",
+        "difficulty_level": "beginner",
+        "exercise_type": "compound",
+        "equipment_needed": "machine",
+        "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-machine-pulldown-front.mp4",
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-machine-pulldown-front.jpg",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-machine-pulldown-front.mp4",
+        "extra_videos": [
+            {
+                "file": "https://media.musclewiki.com/media/uploads/videos/branded/male-machine-pulldown-side.mp4",
+                "title": "Góc nhìn ngang"
+            }
+        ],
+        "popularity_score": 90,
+        "is_public": true,
+        "source_name": "MuscleWiki",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Ứp tay nắm thanh xà."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Kéo thanh xà xuống ngang cằm."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Trở lại vị trí cũ."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 10,
+                "slug_hint": "latissimus-dorsi",
+                "impact_level": "primary"
+            }
+        ],
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-machine-pulldown-front.jpg"
+    },
+    {
+        "slug": "barbell-overhead-press",
+        "name": "Đẩy Tạ Đòn Qua Đầu",
+        "name_en": "Barbell Overhead Press",
+        "description": "Bài tập cho cơ vai.",
+        "difficulty_level": "intermediate",
+        "exercise_type": "compound",
+        "equipment_needed": "barbell",
+        "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Barbell-barbell-overhead-press-front.mp4",
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-Barbell-barbell-overhead-press-front.jpg",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Barbell-barbell-overhead-press-front.mp4",
+        "extra_videos": [
+            {
+                "file": "https://media.musclewiki.com/media/uploads/videos/branded/male-Barbell-barbell-overhead-press-side.mp4",
+                "title": "Góc nhìn ngang"
+            }
+        ],
+        "popularity_score": 95,
+        "is_public": true,
+        "source_name": "MuscleWiki",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Cầm tạ ngang vai."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Đẩy tạ lên cao qua đầu."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Hạ xuống có kiểm soát."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 15,
+                "slug_hint": "anterior-deltoid",
+                "impact_level": "primary"
+            },
+            {
+                "muscle_group_id": 16,
+                "slug_hint": "lateral-deltoid",
+                "impact_level": "primary"
+            }
+        ],
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-Barbell-barbell-overhead-press-front.jpg"
+    },
+    {
+        "slug": "dumbbell-lateral-raise",
+        "name": "Dang Tạ Tay Sang Bên",
+        "name_en": "Dumbbell Lateral Raise",
+        "description": "Bài tập cho cơ vai giữa.",
+        "difficulty_level": "beginner",
+        "exercise_type": "isolation",
+        "equipment_needed": "dumbbell",
+        "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Dumbbells-dumbbell-lateral-raise-front.mp4",
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-Dumbbells-dumbbell-lateral-raise-front.jpg",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Dumbbells-dumbbell-lateral-raise-front.mp4",
+        "extra_videos": [
+            {
+                "file": "https://media.musclewiki.com/media/uploads/videos/branded/male-Dumbbells-dumbbell-lateral-raise-side.mp4",
+                "title": "Góc nhìn ngang"
+            }
+        ],
+        "popularity_score": 92,
+        "is_public": true,
+        "source_name": "MuscleWiki",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Cầm tạ dang hai tay sang bên."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Nâng cánh tay cho đến khi song song với sàn."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Từ từ hạ tay về vị trí ban đầu."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 16,
+                "slug_hint": "lateral-deltoid",
+                "impact_level": "primary"
+            }
+        ],
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-Dumbbells-dumbbell-lateral-raise-front.jpg"
+    },
+    {
+        "slug": "dumbbell-incline-bench-press",
+        "name": "Đẩy Ngực Dốc Lên Với Tạ Tay",
+        "name_en": "Dumbbell Incline Bench Press",
+        "description": "Bài tập tuyệt vời để phát triển phần ngực trên, giúp ngực trông đầy đặn hơn.",
+        "difficulty_level": "beginner",
+        "exercise_type": "compound",
+        "equipment_needed": "dumbbell, bench",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Dumbbells-dumbbell-incline-bench-press-front.mp4",
+        "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Dumbbells-dumbbell-incline-bench-press-front.mp4",
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-dumbbell-incline-bench-press-front_q2q0T12.jpg",
+        "source_name": "MuscleWiki",
+        "source_url": "https://musclewiki.com/exercise/dumbbell-incline-bench-press",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Nằm trên ghế dốc lên khoảng 30 độ, mỗi tay cầm một quả tạ đơn."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Hạ tạ xuống ngang ngực trên, giữ khuỷu tay ở góc khoảng 45 độ so với cơ thể."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Đẩy tạ lên cao theo đường vòng cung cho đến khi hai tạ gần chạm nhau ở phía trên ngực."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 7,
+                "slug_hint": "upper-chest",
+                "impact_level": "primary"
+            },
+            {
+                "muscle_group_id": 15,
+                "slug_hint": "anterior-deltoid",
+                "impact_level": "secondary"
+            }
+        ],
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-dumbbell-incline-bench-press-front_q2q0T12.jpg"
+    },
+    {
+        "slug": "machine-pec-fly",
+        "name": "Ép Ngực Với Máy (Pec Deck)",
+        "name_en": "Machine Pec Fly",
+        "description": "Bài tập cô lập giúp tạo nét và cảm nhận cơ ngực giữa cực tốt, giảm thiểu sự tham gia của tay sau.",
+        "difficulty_level": "beginner",
+        "exercise_type": "isolation",
+        "equipment_needed": "machine",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-machine-pec-fly-front.mp4",
+        "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-machine-pec-fly-front.mp4",
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-Machine-machine-pec-fly-side.jpg",
+        "source_name": "MuscleWiki",
+        "source_url": "https://musclewiki.com/exercise/machine-pec-fly",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Điều chỉnh ghế sao cho tay cầm ngang với ngực. Ngồi tựa sát lưng vào đệm."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Dùng cơ ngực ép hai tay cầm lại với nhau ở phía trước mặt. Giữ khuỷu tay hơi gập nhẹ."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Từ từ đưa tay về vị trí cũ sao cho cảm thấy cơ ngực được kéo giãn căng."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 8,
+                "slug_hint": "mid-chest",
+                "impact_level": "primary"
+            }
+        ],
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-Machine-machine-pec-fly-side.jpg"
+    },
+    {
+        "slug": "dumbbell-fly",
+        "name": "Nằm Dang Tạ Tay Tập Ngực",
+        "name_en": "Dumbbell Fly",
+        "description": "Bài tập kéo giãn cơ ngực, giúp mở rộng lồng ngực và tạo độ sâu cho rãnh ngực.",
+        "difficulty_level": "intermediate",
+        "exercise_type": "isolation",
+        "equipment_needed": "dumbbell, bench",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Dumbbells-dumbbell-fly-front.mp4",
+        "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Dumbbells-dumbbell-fly-front.mp4",
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-dumbbell-fly-front.jpg",
+        "source_name": "MuscleWiki",
+        "source_url": "https://musclewiki.com/exercise/dumbbell-flys",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Nằm trên ghế phẳng, cầm hai quả tạ hướng lên trên ngực."
+            },
+            {
+                "step_number": 2,
+                "instruction_test": "Từ từ hạ tạ sang hai bên theo hình vòng cung cho đến khi cảm thấy ngực căng."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Dùng cơ ngực kéo tạ trở lại vị trí ban đầu như đang ôm một vòng tay lớn."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 8,
+                "slug_hint": "mid-chest",
+                "impact_level": "primary"
+            }
+        ],
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-dumbbell-fly-front.jpg"
+    },
+    {
+        "slug": "chest-dips",
+        "name": "Xà Kép Tập Ngực (Chest Dips)",
+        "name_en": "Chest Dips",
+        "description": "Bài tập bodyweight mạnh mẽ tập trung vào phần ngực dưới và cơ vai.",
+        "difficulty_level": "advanced",
+        "exercise_type": "compound",
+        "equipment_needed": "body-weight",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-bodyweight-chest-dip-front.mp4",
+        "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-bodyweight-chest-dip-front.mp4",
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-chest-dips-front.jpg",
+        "source_name": "MuscleWiki",
+        "source_url": "https://musclewiki.com/exercise/chest-dips",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Chống tay lên xà kép, hơi nghiêng người về phía trước để tập trung vào cơ ngực."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Hạ thấp người xuống cho đến khi cánh tay gập một góc khoảng 90 độ."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Đẩy mạnh tay để nâng người trở lại vị trí ban đầu."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 9,
+                "slug_hint": "lower-chest",
+                "impact_level": "primary"
+            },
+            {
+                "muscle_group_id": 15,
+                "slug_hint": "anterior-deltoid",
+                "impact_level": "secondary"
+            },
+            {
+                "muscle_group_id": 23,
+                "slug_hint": "triceps-brachii",
+                "impact_level": "secondary"
+            }
+        ],
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-chest-dips-front.jpg"
+    },
+    {
+        "slug": "dumbbell-hammer-curl",
+        "name": "Cuốn Tạ Tay Kiểu Búa (Hammer Curl)",
+        "name_en": "Dumbbell Hammer Curl",
+        "description": "Bài tập tuyệt vời để phát triển cơ cánh tay (brachialis) và cơ cẳng tay, giúp cánh tay trông dày hơn.",
+        "difficulty_level": "beginner",
+        "exercise_type": "isolation",
+        "equipment_needed": "dumbbell",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Dumbbells-dumbbell-hammer-curl-front.mp4",
+        "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Dumbbells-dumbbell-hammer-curl-front.mp4",
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-Dumbbells-dumbbell-hammer-curl-front.jpg",
+        "source_name": "MuscleWiki",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Đứng thẳng, mỗi tay cầm một quả tạ đơn. Lòng bàn tay hướng vào thân người (neutral grip)."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Giữ cánh tay trên cố định, cuốn tạ lên trong khi vẫn giữ lòng bàn tay hướng vào nhau."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Cuốn tạ cho đến khi đạt mức cao nhất và xiết chặt cơ bắp tay, sau đó từ từ hạ xuống."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 20,
+                "slug_hint": "brachialis",
+                "impact_level": "primary"
+            },
+            {
+                "muscle_group_id": 24,
+                "slug_hint": "brachioradialis",
+                "impact_level": "primary"
+            }
+        ],
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-Dumbbells-dumbbell-hammer-curl-front.jpg"
+    },
+    {
+        "slug": "bench-dips",
+        "name": "Chống Đẩy Sau Với Ghế (Bench Dips)",
+        "name_en": "Bench Dips",
+        "description": "Bài tập triceps đơn giản nhưng hiệu quả, có thể thực hiện ở bất cứ đâu với một điểm tựa vững chắc.",
+        "difficulty_level": "beginner",
+        "exercise_type": "isolation",
+        "equipment_needed": "bench",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-bodyweight-bench-dip-front.mp4",
+        "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-bodyweight-bench-dip-front.mp4",
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-Bodyweight-bench-dips-front.jpg",
+        "source_name": "MuscleWiki",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Ngồi cạnh ghế, đặt hai lòng bàn tay lên mép ghế. Đu đưa người ra khỏi ghế với chân duỗi thẳng phía trước."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Hạ thấp cơ thể bằng cách gập khuỷu tay cho đến khi bắp tay song song với sàn."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Đẩy người ngược lên trở lại vị trí cũ bằng sức mạnh của cơ tay sau."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 23,
+                "slug_hint": "triceps-brachii",
+                "impact_level": "primary"
+            },
+            {
+                "muscle_group_id": 15,
+                "slug_hint": "anterior-deltoid",
+                "impact_level": "secondary"
+            }
+        ],
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-Bodyweight-bench-dips-front.jpg"
+    },
+    {
+        "slug": "dumbbell-kickback",
+        "name": "Đá Tạ Tay Sau (Dumbbell Kickback)",
+        "name_en": "Dumbbell Kickback",
+        "description": "Bài tập cô lập giúp định hình và làm săn chắc cơ tam đầu (triceps).",
+        "difficulty_level": "beginner",
+        "exercise_type": "isolation",
+        "equipment_needed": "dumbbell",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Dumbbells-dumbbell-kickback-side.mp4",
+        "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Dumbbells-dumbbell-kickback-side.mp4",
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-dumbbell-kickback-front.jpg",
+        "source_name": "MuscleWiki",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Cầm tạ bằng một tay, cúi người về phía trước, tay kia tựa lên ghế hoặc đầu gối. Giữ cánh tay trên song song với thân người."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Chỉ di chuyển cẳng tay, đá tạ ra phía sau cho đến khi cánh tay duỗi thẳng hoàn toàn."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Dừng lại một chút rồi từ từ đưa tạ về vị trí cũ."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 23,
+                "slug_hint": "triceps-brachii",
+                "impact_level": "primary"
+            }
+        ],
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-dumbbell-kickback-front.jpg"
+    },
+    {
+        "slug": "concentration-curl",
+        "name": "Cuốn Tạ Tập Trung (Concentration Curl)",
+        "name_en": "Concentration Curl",
+        "description": "Bài tập cô lập đỉnh cao cho cơ nhị đầu, giúp tạo độ cao cho 'đỉnh' bắp tay.",
+        "difficulty_level": "intermediate",
+        "exercise_type": "isolation",
+        "equipment_needed": "dumbbell",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Dumbbells-dumbbell-concentration-curl-front.mp4",
+        "primary_video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Dumbbells-dumbbell-concentration-curl-front.mp4",
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-concentration-curl-front.jpg",
+        "source_name": "MuscleWiki",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Ngồi trên ghế, hơi cúi người. Tựa khuỷu tay của tay cầm tạ vào mặt trong của đùi cùng bên."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Cuốn tạ lên phía vai mà không di chuyển khuỷu tay khỏi đùi."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Siết chặt bắp tay ở điểm cao nhất rồi từ từ hạ xuống."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 20,
+                "slug_hint": "biceps-brachii",
+                "impact_level": "primary"
+            }
+        ],
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-concentration-curl-front.jpg"
+    },
+    {
+        "slug": "laying-leg-raises",
+        "name": "Nằm Nhấc Chân (Leg Raises)",
+        "name_en": "Laying Leg Raises",
+        "description": "Bài tập tuyệt vời để tác động vào cơ bụng dưới.",
+        "difficulty_level": "beginner",
+        "exercise_type": "isolation",
+        "equipment_needed": "body-weight",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-bodyweight-leg-raises-front.mp4",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Nằm ngửa trên sàn, hai tay đặt dưới mông hoặc hai bên hông để hỗ trợ."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Giữ chân thẳng, từ từ nhấc chân lên cho đến khi vuông góc với sàn."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Hạ chân xuống từ từ nhưng không chạm sàn để duy trì áp lực lên cơ bụng."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 26,
+                "slug_hint": "rectus-abdominis",
+                "impact_level": "primary"
+            }
+        ],
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-Bodyweight-laying-leg-raises-front.jpg",
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-Bodyweight-laying-leg-raises-front.jpg"
+    },
+    {
+        "slug": "forearm-plank",
+        "name": "Plank Cẳng Tay (Forearm Plank)",
+        "name_en": "Forearm Plank",
+        "description": "Bài tập nền tảng giúp xây dựng sức bền cơ trọng tâm (core) và ổn định toàn thân.",
+        "difficulty_level": "beginner",
+        "exercise_type": "isolation",
+        "equipment_needed": "body-weight",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-bodyweight-forearm-plank-side.mp4",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Tựa người trên cẳng tay và mũi chân, giữ khuỷu tay ngay dưới vai."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Giữ cơ thể thành một đường thẳng từ đầu đến gót chân."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Gồng cơ bụng và giữ tư thế trong thời gian quy định."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 26,
+                "slug_hint": "rectus-abdominis",
+                "impact_level": "primary"
+            }
+        ],
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-bodyweight-forearm-plank-front.jpg",
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-bodyweight-forearm-plank-front.jpg"
+    },
+    {
+        "slug": "machine-standing-calf-raises",
+        "name": "Nhón Bắp Chân Đứng Với Máy",
+        "name_en": "Machine Standing Calf Raises",
+        "description": "Bài tập phát triển cơ bắp chân (gastrocnemius) mạnh mẽ.",
+        "difficulty_level": "beginner",
+        "exercise_type": "isolation",
+        "equipment_needed": "machine",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-machine-standing-calf-raise-front.mp4",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Đứng vào máy, đặt vai dưới đệm và mũi chân trên bục."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Nhón gót chân lên cao nhất có thể, siết chặt cơ bắp chân."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Hạ gót chân xuống dưới mức bục để kéo giãn cơ tối đa."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 36,
+                "slug_hint": "gastrocnemius",
+                "impact_level": "primary"
+            }
+        ],
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-machine-standing-calf-raises-front.jpg",
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-machine-standing-calf-raises-front.jpg"
+    },
+    {
+        "slug": "dumbbell-shrug",
+        "name": "Nhún Cầu Vai Với Tạ Tay",
+        "name_en": "Dumbbell Shrug",
+        "description": "Bài tập tập trung vào cơ cầu vai trên (traps).",
+        "difficulty_level": "beginner",
+        "exercise_type": "isolation",
+        "equipment_needed": "dumbbell",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Dumbbells-dumbbell-shrug-front.mp4",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Đứng thẳng, mỗi tay cầm một quả tạ đơn ở hai bên hông."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Nhún vai lên cao về phía tai mà không uốn cong khuỷu tay."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Giữ một giây ở điểm cao nhất rồi từ từ hạ xuống."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 11,
+                "slug_hint": "trapezius",
+                "impact_level": "primary"
+            }
+        ],
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-Dumbbells-dumbbell-shrug-front.jpg",
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-Dumbbells-dumbbell-shrug-front.jpg"
+    },
+    {
+        "slug": "barbell-upright-row",
+        "name": "Kéo Tạ Đòn Thẳng Đứng (Upright Row)",
+        "name_en": "Barbell Upright Row",
+        "description": "Bài tập phát triển cơ cầu vai và cơ vai giữa.",
+        "difficulty_level": "intermediate",
+        "exercise_type": "compound",
+        "equipment_needed": "barbell",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-barbell-upright-row-front.mp4",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Cầm thanh tạ đòn với khoảng cách hai tay hẹp hơn vai."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Kéo thanh tạ thẳng lên dọc theo cơ thể cho đến khi gần chạm cằm, khuỷu tay hướng ra ngoài và lên cao."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Từ từ hạ tạ về vị trí ban đầu."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 11,
+                "slug_hint": "trapezius",
+                "impact_level": "primary"
+            },
+            {
+                "muscle_group_id": 16,
+                "slug_hint": "lateral-deltoid",
+                "impact_level": "secondary"
+            }
+        ],
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-Barbell-barbell-upright-row-side.jpg",
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-Barbell-barbell-upright-row-side.jpg"
+    },
+    {
+        "slug": "barbell-behind-the-back-wrist-curl",
+        "name": "Cuốn Cổ Tay Tạ Đòn Sau Lưng",
+        "name_en": "Barbell Behind The Back Wrist Curl",
+        "description": "Bài tập chuyên sâu cho cơ cẳng tay.",
+        "difficulty_level": "beginner",
+        "exercise_type": "isolation",
+        "equipment_needed": "barbell",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-barbell-behind-back-wrist-curl-side.mp4",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Đứng thẳng, cầm thanh tạ đòn ở phía sau lưng với lòng bàn tay hướng ra xa."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Chỉ sử dụng cổ tay để cuốn thanh tạ lên cao nhất có thể."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Hạ tạ xuống từ từ và lặp lại."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 24,
+                "slug_hint": "wrist-flexors",
+                "impact_level": "primary"
+            }
+        ],
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-barbell-behind-the-back-wrist-curl-front.jpg",
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-barbell-behind-the-back-wrist-curl-front.jpg"
+    },
+    {
+        "slug": "barbell-skull-crusher",
+        "name": "Nằm Đẩy Tạ Đòn Sau Đầu (Skull Crusher)",
+        "name_en": "Barbell Skull Crusher",
+        "description": "Một trong những bài tập tốt nhất để xây dựng kích thước cho cơ tam đầu (triceps).",
+        "difficulty_level": "intermediate",
+        "exercise_type": "isolation",
+        "equipment_needed": "barbell",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-barbell-skull-crusher-front.mp4",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Nằm trên ghế phẳng, cầm thanh tạ đòn (thường là thanh EZ) thẳng trên ngực."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Giữ bắp tay cố định, gập khuỷu tay để hạ thanh tạ về phía trán."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Dùng cơ tay sau đẩy thanh tạ trở lại vị trí ban đầu."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 23,
+                "slug_hint": "triceps-brachii",
+                "impact_level": "primary"
+            }
+        ],
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-barbell-skull-crusher-front.jpg",
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-barbell-skull-crusher-front.jpg"
+    },
+    {
+        "slug": "hanging-knee-raises",
+        "name": "Treo Người Co Gối (Hanging Knee Raises)",
+        "name_en": "Hanging Knee Raises",
+        "description": "Bài tập cơ bụng dưới hiệu quả cao, giúp tăng cường sức mạnh bám nắm.",
+        "difficulty_level": "intermediate",
+        "exercise_type": "isolation",
+        "equipment_needed": "body-weight",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-bodyweight-hanging-knee-raises-front.mp4",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Treo người trên thanh xà, hai tay rộng bằng vai."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Dùng cơ bụng kéo đầu gối lên cao về phía ngực."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Từ từ hạ chân xuống vị trí ban đầu mà không để cơ thể đung đưa."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 26,
+                "slug_hint": "rectus-abdominis",
+                "impact_level": "primary"
+            }
+        ],
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-bodyweight-hanging-knee-raises-front.jpg",
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-bodyweight-hanging-knee-raises-front.jpg"
+    },
+    {
+        "slug": "mountain-climber",
+        "name": "Leo Núi Tại Chỗ (Mountain Climber)",
+        "name_en": "Mountain Climber",
+        "description": "Bài tập cardio và cơ bụng kết hợp, giúp đốt cháy mỡ thừa và tăng sức bền.",
+        "difficulty_level": "beginner",
+        "exercise_type": "compound",
+        "equipment_needed": "body-weight",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-bodyweight-mountain-climbers-side.mp4",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Bắt đầu ở tư thế chống đẩy cao (plank cao)."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Kéo đầu gối một chân về phía ngực nhanh nhất có thể, sau đó đưa về và đổi chân."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Lặp lại động tác liên tục như đang chạy bộ ở tư thế nằm."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 26,
+                "slug_hint": "rectus-abdominis",
+                "impact_level": "primary"
+            },
+            {
+                "muscle_group_id": 5,
+                "slug_hint": "core",
+                "impact_level": "primary"
+            }
+        ],
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-bodyweight-mountain-climber-front.jpg",
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-bodyweight-mountain-climber-front.jpg"
+    },
+    {
+        "slug": "hollow-hold",
+        "name": "Giữ Thân Hình Chuối (Hollow Hold)",
+        "name_en": "Hollow Hold",
+        "description": "Bài tập nền tảng trong Calisthenics giúp nén cơ bụng và tạo độ cứng cho cơ trọng tâm.",
+        "difficulty_level": "intermediate",
+        "exercise_type": "isolation",
+        "equipment_needed": "body-weight",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-bodyweight-hollow-hold-front.mp4",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Nằm ngửa trên sàn, tay duỗi thẳng qua đầu."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Đồng thời nhấc chân, vai và tay lên khỏi sàn khoảng 15-20cm, ép chặt lưng dưới xuống sàn."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Giữ tư thế này lâu nhất có thể."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 26,
+                "slug_hint": "rectus-abdominis",
+                "impact_level": "primary"
+            }
+        ],
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-Bodyweight-hollow-hold-front.jpg",
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-Bodyweight-hollow-hold-front.jpg"
+    },
+    {
+        "slug": "kettlebell-calf-raise",
+        "name": "Nhón Bắp Chân Với Tạ Ấm",
+        "name_en": "Kettlebell Calf Raise",
+        "description": "Bài tập bắp chân linh hoạt sử dụng tạ ấm.",
+        "difficulty_level": "beginner",
+        "exercise_type": "isolation",
+        "equipment_needed": "kettlebell",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Kettlebells-kettlebell-calf-raise-front.mp4",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Đứng thẳng, mỗi tay cầm một quả tạ ấm."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Nhón gót chân lên cao tối đa, giữ thăng bằng."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Hạ xuống từ từ và lặp lại."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 36,
+                "slug_hint": "gastrocnemius",
+                "impact_level": "primary"
+            }
+        ],
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-Kettlebells-kettlebell-calf-raise-front.jpg",
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-Kettlebells-kettlebell-calf-raise-front.jpg"
+    },
+    {
+        "slug": "cable-bicep-curl",
+        "name": "Cuốn Tay Trước Với Cáp",
+        "name_en": "Cable Bicep Curl",
+        "description": "Duy trì áp lực liên tục lên cơ nhị đầu trong suốt biên độ chuyển động.",
+        "difficulty_level": "beginner",
+        "exercise_type": "isolation",
+        "equipment_needed": "machine",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Cables-cable-bicep-curl-front.mp4",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Nắm thanh xà của máy cáp, đặt ở vị trí thấp."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Cuốn thanh xà lên về phía ngực, giữ khuỷu tay sát sườn."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Hạ xuống từ từ có kiểm soát."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 20,
+                "slug_hint": "biceps-brachii",
+                "impact_level": "primary"
+            }
+        ],
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-cable-bicep-curl-front.jpg",
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-cable-bicep-curl-front.jpg"
+    },
+    {
+        "slug": "tricep-dips",
+        "name": "Chống Xà Kép Tập Tay Sau",
+        "name_en": "Tricep Dips",
+        "description": "Bài tập sức mạnh thân trên tập trung tối đa vào cơ tam đầu.",
+        "difficulty_level": "intermediate",
+        "exercise_type": "compound",
+        "equipment_needed": "body-weight",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-bodyweight-tricep-dip-front.mp4",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Chống hai tay lên xà kép, giữ thân người thẳng đứng (không nghiêng như tập ngực)."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Hạ thấp người xuống bằng cách gập khuỷu tay cho đến khi bắp tay song song với sàn."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Đẩy mạnh người lên trở lại vị trí cũ."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 23,
+                "slug_hint": "triceps-brachii",
+                "impact_level": "primary"
+            }
+        ],
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-tricep-dips-front.jpg",
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-tricep-dips-front.jpg"
+    },
+    {
+        "slug": "kettlebell-swing",
+        "name": "Vung Tạ Ấm (Kettlebell Swing)",
+        "name_en": "Kettlebell Swing",
+        "description": "Bài tập toàn diện cho chuỗi cơ sau, tăng cường sức mạnh hông và tim mạch.",
+        "difficulty_level": "intermediate",
+        "exercise_type": "compound",
+        "equipment_needed": "kettlebell",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-kettlebell-swing-side.mp4",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Đứng rộng hơn vai, cầm tạ ấm bằng cả hai tay. Gập hông để tạ nằm giữa hai chân."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Đẩy hông mạnh về phía trước để vung tạ lên ngang ngực."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Để tạ rơi tự do và lặp lại động tác bằng cách gập hông."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 13,
+                "slug_hint": "erector-spinae",
+                "impact_level": "primary"
+            },
+            {
+                "muscle_group_id": 31,
+                "slug_hint": "gluteus-maximus",
+                "impact_level": "primary"
+            },
+            {
+                "muscle_group_id": 30,
+                "slug_hint": "hamstrings",
+                "impact_level": "secondary"
+            }
+        ],
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-Kettlebells-kettlebell-swing-front.jpg",
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-Kettlebells-kettlebell-swing-front.jpg"
+    },
+    {
+        "slug": "dumbbell-goblet-squat",
+        "name": "Squat Với Tạ Tay (Goblet Squat)",
+        "name_en": "Dumbbell Goblet Squat",
+        "description": "Biến thể Squat an toàn cho người mới bắt đầu, giúp giữ lưng thẳng dễ dàng hơn.",
+        "difficulty_level": "beginner",
+        "exercise_type": "compound",
+        "equipment_needed": "dumbbell",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Dumbbells-dumbbell-goblet-squat-front.mp4",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Cầm một quả tạ đơn bằng cả hai tay trước ngực."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Hạ thấp hông xuống tư thế squat trong khi giữ ngực cao và lưng thẳng."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Đẩy người ngược lên trở lại vị trí cũ."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 29,
+                "slug_hint": "quadriceps",
+                "impact_level": "primary"
+            },
+            {
+                "muscle_group_id": 31,
+                "slug_hint": "gluteus-maximus",
+                "impact_level": "primary"
+            }
+        ],
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-dumbbell-goblet-squat-front.jpg",
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-dumbbell-goblet-squat-front.jpg"
+    },
+    {
+        "slug": "seated-cable-row",
+        "name": "Kéo Cáp Ngồi (Seated Cable Row)",
+        "name_en": "Seated Cable Row",
+        "description": "Bài tập tuyệt vời để xây dựng độ dày cho lưng giữa.",
+        "difficulty_level": "beginner",
+        "exercise_type": "compound",
+        "equipment_needed": "machine",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Cables-seated-cable-row-side.mp4",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Ngồi vào máy, đặt chân lên bục và nắm tay cầm chữ V."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Kéo tay cầm về phía bụng dưới, ép chặt xương bả vai lại với nhau."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Từ từ đưa tay về trí ban đầu, cảm nhận sự kéo giãn của cơ lưng."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 10,
+                "slug_hint": "latissimus-dorsi",
+                "impact_level": "primary"
+            }
+        ],
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-seated-cable-row-front.jpg",
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-seated-cable-row-front.jpg"
+    },
+    {
+        "slug": "dumbbell-pullover",
+        "name": "Nằm Vớt Tạ (Dumbbell Pullover)",
+        "name_en": "Dumbbell Pullover",
+        "description": "Bài tập độc đáo tác động vào cả cơ ngực và cơ xô.",
+        "difficulty_level": "intermediate",
+        "exercise_type": "compound",
+        "equipment_needed": "dumbbell, bench",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Dumbbells-dumbbell-pullover-side.mp4",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Nằm trên ghế, giữ một quả tạ đơn bằng cả hai tay thẳng trên ngực."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Hạ tạ ra sau đầu theo hình vòng cung cho đến khi cảm nhận sự kéo giãn tối đa ở cơ xô và ngực."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Dùng cơ ngực và xô kéo tạ trở lại vị trí ban đầu."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 8,
+                "slug_hint": "mid-chest",
+                "impact_level": "primary"
+            },
+            {
+                "muscle_group_id": 10,
+                "slug_hint": "latissimus-dorsi",
+                "impact_level": "primary"
+            }
+        ],
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-dumbbell-pullover-front.jpg",
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-dumbbell-pullover-front.jpg"
+    },
+    {
+        "slug": "burpees",
+        "name": "Burpees (Nhảy Hít Đất)",
+        "name_en": "Burpees",
+        "description": "Bài tập toàn thân đốt mỡ đỉnh cao, kết hợp giữa hít đất và bật nhảy.",
+        "difficulty_level": "advanced",
+        "exercise_type": "compound",
+        "equipment_needed": "body-weight",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-bodyweight-burpees-front.mp4",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Từ tư thế đứng, hạ người xuống tư thế squat và đặt hai tay xuống sàn."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Bật hai chân ra sau về tư thế chống đẩy, thực hiện một lần hít đất."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Bật chân trở lại tư thế squat và nhảy cao lên, đưa tay qua đầu."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 26,
+                "slug_hint": "rectus-abdominis",
+                "impact_level": "primary"
+            },
+            {
+                "muscle_group_id": 29,
+                "slug_hint": "quadriceps",
+                "impact_level": "primary"
+            },
+            {
+                "muscle_group_id": 1,
+                "slug_hint": "chest",
+                "impact_level": "secondary"
+            }
+        ],
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-burpees-front.jpg",
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-burpees-front.jpg"
+    },
+    {
+        "slug": "superman",
+        "name": "Siêu Nhân (Superman)",
+        "name_en": "Superman",
+        "description": "Bài tập tuyệt vời cho lưng dưới và mông mà không cần thiết bị.",
+        "difficulty_level": "beginner",
+        "exercise_type": "isolation",
+        "equipment_needed": "body-weight",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-bodyweight-supermans-front.mp4",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Nằm sấp trên sàn, hai tay duỗi thẳng về phía trước."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Đồng thời nhấc tay, ngực và chân lên khỏi sàn cao nhất có thể."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Giữ trong 2-3 giây rồi từ từ hạ xuống."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 13,
+                "slug_hint": "erector-spinae",
+                "impact_level": "primary"
+            },
+            {
+                "muscle_group_id": 31,
+                "slug_hint": "gluteus-maximus",
+                "impact_level": "secondary"
+            }
+        ],
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-superman-front.jpg",
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-superman-front.jpg"
+    },
+    {
+        "slug": "bodyweight-glute-bridge",
+        "name": "Cầu Mông (Glute Bridge)",
+        "name_en": "Bodyweight Glute Bridge",
+        "description": "Bài tập kích hoạt cơ mông và bảo vệ lưng dưới.",
+        "difficulty_level": "beginner",
+        "exercise_type": "isolation",
+        "equipment_needed": "body-weight",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-bodyweight-glute-bridge-front.mp4",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Nằm ngửa, đầu gối gập và bàn chân đặt phẳng trên sàn."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Đẩy gót chân để nâng hông lên cho đến khi cơ thể tạo đường thẳng từ vai đến đầu gối."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Siết chặt mông ở đỉnh và từ từ hạ xuống."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 31,
+                "slug_hint": "gluteus-maximus",
+                "impact_level": "primary"
+            }
+        ],
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-bodyweight-glute-bridge-front.jpg",
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-bodyweight-glute-bridge-front.jpg"
+    },
+    {
+        "slug": "bodyweight-fire-hydrants",
+        "name": "Đá Chân Sang Bên (Fire Hydrant)",
+        "name_en": "Fire Hydrant",
+        "description": "Bài tập tuyệt vời để tác động vào cơ mông nhỡ và mông nhỏ.",
+        "difficulty_level": "beginner",
+        "exercise_type": "isolation",
+        "equipment_needed": "body-weight",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-bodyweight-fire-hydrant-side.mp4",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Bắt đầu ở tư thế quỳ bằng hai tay và hai đầu gối."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Nâng một chân sang bên cạnh trong khi vẫn giữ đầu gối gập 90 độ."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Hạ chân xuống và lặp lại."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 31,
+                "slug_hint": "gluteus-medius",
+                "impact_level": "primary"
+            }
+        ],
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-bodyweight-fire-hydrants-front.jpg",
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-bodyweight-fire-hydrants-front.jpg"
+    },
+    {
+        "slug": "bicycle-crunches",
+        "name": "Gập Bụng Đạp Xe (Bicycle Crunches)",
+        "name_en": "Bicycle Crunches",
+        "description": "Bài tập tuyệt vời tác động đồng thời vào cơ bụng thẳng và cơ liên sườn.",
+        "difficulty_level": "beginner",
+        "exercise_type": "isolation",
+        "equipment_needed": "body-weight",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-bodyweight-bicycle-crunch-front.mp4",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Nằm ngửa, tay đặt sau đầu, nhấc vai và chân lên khỏi sàn."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Co một gối về phía ngực đồng thời xoay người để khuỷu tay đối diện chạm vào gối đó."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Đổi bên liên tục như đang đạp xe."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 26,
+                "slug_hint": "abs",
+                "impact_level": "primary"
+            },
+            {
+                "muscle_group_id": 27,
+                "slug_hint": "obliques",
+                "impact_level": "primary"
+            }
+        ],
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-bicycle-crunches-front.jpg",
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-bicycle-crunches-front.jpg"
+    },
+    {
+        "slug": "cable-woodchop",
+        "name": "Kéo Cáp Chặt Gỗ (Cable Woodchop)",
+        "name_en": "Cable Woodchop",
+        "description": "Bài tập xoay người mạnh mẽ giúp định hình cơ liên sườn và tăng sức mạnh bùng nổ.",
+        "difficulty_level": "intermediate",
+        "exercise_type": "isolation",
+        "equipment_needed": "machine",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-cables-cable-wood-choppers-side.mp4",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Đứng cạnh máy cáp, hai tay nắm tay cầm ở vị trí cao."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Dùng cơ bụng xoay người kéo cáp xuống theo đường chéo về phía đầu gối đối diện."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Từ từ đưa cáp trở lại vị trí cũ và lặp lại."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 27,
+                "slug_hint": "obliques",
+                "impact_level": "primary"
+            }
+        ],
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-cable-woodchop-front.jpg",
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-cable-woodchop-front.jpg"
+    },
+    {
+        "slug": "dumbbell-reverse-fly",
+        "name": "Dang Tạ Tay Ngược (Reverse Fly)",
+        "name_en": "Dumbbell Reverse Fly",
+        "description": "Bài tập cô lập tốt nhất cho cơ vai sau, giúp vai tròn trịa và cải thiện tư thế.",
+        "difficulty_level": "beginner",
+        "exercise_type": "isolation",
+        "equipment_needed": "dumbbell",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-Dumbbells-dumbbell-reverse-fly-side.mp4",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Cúi người về phía trước, lưng thẳng, mỗi tay cầm một quả tạ đơn treo tự nhiên."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Mở rộng cánh tay sang hai bên (như sải cánh) cho đến khi ngang vai, ép chặt xương bả vai."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Từ từ hạ tạ về vị trí ban đầu."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 17,
+                "slug_hint": "posterior-delts",
+                "impact_level": "primary"
+            }
+        ],
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-dumbbell-reverse-fly-front.jpg",
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-dumbbell-reverse-fly-front.jpg"
+    },
+    {
+        "slug": "decline-push-ups",
+        "name": "Hít Đất Chân Cao (Decline Push-up)",
+        "name_en": "Decline Push-ups",
+        "description": "Biến thể hít đất tập trung áp lực vào phần ngực trên và vai trước.",
+        "difficulty_level": "intermediate",
+        "exercise_type": "compound",
+        "equipment_needed": "body-weight, bench",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-bodyweight-decline-pushup-front.mp4",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Đặt hai bàn chân lên ghế hoặc bục cao, hai tay chống dưới sàn ở tư thế hít đất."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Hạ thấp ngực xuống gần sàn, giữ cơ thể thẳng."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Đẩy người ngược lên trở lại vị trí cũ."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 7,
+                "slug_hint": "upper-chest",
+                "impact_level": "primary"
+            },
+            {
+                "muscle_group_id": 15,
+                "slug_hint": "anterior-delts",
+                "impact_level": "secondary"
+            }
+        ],
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-decline-push-ups-front.jpg",
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-decline-push-ups-front.jpg"
+    },
+    {
+        "slug": "high-to-low-cable-fly",
+        "name": "Ép Cáp Từ Cao Đến Thấp",
+        "name_en": "High-to-Low Cable Fly",
+        "description": "Bài tập tuyệt vời để nhắm vào sợi cơ ngực dưới.",
+        "difficulty_level": "intermediate",
+        "exercise_type": "isolation",
+        "equipment_needed": "machine",
+        "video_url": "https://media.musclewiki.com/media/uploads/videos/branded/male-cables-high-to-low-cable-fly-front.mp4",
+        "instructions": [
+            {
+                "step_number": 1,
+                "instruction_text": "Đứng giữa hai máy cáp, tay cầm đặt ở vị trí cao hơn vai."
+            },
+            {
+                "step_number": 2,
+                "instruction_text": "Ép hai tay xuống và vào nhau ở phía trước bụng dưới."
+            },
+            {
+                "step_number": 3,
+                "instruction_text": "Từ từ mở tay ra để cảm nhận sự kéo giãn của cơ ngực dưới."
+            }
+        ],
+        "muscles": [
+            {
+                "muscle_group_id": 9,
+                "slug_hint": "lower-chest",
+                "impact_level": "primary"
+            }
+        ],
+        "thumbnail_url": "https://media.musclewiki.com/media/uploads/og-male-high-to-low-cable-fly-front.jpg",
+        "imageUrl": "https://media.musclewiki.com/media/uploads/og-male-high-to-low-cable-fly-front.jpg"
+    }
+]
