@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../../../lib/api.js";
 import {
   Plus,
   Search,
   Edit,
   Trash2,
   Eye,
-  MoreHorizontal,
   FileVideo,
+  X,
+  Loader2,
+  CheckCircle,
+  AlertCircle,
 } from "lucide-react";
 
 // Component Badge nhỏ cho đẹp
@@ -22,9 +25,8 @@ function Badge({ children, color = "blue" }) {
   };
   return (
     <span
-      className={`px-2 py-1 rounded text-xs font-semibold ${
-        colors[color] || colors.gray
-      }`}
+      className={`px-2 py-1 rounded text-xs font-semibold ${colors[color] || colors.gray
+        }`}
     >
       {children}
     </span>
@@ -34,13 +36,18 @@ function Badge({ children, color = "blue" }) {
 export default function AdminExerciseList() {
   const navigate = useNavigate();
 
-  // State
+  // State danh sách
   const [exercises, setExercises] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  // State cho chức năng xóa
+  const [deleteTarget, setDeleteTarget] = useState(null); // { id, name }
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [toast, setToast] = useState(null); // { type: "success" | "error", msg }
 
   // Debounce search input
   useEffect(() => {
@@ -52,13 +59,13 @@ export default function AdminExerciseList() {
   const fetchExercises = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("/api/exercises", {
+      const res = await api.get("/api/exercises", {
         params: { page, pageSize: 10, q: debouncedSearch },
       });
       if (res.data?.success) {
         setExercises(res.data.data || []);
         const total = res.data.total || 0;
-        setTotalPages(Math.ceil(total / 10)); // Giả sử pageSize = 10
+        setTotalPages(Math.ceil(total / 10));
       }
     } catch (error) {
       console.error("Lỗi tải danh sách:", error);
@@ -71,17 +78,32 @@ export default function AdminExerciseList() {
     fetchExercises();
   }, [page, debouncedSearch]);
 
-  // Handle Delete
-  const handleDelete = async (id, name) => {
-    if (!window.confirm(`Bạn có chắc chắn muốn xóa bài tập: "${name}"?`))
-      return;
+  // Hiện Toast
+  const showToast = (type, msg) => {
+    setToast({ type, msg });
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  // Mở Modal xác nhận
+  const handleDelete = (id, name) => {
+    setDeleteTarget({ id, name });
+  };
+
+  // Xác nhận xóa – gọi API
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    setIsDeleting(true);
     try {
-      // Giả định API delete (Cần tạo API này ở bước sau nếu chưa có)
-      // await axios.delete(`/api/exercises/${id}`);
-      alert("Chức năng xóa sẽ được kích hoạt khi có API!");
-      // fetchExercises(); // Reload sau khi xóa
+      await api.delete(`/api/exercises/${deleteTarget.id}`);
+      // Xóa trực tiếp khỏi state, không cần reload
+      setExercises((prev) => prev.filter((ex) => ex.id !== deleteTarget.id));
+      setDeleteTarget(null);
+      showToast("success", "Xóa bài tập thành công!");
     } catch (error) {
-      alert("Xóa thất bại");
+      console.error("Lỗi xóa bài tập:", error);
+      showToast("error", "Có lỗi xảy ra, vui lòng thử lại!");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -176,8 +198,8 @@ export default function AdminExerciseList() {
                           ex.difficulty === "beginner"
                             ? "green"
                             : ex.difficulty === "advanced"
-                            ? "red"
-                            : "yellow"
+                              ? "red"
+                              : "yellow"
                         }
                       >
                         {ex.difficulty || "N/A"}
@@ -195,7 +217,7 @@ export default function AdminExerciseList() {
                   <td className="p-4 text-center">
                     <div className="flex items-center justify-center gap-2">
                       <button
-                        onClick={() => navigate(`/exercises/${ex.id}`)} // Xem chi tiết phía Client
+                        onClick={() => navigate(`/exercises/${ex.id}`)}
                         title="Xem chi tiết"
                         className="p-1.5 hover:bg-blue-50 text-blue-600 rounded"
                       >
@@ -248,6 +270,85 @@ export default function AdminExerciseList() {
           </button>
         </div>
       </div>
+
+      {/* ===================== CONFIRMATION MODAL ===================== */}
+      {deleteTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="relative w-full max-w-md mx-4 bg-white rounded-xl shadow-2xl animate-in zoom-in-95 duration-200">
+            {/* Close button */}
+            <button
+              onClick={() => !isDeleting && setDeleteTarget(null)}
+              disabled={isDeleting}
+              className="absolute top-4 right-4 p-1 text-gray-400 hover:text-gray-600 disabled:cursor-not-allowed"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* Icon + Title */}
+            <div className="flex flex-col items-center px-6 pt-8 pb-4 text-center">
+              <div className="flex items-center justify-center w-14 h-14 mb-4 rounded-full bg-red-100">
+                <Trash2 className="w-7 h-7 text-red-600" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900">Xác nhận xóa</h3>
+              <p className="mt-2 text-sm text-gray-500 leading-relaxed">
+                Bạn có chắc chắn muốn xóa bài tập{" "}
+                <span className="font-semibold text-gray-800">
+                  &ldquo;{deleteTarget.name}&rdquo;
+                </span>
+                ?<br />
+                <span className="text-red-500 font-medium">
+                  Hành động này không thể hoàn tác.
+                </span>
+              </p>
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-3 px-6 pb-6">
+              <button
+                onClick={() => setDeleteTarget(null)}
+                disabled={isDeleting}
+                className="flex-1 px-4 py-2.5 text-sm font-semibold text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={confirmDelete}
+                disabled={isDeleting}
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-red-600 rounded-lg hover:bg-red-700 transition disabled:opacity-70 disabled:cursor-not-allowed"
+              >
+                {isDeleting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Đang xóa...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4" />
+                    Xóa bài tập
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ===================== TOAST NOTIFICATION ===================== */}
+      {toast && (
+        <div
+          className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] flex items-center gap-2.5 px-5 py-3 rounded-full shadow-2xl text-sm font-semibold text-white animate-in slide-in-from-bottom-4 duration-300 ${toast.type === "success"
+            ? "bg-emerald-600"
+            : "bg-red-600"
+            }`}
+        >
+          {toast.type === "success" ? (
+            <CheckCircle className="w-4 h-4 shrink-0" />
+          ) : (
+            <AlertCircle className="w-4 h-4 shrink-0" />
+          )}
+          {toast.msg}
+        </div>
+      )}
     </div>
   );
 }
