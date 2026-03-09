@@ -50,14 +50,14 @@ export function HumanModel({ onBodyPartClick }) {
       if (node.isMesh) {
         // Save original material
         node.userData.originalMaterial = node.material;
-        
+
         // Apply default material
         node.material = materials.default.clone();
-        
+
         // Enable shadows for better depth
         node.castShadow = true;
         node.receiveShadow = true;
-        
+
         // Mark as interactive
         node.userData.isInteractive = true;
       }
@@ -106,8 +106,8 @@ export function HumanModel({ onBodyPartClick }) {
       const progress = Math.min(elapsed / duration, 1);
 
       // Smooth easing
-      const eased = progress < 0.5 
-        ? 2 * progress * progress 
+      const eased = progress < 0.5
+        ? 2 * progress * progress
         : -1 + (4 - 2 * progress) * progress;
 
       camera.position.lerpVectors(startPos, targetPos, eased);
