@@ -10,6 +10,22 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
+## Download model AI (bắt buộc, chỉ làm 1 lần)
+
+```bash
+curl -L -o pose_landmarker_heavy.task \
+  https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_heavy/float16/latest/pose_landmarker_heavy.task
+```
+
+> File ~30MB, lưu trong thư mục `AITrainer/` (không commit lên git)
+
+## Tạo file .env
+
+```bash
+cp .env.example .env
+# Mở .env và điền GROQ_API_KEY (lấy miễn phí tại https://console.groq.com/keys)
+```
+
 ## Chạy server
 
 ```bash
@@ -22,7 +38,10 @@ Server chạy tại: http://localhost:8000
 
 ## Kiểm tra hoạt động
 
-Mở trình duyệt vào: http://localhost:8000/health
+```bash
+curl http://localhost:8000/health
+# Kết quả: {"pose_model":"loaded","groq_api":"configured","processed_images_dir":true}
+```
 
 ## Dừng server
 
