@@ -18,7 +18,7 @@ import { Target, Star, ChevronRight, Play } from "lucide-react";
 import { Canvas } from "@react-three/fiber";
 import { HumanModel } from "../../components/3d/HumanModel";
 import { Bounds, OrbitControls } from "@react-three/drei";
-import HeaderDemo from "../../components/header/HeaderDemo.jsx";
+import HeaderLogin from "../../components/header/HeaderLogin.jsx";
 import api from "../../lib/api";
 
 const Fitnexus3DLanding = () => {
@@ -110,7 +110,7 @@ const Fitnexus3DLanding = () => {
 
   return (
     <div className="min-h-screen text-black bg-white" style={{ "--section-spacing": "clamp(80px, 10vh, 140px)", "--container-width": "1280px" }}>
-      <HeaderDemo />
+      <HeaderLogin />
 
       <section className="relative flex items-center min-h-screen px-6 overflow-hidden" style={{ paddingBlock: "var(--section-spacing)" }}>
         {/* Video Background */}

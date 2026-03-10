@@ -2,7 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/auth.context.jsx";
 import HeaderLogin from "../../components/header/HeaderLogin.jsx";
-import HeaderDemo from "../../components/header/HeaderDemo.jsx";
+
 
 import B1 from "../../assets/nutrition/B1.png";
 import B2 from "../../assets/nutrition/B2.png";
@@ -20,7 +20,7 @@ export default function NutritionDemo() {
 
   return (
     <div className="min-h-screen bg-white">
-      {isAuthenticated ? <HeaderLogin /> : <HeaderDemo />}
+      <HeaderLogin />
 
       <main className="max-w-6xl px-4 py-10 mx-auto">
         {/* HERO */}

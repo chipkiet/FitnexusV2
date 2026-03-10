@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { MuscleMap } from '../../components/muscle-map/MuscleMap';
 import { ExercisePanel } from '../../components/muscle-map/ExercisePanel';
 import { Button } from '../../components/ui/button';
-import HeaderLogin from '../../components/common/Navbar';
+import HeaderLogin from '../../components/header/HeaderLogin.jsx';
 
 const FemaleFrontMap = () => {
 

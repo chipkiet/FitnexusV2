@@ -2,7 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/auth.context.jsx";
 import HeaderLogin from "../../components/header/HeaderLogin.jsx";
-import HeaderDemo from "../../components/header/HeaderDemo.jsx";
+
 
 export default function ExercisesDemo() {
   const navigate = useNavigate();
@@ -11,7 +11,7 @@ export default function ExercisesDemo() {
 
   return (
     <div className="min-h-screen bg-white">
-      {isAuthenticated ? <HeaderLogin /> : <HeaderDemo />}
+      <HeaderLogin />
 
       <main className="max-w-6xl px-4 py-10 mx-auto">
         {/* HERO */}

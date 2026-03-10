@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../../context/auth.context.jsx';
 import HeaderLogin from '../../components/header/HeaderLogin.jsx';
-import HeaderDemo from '../../components/header/HeaderDemo.jsx';
+
 import { getActiveSubscriptionPlans, createPaymentLinkApi, listMyPurchasesApi } from '../../lib/api.js';
 import {
   Activity,
@@ -198,7 +198,7 @@ export default function Pricing() {
 
   return (
     <div className="flex flex-col min-h-screen bg-white text-slate-900">
-      {isAuthenticated ? <HeaderLogin /> : <HeaderDemo />}
+      <HeaderLogin />
 
       <main className="flex-1 bg-slate-50">
         <section className="px-4 pt-24 pb-16">
