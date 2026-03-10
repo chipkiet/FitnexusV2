@@ -14,5 +14,11 @@ export const mockExercisesDataset = {
     "forearms": ["Wrist Curls", "Reverse Curls", "Farmer's Walk"],
     "quads": ["Squats", "Leg Press", "Lunges"],
     "calves": ["Calf Raises", "Jump Rope", "Running"],
-    "traps": ["Shrugs", "Upright Rows", "Face Pulls"]
+    "traps": ["Shrugs", "Upright Rows", "Face Pulls"],
+
+    // Back view muscles
+    "lats": ["Pull-ups", "Lat Pulldown", "Seated Row", "Single-Arm Row"],
+    "glutes": ["Hip Thrust", "Squats", "Deadlift", "Glute Bridge"],
+    "hamstrings": ["Romanian Deadlift", "Leg Curl", "Good Mornings"],
+    "lowerback": ["Deadlift", "Hyperextension", "Good Mornings"]
 };

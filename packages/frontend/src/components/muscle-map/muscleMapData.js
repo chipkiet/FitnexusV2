@@ -1,11 +1,13 @@
 export const defaultStyle = {
     preFillColor: "transparent",
-    fillColor: "rgba(59, 130, 246, 0.4)",
-    strokeColor: "rgba(59, 130, 246, 1)",
-    strokeWidth: 2
+    fillColor: "rgba(59, 130, 246, 0.25)",
+    strokeColor: "transparent",
+    strokeWidth: 0
 };
 
-export const bodyMap = {
+// ─── Front Body Map ───────────────────────────────────────────────────────────
+
+export const bodyMapFront = {
     name: "male-front-map",
     areas: [
         { id: "chest", name: "Cơ ngực (Pectorals)", shape: "poly", coords: [143, 139, 136, 143, 130, 149, 127, 155, 121, 160, 117, 170, 115, 177, 116, 184, 118, 190, 124, 195, 128, 202, 134, 204, 142, 205, 148, 205, 156, 204, 164, 202, 171, 200, 176, 194, 184, 196, 192, 199, 199, 202, 209, 204, 216, 204, 223, 206, 230, 206, 238, 201, 242, 192, 246, 183, 246, 173, 242, 163, 238, 155, 229, 147, 220, 140], ...defaultStyle },
@@ -26,51 +28,121 @@ export const bodyMap = {
     ]
 };
 
+// Kept for backward compatibility
+export const bodyMap = bodyMapFront;
+
+// ─── Muscle Info Map ──────────────────────────────────────────────────────────
+
 export const muscleInfoMap = {
     chest: {
-        name: "Pectorals (Ngực)",
+        name: "Pectorals",
+        nameVi: "Ngực",
         icon: "💪",
-        exercises: ["Bench Press", "Push Ups", "Chest Fly"]
+        exercises: ["Bench Press", "Push Ups", "Chest Fly", "Incline Dumbbell Press"]
     },
     abs: {
-        name: "Abs (Bụng)",
+        name: "Abs",
+        nameVi: "Bụng",
         icon: "🍫",
-        exercises: ["Crunches", "Plank", "Leg Raises"]
+        exercises: ["Crunches", "Plank", "Leg Raises", "Russian Twists"]
     },
     shoulders: {
-        name: "Deltoids (Vai)",
+        name: "Deltoids",
+        nameVi: "Vai",
         icon: "🦍",
-        exercises: ["Overhead Press", "Lateral Raises", "Front Raises"]
+        exercises: ["Overhead Press", "Lateral Raises", "Front Raises", "Arnold Press"]
     },
     biceps: {
-        name: "Biceps (Tay trước)",
+        name: "Biceps",
+        nameVi: "Tay trước",
         icon: "🦾",
-        exercises: ["Bicep Curls", "Hammer Curls", "Chin Ups"]
+        exercises: ["Bicep Curls", "Hammer Curls", "Chin Ups", "Concentration Curl"]
     },
     forearms: {
-        name: "Forearms (Cẳng tay)",
+        name: "Forearms",
+        nameVi: "Cẳng tay",
         icon: "✊",
         exercises: ["Wrist Curls", "Reverse Curls", "Farmer's Walk"]
     },
     quads: {
-        name: "Quadriceps (Đùi trước)",
+        name: "Quadriceps",
+        nameVi: "Đùi trước",
         icon: "🦵",
-        exercises: ["Squats", "Leg Press", "Lunges"]
+        exercises: ["Squats", "Leg Press", "Lunges", "Leg Extension"]
     },
     calves: {
-        name: "Calves (Bắp chân)",
+        name: "Calves",
+        nameVi: "Bắp chân",
         icon: "🏃",
         exercises: ["Calf Raises", "Jump Rope", "Running"]
     },
     traps: {
-        name: "Trapezius (Cầu vai)",
+        name: "Trapezius",
+        nameVi: "Cầu vai",
         icon: "🤷",
         exercises: ["Shrugs", "Upright Rows", "Face Pulls"]
+    },
+    // Back view muscles
+    trapezius: {
+        name: "Trapezius",
+        nameVi: "Cầu vai (sau)",
+        icon: "🤷",
+        exercises: ["Shrugs", "Upright Rows", "Face Pulls", "Cable Shrugs"]
+    },
+    rear_deltoids: {
+        name: "Rear Deltoids",
+        nameVi: "Vai sau",
+        icon: "🫱",
+        exercises: ["Face Pulls", "Reverse Fly", "Bent-Over Lateral Raise"]
+    },
+    triceps: {
+        name: "Triceps",
+        nameVi: "Tay sau",
+        icon: "💪",
+        exercises: ["Triceps Pushdown", "Skull Crusher", "Dips", "Overhead Tricep Extension"]
+    },
+    erector: {
+        name: "Erector Spinae",
+        nameVi: "Cơ dựng sống",
+        icon: "🔩",
+        exercises: ["Deadlift", "Hyperextension", "Good Mornings", "Superman"]
+    },
+    lats: {
+        name: "Latissimus Dorsi",
+        nameVi: "Lưng rộng",
+        icon: "🏋️",
+        exercises: ["Pull-ups", "Lat Pulldown", "Seated Row", "Single-Arm Row"]
+    },
+    glutes: {
+        name: "Glutes",
+        nameVi: "Mông",
+        icon: "🍑",
+        exercises: ["Hip Thrust", "Squats", "Deadlift", "Glute Bridge"]
+    },
+    hamstrings: {
+        name: "Hamstrings",
+        nameVi: "Đùi sau",
+        icon: "🦵",
+        exercises: ["Romanian Deadlift", "Leg Curl", "Good Mornings"]
+    },
+    lowerback: {
+        name: "Lower Back",
+        nameVi: "Lưng dưới",
+        icon: "🔩",
+        exercises: ["Deadlift", "Hyperextension", "Good Mornings"]
     }
 };
 
 export const getMuscleInfo = (areaId) => {
     if (!areaId) return null;
-    const coreId = areaId.split('_')[0];
-    return muscleInfoMap[coreId] || null;
+    // Try exact match first (e.g. "trapezius", "erector_spinae")
+    if (muscleInfoMap[areaId]) return muscleInfoMap[areaId];
+    // Try progressively shorter prefixes (longest first)
+    // This handles IDs like "rear_deltoids_left" → "rear_deltoids"
+    const parts = areaId.split('_');
+    for (let len = parts.length - 1; len >= 1; len--) {
+        const key = parts.slice(0, len).join('_');
+        if (muscleInfoMap[key]) return muscleInfoMap[key];
+    }
+    return null;
 };
