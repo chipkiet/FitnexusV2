@@ -160,13 +160,21 @@ export default function HeaderLogin() {
   }, []);
 
   const menuButtonClass =
-    "flex w-full items-center justify-between px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition";
+    "flex w-full items-center justify-between px-4 py-2.5 text-sm text-gray-700 hover:bg-teal-50/60 hover:text-teal-700 transition rounded-lg";
   const menuLinkClass =
-    "w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition";
-  const submenuContainerClass = "px-4 py-2 space-y-1 bg-slate-50 border-t border-slate-100";
+    "w-full px-4 py-2.5 text-left text-sm text-gray-600 hover:bg-teal-50/60 hover:text-teal-700 transition rounded-lg";
+  const submenuContainerClass = "px-3 py-2 space-y-0.5 bg-gray-50/60 border-t border-gray-100/80 rounded-b-lg";
+
+  // Active tab helper: teal accent on frosted glass navbar
+  const navBtnClass = (...paths) => {
+    const active = paths.some((p) => location.pathname.startsWith(p));
+    return active
+      ? "px-4 py-2 text-sm font-semibold text-teal-700 bg-teal-50 rounded-full transition-all shadow-sm ring-1 ring-teal-200/60"
+      : "px-4 py-2 text-sm font-medium text-gray-600 rounded-full hover:bg-gray-100 hover:text-gray-900 transition-all";
+  };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/85 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-2xl border-b border-gray-200/60 shadow-[0_1px_3px_rgba(0,0,0,0.08),0_4px_20px_rgba(0,0,0,0.04)]" style={{WebkitBackdropFilter: 'blur(24px)'}}>
       <div className="flex items-center justify-between px-4 py-2 mx-auto max-w-7xl">
         <button
           onClick={() => navigate("/dashboard")}
@@ -192,10 +200,10 @@ export default function HeaderLogin() {
           </svg>
         </button>
 
-        <nav className="items-center hidden gap-5 md:flex">
+        <nav className="items-center hidden gap-1 md:flex">
           <button
-            onClick={() => navigate("/ai")}
-            className="text-sm text-gray-800 hover:text-blue-600"
+            onClick={() => navigate(isAuthenticated ? "/ai" : "/ai-guide")}
+            className={navBtnClass("/ai", "/ai-guide")}
           >
             AI
           </button>
@@ -205,7 +213,7 @@ export default function HeaderLogin() {
               onClick={() => setOpenWorkout((v) => !v)}
               aria-haspopup="true"
               aria-expanded={openWorkout}
-              className="inline-flex items-center text-sm text-gray-800 hover:text-blue-600"
+              className={`inline-flex items-center ${navBtnClass("/exercises", "/plans")}`}
             >
               Luyện tập
               <svg
@@ -221,12 +229,12 @@ export default function HeaderLogin() {
               <div
                 role="menu"
                 aria-label="Menu luyện tập"
-                className="absolute left-0 p-2 mt-2 bg-white border border-gray-200 shadow-xl top-full w-72 rounded-xl"
+                className="absolute left-0 p-2 mt-2 bg-white/90 backdrop-blur-2xl border border-gray-200/60 shadow-xl top-full w-72 rounded-2xl"
               >
                 <button
                   role="menuitem"
                   onClick={() => navigate("/exercises")}
-                  className="w-full px-3 py-2 text-left rounded-lg hover:bg-gray-50"
+                  className="w-full px-3 py-2 text-left rounded-lg hover:bg-gray-100"
                 >
                   <div className="text-sm font-semibold text-gray-900">
                     Xem tất cả bài tập
@@ -245,7 +253,7 @@ export default function HeaderLogin() {
                       ? navigate("/login", { state: { from: "/plans/select" } })
                       : navigate("/plans/select")
                   }
-                  className="w-full px-3 py-2 text-left rounded-lg hover:bg-gray-50"
+                  className="w-full px-3 py-2 text-sm text-gray-700 text-left rounded-lg hover:bg-gray-100"
                 >
                   Kế hoạch của tôi
                 </button>
@@ -256,7 +264,7 @@ export default function HeaderLogin() {
                       ? navigate("/login", { state: { from: "/plans/new" } })
                       : navigate("/plans/new")
                   }
-                  className="w-full px-3 py-2 mt-1 text-left rounded-lg hover:bg-gray-50"
+                  className="w-full px-3 py-2 mt-1 text-sm text-gray-700 text-left rounded-lg hover:bg-gray-100"
                 >
                   Tạo plan mới
                 </button>
@@ -270,7 +278,7 @@ export default function HeaderLogin() {
               onClick={handleToggleFavorites}
               aria-haspopup="true"
               aria-expanded={openFavorites}
-              className="inline-flex items-center text-sm text-gray-800 hover:text-blue-600"
+              className={`inline-flex items-center ${navBtnClass("/favorites")}`}
             >
               Yêu thích
             </button>
@@ -278,7 +286,7 @@ export default function HeaderLogin() {
               <div
                 role="menu"
                 aria-label="Bài tập yêu thích"
-                className="absolute right-0 p-2 mt-2 bg-white border border-gray-200 shadow-xl top-full w-80 rounded-xl"
+                className="absolute right-0 p-2 mt-2 bg-white/90 backdrop-blur-2xl border border-gray-200/60 shadow-xl top-full w-80 rounded-2xl"
               >
                 {loadingFavorites ? (
                   <div className="px-3 py-2 text-sm text-gray-500">
@@ -293,7 +301,7 @@ export default function HeaderLogin() {
                     {favorites.map((ex) => (
                       <li
                         key={ex.id}
-                        className="flex items-center px-3 py-2 rounded-lg cursor-pointer hover:bg-gray-50"
+                        className="flex items-center px-3 py-2 rounded-lg cursor-pointer hover:bg-gray-100"
                         onClick={() => {
                           setOpenFavorites(false);
                           navigate(`/exercises/${ex.id}`);
@@ -326,21 +334,21 @@ export default function HeaderLogin() {
           </div>
 
           <button
-            onClick={() => navigate("/modeling")}
-            className="text-sm text-gray-800 hover:text-blue-600"
+            onClick={() => navigate(isAuthenticated ? "/modeling" : "/modeling-demo")}
+            className={navBtnClass("/modeling", "/modeling-demo", "/modeling-preview")}
           >
             Mô hình hoá
           </button>
           <button
-            onClick={() => navigate("/nutrition-ai")}
-            className="text-sm text-gray-800 hover:text-blue-600"
+            onClick={() => navigate(isAuthenticated ? "/nutrition-ai" : "/nutrition-demo")}
+            className={navBtnClass("/nutrition")}
           >
             Dinh dưỡng
           </button>
 
           <button
             onClick={() => navigate("/screenshots")}
-            className="text-sm text-gray-800 hover:text-blue-600"
+            className={navBtnClass("/screenshots")}
           >
             Thư viện ảnh
           </button>
@@ -402,8 +410,8 @@ export default function HeaderLogin() {
                   })()}
                 </button>
                 {showAvatarMenu && (
-                  <div className="absolute right-0 z-50 w-64 mt-2 overflow-hidden bg-white shadow-2xl rounded-xl ring-1 ring-black/5">
-                    <div className="flex flex-col divide-y divide-slate-100">
+                  <div className="absolute right-0 z-50 w-64 mt-2 overflow-hidden bg-white/80 backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] rounded-2xl ring-1 ring-gray-200/50" style={{WebkitBackdropFilter: 'blur(20px)'}}>
+                    <div className="flex flex-col divide-y divide-gray-200/50">
                       <div className="py-1">
                         <button
                           onClick={() =>
@@ -511,7 +519,7 @@ export default function HeaderLogin() {
                             setActiveSubmenu(null);
                             navigate("/pricing");
                           }}
-                          className={menuLinkClass}
+                          className="w-full px-4 py-2.5 text-left text-sm font-medium text-amber-600 hover:bg-amber-50/60 transition rounded-lg"
                         >
                           Nâng cấp Premium
                         </button>
@@ -574,7 +582,7 @@ export default function HeaderLogin() {
                             setActiveSubmenu(null);
                             handleLogout();
                           }}
-                          className="w-full px-4 py-2 text-sm font-semibold text-left text-red-600 hover:bg-red-50"
+                          className="w-full px-4 py-2.5 text-sm font-semibold text-left text-red-500 hover:bg-red-50/60 transition rounded-lg"
                         >
                           Đăng xuất
                         </button>
@@ -586,13 +594,13 @@ export default function HeaderLogin() {
             ) : (
               <>
                 <button
-                  className="transition hover:text-blue-400"
+                  className="transition text-gray-600 hover:text-gray-900"
                   onClick={() => navigate("/login")}
                 >
                   Đăng nhập
                 </button>
                 <button
-                  className="px-6 py-3 font-semibold text-black transition bg-white rounded-full hover:bg-gray-200"
+                  className="px-6 py-3 font-semibold text-white transition bg-teal-600 rounded-full hover:bg-teal-700 shadow-md"
                   onClick={() => navigate("/register")}
                 >
                   Bắt đầu ngay

@@ -6,7 +6,7 @@ import * as mobilenet from "@tensorflow-models/mobilenet";
 import "./NutritionAI.css";
 import { useAuth } from "../../context/auth.context.jsx";
 import HeaderLogin from "../../components/header/HeaderLogin.jsx";
-import HeaderDemo from "../../components/header/HeaderDemo.jsx";
+
 import ScreenshotCapture from "../../components/screenshot/ScreenshotCapture.jsx";
 import TrackpadScale from "@/components/TrackpadScale";
 import {
@@ -421,7 +421,7 @@ export default function FoodCalorie() {
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
-      {isAuthenticated ? <HeaderLogin /> : <HeaderDemo />}
+      <HeaderLogin />
       <ScreenshotCapture
         targetRef={containerRef}
         feature="nutrition_ai"
