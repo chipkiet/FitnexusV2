@@ -7,7 +7,7 @@ import {
   setTokens,
   isTokenExpired,
 } from "./tokenManager.js";
-import {exp} from "@tensorflow/tfjs";
+import { exp } from "@tensorflow/tfjs";
 import { env } from "../config/env.js";
 
 const BASE_URL = env.backendUrl;
@@ -605,7 +605,22 @@ export const markAllNotificationsReadApi = async () => {
   return res.data;
 };
 
+// ===== Workout Logging APIs =====
+export const getSessionDetailApi = async (sessionId) => {
+  const res = await api.get(`/api/workout/${sessionId}/detail`);
+  return res.data;
+};
+
+export const logWorkoutSetApi = async (sessionId, sessionExerciseId, setData) => {
+  const res = await api.post(
+    `/api/workout/${sessionId}/exercises/${sessionExerciseId}/sets`,
+    setData
+  );
+  return res.data;
+};
+
 export default api;
+
 
 export const reorderPlanExercisesApi = async (planId, exercises) => {
   const res = await api.put(endpoints.plans.reorder(planId), { exercises });

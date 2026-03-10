@@ -10,6 +10,7 @@ const PlanExerciseDetail = sequelize.define(
     sets_recommended: { type: DataTypes.INTEGER, allowNull: true },
     reps_recommended: { type: DataTypes.STRING(50), allowNull: true },
     rest_period_seconds: { type: DataTypes.INTEGER, allowNull: true },
+    target_weight_kg: { type: DataTypes.DECIMAL(8, 2), allowNull: true },
   },
   {
     tableName: "plan_exercise_details",

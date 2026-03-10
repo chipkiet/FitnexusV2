@@ -19,7 +19,7 @@ from typing import Optional
 from core.pose_analyzer import (
     load_pose_model,
     analyze_pose_with_model,
-    draw_measurements_on_image
+    draw_measurements_on_image,
 )
 
 # --- KHỞI TẠO APP FASTAPI ---
@@ -35,6 +35,7 @@ app.add_middleware(
 )
 
 from dotenv import load_dotenv
+
 load_dotenv(override=True)
 
 # !!! QUAN TRỌNG: Lấy khóa API GROQ miễn phí tại https://console.groq.com/keys
@@ -51,10 +52,11 @@ print("Khởi tạo cấu hình Groq API (Llama models)...")
 
 # Chuẩn bị danh sách model fallback trên Groq
 GROQ_MODELS = [
-    os.getenv("GROQ_MODEL") or "llama3-8b-8192",
-    "llama3-70b-8192",
-    "llama-3.1-8b-instant"
+    os.getenv("GROQ_MODEL") or "llama-3.3-70b-versatile",
+    "llama-3.1-8b-instant",
+    "llama3-groq-8b-8192-tool-use-preview",
 ]
+
 
 def _groq_generate_json(prompt: str, timeout_sec: int = 120):
     last_err = None
@@ -65,7 +67,7 @@ def _groq_generate_json(prompt: str, timeout_sec: int = 120):
                 messages=[{"role": "user", "content": prompt}],
                 model=model_name,
                 response_format={"type": "json_object"},
-                timeout=timeout_sec
+                timeout=timeout_sec,
             )
             return chat_completion.choices[0].message.content
         except Exception as e:
@@ -73,6 +75,7 @@ def _groq_generate_json(prompt: str, timeout_sec: int = 120):
             last_err = e
             continue
     raise last_err if last_err else RuntimeError("Groq API call failed for all models")
+
 
 # Khởi tạo MediaPipe Pose Model
 pose_model = load_pose_model()
@@ -89,10 +92,11 @@ app.mount("/processed", StaticFiles(directory="processed_images"), name="process
 
 # --- CÁC HÀM XỬ LÝ ---
 
+
 def get_ai_recommendations(measurements_data):
     """
     Gọi Groq API (Llama) với dữ liệu đo lường chi tiết.
-    
+
     Args:
         measurements_data: Dictionary chứa các số đo từ pose_analyzer
     """
@@ -103,18 +107,18 @@ def get_ai_recommendations(measurements_data):
     else:
         measurements = measurements_data.get("pixel_measurements", {})
         unit = "px"
-    
+
     # Tạo prompt chi tiết
     prompt = f"""
     Phân tích vóc dáng cơ thể dựa trên các số đo sau:
     
     **Số đo cơ bản:**
-    - Chiều rộng vai: {measurements.get('shoulder_width', 'N/A')} {unit}
-    - Chiều rộng eo: {measurements.get('waist_width', 'N/A')} {unit}
-    - Chiều rộng hông: {measurements.get('hip_width', 'N/A')} {unit}
-    - Chiều cao: {measurements.get('height', 'N/A')} {unit}
-    - Độ dài chân: {measurements.get('leg_length', 'N/A')} {unit}
-    - Tỷ lệ vai/hông: {measurements_data.get('pixel_measurements', {}).get('shoulder_hip_ratio', 'N/A')}
+    - Chiều rộng vai: {measurements.get("shoulder_width", "N/A")} {unit}
+    - Chiều rộng eo: {measurements.get("waist_width", "N/A")} {unit}
+    - Chiều rộng hông: {measurements.get("hip_width", "N/A")} {unit}
+    - Chiều cao: {measurements.get("height", "N/A")} {unit}
+    - Độ dài chân: {measurements.get("leg_length", "N/A")} {unit}
+    - Tỷ lệ vai/hông: {measurements_data.get("pixel_measurements", {}).get("shoulder_hip_ratio", "N/A")}
     
     **Yêu cầu phân tích:**
     1. Đánh giá vóc dáng hiện tại (dáng chữ V, chữ A, chữ H, chữ O...)
@@ -139,44 +143,45 @@ def get_ai_recommendations(measurements_data):
     
     Chỉ trả về JSON, không có văn bản nào khác.
     """
-    
+
     try:
         text_response = _groq_generate_json(prompt, timeout_sec=120)
-        
+
         # Tìm và parse JSON
-        json_start = text_response.find('{')
-        json_end = text_response.rfind('}') + 1
-        
+        json_start = text_response.find("{")
+        json_end = text_response.rfind("}") + 1
+
         if json_start != -1 and json_end != -1 and json_start < json_end:
             json_str = text_response[json_start:json_end]
             recommendations = json.loads(json_str)
-            
+
             # Thêm số đo vào kết quả
-            recommendations['measurements'] = measurements
-            recommendations['unit'] = unit
-            
+            recommendations["measurements"] = measurements
+            recommendations["unit"] = unit
+
             return recommendations
         else:
             raise ValueError(f"AI không trả về JSON hợp lệ: {text_response}")
-            
+
     except Exception as e:
         print(f"Lỗi khi gọi Groq API: {e}")
         raise HTTPException(status_code=500, detail=f"Lỗi khi gọi Groq API: {e}")
 
+
 # --- ENDPOINT API ---
+
 
 @app.post("/analyze-image/")
 async def analyze_image(
-    file: UploadFile = File(...),
-    known_height_cm: Optional[float] = Form(None)
+    file: UploadFile = File(...), known_height_cm: Optional[float] = Form(None)
 ):
     """
     Phân tích ảnh tư thế và trả về các số đo cơ thể kèm gợi ý từ AI.
-    
+
     Args:
         file: File ảnh upload
         known_height_cm: Chiều cao thực tế (cm) - optional, để quy đổi sang cm
-    
+
     Returns:
         JSON chứa:
         - analysis_data: Phân tích từ AI
@@ -190,13 +195,13 @@ async def analyze_image(
 
     if image is None:
         raise HTTPException(status_code=400, detail="Không thể đọc file ảnh.")
-    
-    print(f"\n{'='*60}")
+
+    print(f"\n{'=' * 60}")
     print(f"Đang xử lý ảnh: {file.filename}")
     if known_height_cm:
         print(f"Chiều cao thực tế: {known_height_cm} cm")
-    print(f"{'='*60}\n")
-    
+    print(f"{'=' * 60}\n")
+
     # Phân tích tư thế với MediaPipe Pose
     try:
         annotated_image, ratio, measurements = analyze_pose_with_model(
@@ -207,7 +212,7 @@ async def analyze_image(
     except Exception as e:
         print(f"✗ Lỗi khi chạy MediaPipe pose analyzer: {e}")
         raise HTTPException(status_code=500, detail=f"Pose analysis failed: {e}")
-    
+
     # Khởi tạo response mặc định
     response_data = {
         "success": False,
@@ -215,32 +220,32 @@ async def analyze_image(
         "analysis_data": {
             "body_type": "Không xác định",
             "body_analysis": "Không thể phân tích",
-            "title": "Không phát hiện được cơ thể", 
-            "exercises": [], 
+            "title": "Không phát hiện được cơ thể",
+            "exercises": [],
             "nutrition_advice": "",
             "lifestyle_tips": "",
             "estimated_timeline": "",
-            "general_advice": "Vui lòng thử lại với ảnh rõ ràng hơn, đứng thẳng và toàn thân."
+            "general_advice": "Vui lòng thử lại với ảnh rõ ràng hơn, đứng thẳng và toàn thân.",
         },
         "measurements": None,
-        "processed_image_url": None
+        "processed_image_url": None,
     }
-    
+
     # Nếu phát hiện được cơ thể và có đủ số đo
     if annotated_image is not None and measurements is not None:
         # Kiểm tra xem có đủ số đo quan trọng không
         has_valid_measurements = (
-            measurements["confidence_flags"].get("shoulder_width") and
-            measurements["confidence_flags"].get("hip_width") and
-            measurements["confidence_flags"].get("height")
+            measurements["confidence_flags"].get("shoulder_width")
+            and measurements["confidence_flags"].get("hip_width")
+            and measurements["confidence_flags"].get("height")
         )
-        
+
         if has_valid_measurements:
             print("✓ Phát hiện đầy đủ các điểm khớp quan trọng")
             print(f"✓ Số đo pixel: {measurements['pixel_measurements']}")
-            if measurements['cm_measurements']:
+            if measurements["cm_measurements"]:
                 print(f"✓ Số đo cm: {measurements['cm_measurements']}")
-            
+
             # Gọi Groq để phân tích
             try:
                 ai_recommendations = get_ai_recommendations(measurements)
@@ -269,21 +274,23 @@ async def analyze_image(
                         "cm_measurements": measurements["cm_measurements"],
                         "scale_cm_per_px": measurements["scale_cm_per_px"],
                         "confidence_flags": measurements["confidence_flags"],
-                        "classifications": measurements.get("classifications", {})
+                        "classifications": measurements.get("classifications", {}),
                     },
-                    "processed_image_url": None  # Sẽ cập nhật bên dưới
+                    "processed_image_url": None,  # Sẽ cập nhật bên dưới
                 }
 
                 print("✓ Đã nhận phân tích từ Groq AI (Llama)")
-                
+
             except Exception as e:
                 print(f"✗ Lỗi khi gọi AI: {e}")
-                response_data["message"] = f"Phát hiện cơ thể nhưng lỗi phân tích AI: {str(e)}"
+                response_data["message"] = (
+                    f"Phát hiện cơ thể nhưng lỗi phân tích AI: {str(e)}"
+                )
                 response_data["measurements"] = {
                     "pixel_measurements": measurements["pixel_measurements"],
                     "cm_measurements": measurements["cm_measurements"],
                     "scale_cm_per_px": measurements["scale_cm_per_px"],
-                    "confidence_flags": measurements["confidence_flags"]
+                    "confidence_flags": measurements["confidence_flags"],
                 }
         else:
             print("✗ Không đủ điểm khớp để phân tích")
@@ -294,9 +301,9 @@ async def analyze_image(
                 missing_parts.append("hông")
             if not measurements["confidence_flags"].get("height"):
                 missing_parts.append("chiều cao")
-            
+
             response_data["message"] = f"Không phát hiện rõ: {', '.join(missing_parts)}"
-    
+
     # Lưu ảnh đã xử lý (dù có phát hiện hay không)
     try:
         output_filename = f"processed_{file.filename}"
@@ -312,11 +319,12 @@ async def analyze_image(
         response_data["processed_image_url"] = image_url
 
         print(f"\n✓ Đã lưu ảnh xử lý: {output_path}")
-        print(f"{'='*60}\n")
+        print(f"{'=' * 60}\n")
     except Exception as e:
         print(f"✗ Lỗi khi lưu ảnh xử lý: {e}")
-    
+
     return response_data
+
 
 @app.get("/")
 async def root():
@@ -329,9 +337,10 @@ async def root():
             "MediaPipe Pose Detection",
             "Body Measurements (px and cm)",
             "Groq AI Analysis (Llama)",
-            "Personalized Workout Recommendations"
-        ]
+            "Personalized Workout Recommendations",
+        ],
     }
+
 
 @app.get("/health")
 async def health_check():
@@ -339,8 +348,9 @@ async def health_check():
     return {
         "pose_model": "loaded" if pose_model else "failed",
         "groq_api": "configured" if GROQ_API_KEY else "not_configured",
-        "processed_images_dir": os.path.exists("processed_images")
+        "processed_images_dir": os.path.exists("processed_images"),
     }
+
 
 # Lệnh để chạy server
 if __name__ == "__main__":

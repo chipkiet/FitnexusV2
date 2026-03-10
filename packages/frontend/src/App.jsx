@@ -272,7 +272,7 @@ function App() {
               path="/modeling"
               element={
                 <PrivateRoute>
-                  <Modeling />
+                  <FemaleFrontMap />
                 </PrivateRoute>
               }
             />

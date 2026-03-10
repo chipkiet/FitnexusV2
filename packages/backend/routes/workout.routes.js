@@ -10,6 +10,8 @@ import {
     getCurrentExercise,
     completeCurrentExercise,
     skipCurrentExercise,
+    getSessionDetail,
+    logSet,
 } from "../controllers/workout.controller.js";
 
 const router = Router();
@@ -30,6 +32,8 @@ router.post("/:sessionId/complete", authOrSession, completeSession);
 // List sessions (history / active)
 router.get("/", authOrSession, listWorkoutSessions);
 
-
+// Workout Logging — new endpoints
+router.get("/:sessionId/detail", authOrSession, getSessionDetail);
+router.post("/:sessionId/exercises/:sessionExerciseId/sets", authOrSession, logSet);
 
 export default router;

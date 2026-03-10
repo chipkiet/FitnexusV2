@@ -1565,3 +1565,71 @@ export const updateExercise = async (req, res) => {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
+
+export const deleteExercise = async (req, res) => {
+  const t = await sequelize.transaction();
+  try {
+    const { id } = req.params;
+    const exerciseId = parseInt(id, 10);
+
+    if (!Number.isFinite(exerciseId) || exerciseId <= 0) {
+      await t.rollback();
+      return res.status(400).json({ success: false, message: "ID bài tập không hợp lệ" });
+    }
+
+    // 1. Kiểm tra exercise có tồn tại không
+    const exercise = await Exercise.findByPk(exerciseId, { transaction: t });
+    if (!exercise) {
+      await t.rollback();
+      return res.status(404).json({ success: false, message: "Không tìm thấy bài tập" });
+    }
+
+    const exerciseName = exercise.name || exercise.name_en || `ID ${exerciseId}`;
+
+    // 2. Cascade delete theo đúng thứ tự FK dependency
+    const [, wseMeta] = await sequelize.query(
+      `DELETE FROM workout_session_exercises WHERE exercise_id = :eid`,
+      { replacements: { eid: exerciseId }, transaction: t }
+    );
+    const [, pedMeta] = await sequelize.query(
+      `DELETE FROM plan_exercise_details WHERE exercise_id = :eid`,
+      { replacements: { eid: exerciseId }, transaction: t }
+    );
+    const [, favMeta] = await sequelize.query(
+      `DELETE FROM exercise_favorites WHERE exercise_id = :eid`,
+      { replacements: { eid: exerciseId }, transaction: t }
+    );
+    const [, imgMeta] = await sequelize.query(
+      `DELETE FROM exercise_videos WHERE exercise_id = :eid`,
+      { replacements: { eid: exerciseId }, transaction: t }
+    );
+    await sequelize.query(
+      `DELETE FROM exercise_muscle_group WHERE exercise_id = :eid`,
+      { replacements: { eid: exerciseId }, transaction: t }
+    );
+
+    // 3. Xóa exercise chính
+    await exercise.destroy({ transaction: t });
+    await t.commit();
+
+    console.log(`[deleteExercise] Đã xóa exercise "${exerciseName}" (id=${exerciseId})`);
+
+    return res.status(200).json({
+      success: true,
+      message: `Xóa bài tập "${exerciseName}" thành công!`,
+      deleted: {
+        exercise_id: exerciseId,
+        workout_sessions_cleaned: wseMeta?.rowCount ?? 0,
+        plan_details_cleaned: pedMeta?.rowCount ?? 0,
+        favorites_cleaned: favMeta?.rowCount ?? 0,
+        images_cleaned: imgMeta?.rowCount ?? 0,
+      },
+    });
+  } catch (error) {
+    await t.rollback();
+    console.error("deleteExercise error:", error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Lỗi server", error: error.message });
+  }
+};
