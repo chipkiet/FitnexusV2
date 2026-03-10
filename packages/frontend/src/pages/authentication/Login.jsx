@@ -217,6 +217,7 @@ export default function Login() {
     window.location.href = url;
   };
 
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50">
       <div className="flex w-full max-w-4xl p-8 bg-white shadow-xl rounded-xl">
