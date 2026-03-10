@@ -328,7 +328,7 @@ def analyze_pose_with_model(pose_model, image, known_height_cm=None):
 
     # Overlay segmentation mask (nếu có)
     if result.segmentation_masks:
-        seg_mask = result.segmentation_masks[0].numpy_view()
+        seg_mask = result.segmentation_masks[0].numpy_view().squeeze()
         condition = np.stack((seg_mask,) * 3, axis=-1) > 0.3
         bg_image = np.zeros(image.shape, dtype=np.uint8)
         bg_image[:] = (200, 150, 50)
