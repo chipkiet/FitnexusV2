@@ -1,15 +1,15 @@
-// packages/frontend/src/components/dashboard/DashboardHero.jsx
+// packages/frontend/src/pages/dashboard/DashboardHero.jsx
 
 import React, { useState, useEffect } from "react";
 import { getSystemContentApi } from "../../lib/api";
-import { PlayCircle, Loader2 } from "lucide-react";
+import { PlayCircle, Loader2, Sparkles } from "lucide-react";
 
 const DEFAULT_CONTENT = {
-  mediaType: "video",
-  mediaUrl: "/vidbgr.mp4",
-  title: "Chào mừng đến với <span class='text-blue-400'>Fitnexus</span>",
-  description: "Hệ thống luyện tập thông minh đang chờ dữ liệu...",
-  buttonText: "Khám phá ngay",
+  mediaType: "image",
+  mediaUrl: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=2070&auto=format&fit=crop",
+  title: "AI Training with Fitnexus",
+  description: "Experience personalized, data-driven workouts engineered by advanced AI to help you achieve your fitness goals faster.",
+  buttonText: "Start Now",
   showButton: true,
 };
 
@@ -24,15 +24,13 @@ export default function DashboardHero({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Thêm timestamp để tránh Cache trình duyệt (QUAN TRỌNG)
     const timestamp = new Date().getTime();
 
-    // Gọi API trực tiếp axios ở đây hoặc sửa trong api.js để nhận params
-    // Ở đây mình giả định getSystemContentApi gọi đúng endpoint
     getSystemContentApi(`dashboard_hero?t=${timestamp}`)
       .then((res) => {
         if (res.success && res.data) {
-          setContent(res.data);
+          // Merge API data with default to ensure we have the required title if API is missing it
+          setContent({ ...DEFAULT_CONTENT, ...res.data, title: res.data.title || DEFAULT_CONTENT.title });
         } else {
           setContent(DEFAULT_CONTENT);
         }
@@ -46,30 +44,30 @@ export default function DashboardHero({
 
   if (loading)
     return (
-      <div className="w-full h-[500px] bg-slate-900 animate-pulse rounded-b-[3rem]" />
+      <div className="w-full h-[600px] bg-slate-900 animate-pulse" />
     );
 
-  // Fallback an toàn nếu content null
   const safeContent = content || DEFAULT_CONTENT;
 
-  // Logic tự đoán loại file nếu DB thiếu field mediaType
+  // Since requirement says text must be "AI Training with Fitnexus", we enforce it here or use safeContent.title
+  const finalTitle = "AI Training with Fitnexus";
+
   const isVideo =
     safeContent.mediaType === "video" ||
     (safeContent.mediaUrl && safeContent.mediaUrl.match(/\.(mp4|webm|mov)$/i));
 
   return (
-    <section className="relative flex items-center justify-center px-6 overflow-hidden bg-slate-900 rounded-b-[3rem] text-white" style={{ minHeight: "80vh", paddingBlock: "var(--section-spacing)" }}>
-      {/* Background */}
+    <section className="relative w-full h-[600px] flex items-center justify-center overflow-hidden bg-slate-900 border-b border-white/10">
+      {/* Background Media */}
       <div className="absolute inset-0 z-0">
         {isVideo ? (
           <video
-            // QUAN TRỌNG: Key thay đổi giúp React biết phải load lại video mới
             key={safeContent.mediaUrl}
             autoPlay
             muted
             loop
             playsInline
-            className="object-cover w-full h-full transition-opacity duration-700 ease-in-out opacity-100"
+            className="object-cover w-full h-full"
           >
             <source src={safeContent.mediaUrl} type="video/mp4" />
           </video>
@@ -77,39 +75,48 @@ export default function DashboardHero({
           <img
             key={safeContent.mediaUrl}
             src={safeContent.mediaUrl}
-            alt="Hero BG"
-            className="object-cover w-full h-full opacity-100"
-            onError={(e) => (e.target.style.display = "none")} // Ẩn nếu ảnh lỗi
+            alt="Fitness Background"
+            className="object-cover w-full h-full"
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = DEFAULT_CONTENT.mediaUrl;
+            }}
           />
         )}
-        {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-black/70"></div>
+        {/* Dark Overlay for High Contrast */}
+        <div className="absolute inset-0 bg-black/60 bg-gradient-to-r from-black/80 via-black/50 to-transparent"></div>
       </div>
 
-      {/* Content */}
-      <div className="relative z-10 w-full mx-auto" style={{ maxWidth: "var(--container-width)" }}>
-        <div className="w-full space-y-8 text-center duration-700 md:w-3/5 md:text-left animate-in fade-in slide-in-from-left-5">
-          <h1
-            className="text-5xl font-extrabold leading-tight tracking-tight md:text-7xl drop-shadow-xl shadow-black"
-            dangerouslySetInnerHTML={{ __html: safeContent.title }}
-          />
-          <p className="max-w-xl text-lg font-medium leading-relaxed text-gray-200 md:text-xl drop-shadow-md">
+      {/* Content Container */}
+      <div className="relative z-10 w-full px-6 mx-auto max-w-7xl md:px-12">
+        <div className="max-w-3xl space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-1000">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-semibold text-blue-400 bg-blue-500/10 border border-blue-500/20 rounded-full backdrop-blur-md">
+            <Sparkles className="w-4 h-4" />
+            <span>Next-Generation Fitness</span>
+          </div>
+
+          <h1 className="text-5xl font-black leading-tight tracking-tight text-white md:text-7xl drop-shadow-2xl">
+            {finalTitle}
+          </h1>
+
+          <p className="max-w-xl text-lg text-gray-300 md:text-xl drop-shadow-lg font-medium leading-relaxed">
             {safeContent.description}
           </p>
+
           {safeContent.showButton && (
-            <div className="flex flex-wrap justify-center gap-4 pt-4 md:justify-start">
+            <div className="flex flex-wrap items-center gap-4 pt-6">
               <button
                 onClick={onContinue}
                 disabled={continueLoading}
-                className="flex items-center gap-3 px-10 py-5 text-lg font-bold text-black transition-transform bg-white rounded-full shadow-xl hover:scale-105 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed group"
+                className="flex items-center gap-2 px-8 py-4 text-base font-bold text-white transition-all bg-blue-600 rounded-full hover:bg-blue-500 hover:shadow-[0_0_20px_rgba(59,130,246,0.5)] active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed group"
               >
                 {continueLoading ? (
                   <Loader2 className="w-5 h-5 animate-spin" />
                 ) : (
                   <>
                     {activeSession?.session_id
-                      ? `Tiếp tục: ${activeSession.plan_name}`
-                      : safeContent.buttonText || "Bắt đầu ngay"}
+                      ? `Continue: ${activeSession.plan_name}`
+                      : "Start Now"}
                     <PlayCircle className="w-5 h-5 transition-transform group-hover:translate-x-1" />
                   </>
                 )}
@@ -118,9 +125,9 @@ export default function DashboardHero({
               {!isPremiumOrAdmin && (
                 <button
                   onClick={onPremiumClick}
-                  className="px-10 py-5 text-lg font-bold text-white transition-colors border border-white/30 rounded-full hover:bg-white/10 backdrop-blur-sm"
+                  className="px-8 py-4 text-base font-bold text-white transition-all border-2 border-white/80 rounded-full hover:bg-white hover:text-black hover:border-white active:scale-95 backdrop-blur-sm"
                 >
-                  Gói Premium
+                  Premium Package
                 </button>
               )}
             </div>

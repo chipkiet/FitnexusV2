@@ -11,18 +11,20 @@ const transporter = nodemailer.createTransport({
 });
 
 export async function sendMail({ to, subject, html, text }) {
-  console.log(`\n================================`);
-  console.log(`[MOCK EMAIL] To: ${to}`);
-  console.log(`[MOCK EMAIL] Subject: ${subject}`);
-  console.log(`[MOCK EMAIL] OTP/Content:\n${text || html?.replace(/<[^>]+>/g, '')}`);
-  console.log(`================================\n`);
-  //   to,
-  //   subject,
-  //   text,
-  //   html,
-  // });
-  // return info;
-  return { messageId: "mocked-email-id-123" };
+  try {
+    const info = await transporter.sendMail({
+      from: `"FITNEXUS" <${process.env.SMTP_USER}>`,
+      to,
+      subject,
+      text,
+      html,
+    });
+    console.log(`Email sent: ${info.messageId}`);
+    return info;
+  } catch (error) {
+    console.error("Error sending email:", error);
+    throw error;
+  }
 }
 // mẫu email
 export function lockEmailTemplate({ fullName, reason }) {
