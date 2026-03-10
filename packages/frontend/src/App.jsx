@@ -81,6 +81,7 @@ import Avatar from "./pages/profile/Avatar.jsx";
 import FAQ from "./pages/support/FAQ.jsx";
 // Settings pages
 import Theme from "./pages/settings/Theme.jsx";
+import FemaleFrontMap from "./pages/model-ex/FemaleFrontMap.jsx";
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
@@ -131,6 +132,8 @@ function App() {
       <AuthProvider>
         <Router>
           <Routes>
+            <Route path="/model-ex" element={<FemaleFrontMap />} />/
+
             <Route path="/login" element={<Login />} />
             <Route path="/login/otp" element={<GoogleOtp />} />
             <Route path="/register" element={<Register />} />
@@ -269,7 +272,7 @@ function App() {
               path="/modeling"
               element={
                 <PrivateRoute>
-                  <Modeling />
+                  <FemaleFrontMap />
                 </PrivateRoute>
               }
             />
@@ -377,7 +380,9 @@ function App() {
               />
 
               <Route path="content/hero" element={<AdminHeroSettings />} />
+
             </Route>
+
 
             {/* Catch all: redirect based on auth status */}
             <Route path="*" element={<NotFoundRedirect />} />
