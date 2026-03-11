@@ -8,17 +8,46 @@ import { MuscleHoverCard } from "./MuscleHoverCard";
 // Width at which coordinates were originally mapped
 const IMG_WIDTH = 448;
 
+// Spatial suffixes that are never part of the muscle key itself
+const SPATIAL_SUFFIXES = ["_right", "_left", "_center", "_upper", "_lower"];
+
+/**
+ * Given an area ID from the image map (e.g. "biceps_right", "rear_deltoids_left"),
+ * return the key that exists in muscleExerciseMap.
+ *
+ * Strategy:
+ *  1. Strip known spatial suffixes and check the remainder.
+ *  2. Walk descending prefix lengths and return the first one that
+ *     muscleInfoMap knows about (exact key only, no internal fallback).
+ *  3. Last resort: first part of the underscore-split.
+ */
 const getCoreId = (areaId) => {
     if (!areaId) return null;
-    const info = getMuscleInfo(areaId);
-    if (!info) return areaId.split("_")[0];
+
+    // 1. Try stripping a known spatial suffix first (handles compound names
+    //    like "rear_deltoids_right" → "rear_deltoids")
+    for (const sfx of SPATIAL_SUFFIXES) {
+        if (areaId.endsWith(sfx)) {
+            const base = areaId.slice(0, -sfx.length);
+            if (getMuscleInfo(base)) return base;   // exact key in muscleInfoMap
+        }
+    }
+
+    // 2. If the id itself is an exact key in muscleInfoMap, just use it
+    if (getMuscleInfo(areaId) && !SPATIAL_SUFFIXES.some(s => areaId.endsWith(s))) {
+        return areaId;
+    }
+
+    // 3. Descending prefix walk (skips full length so "biceps_right" → "biceps")
     const parts = areaId.split("_");
-    for (let len = parts.length; len >= 1; len--) {
+    for (let len = parts.length - 1; len >= 1; len--) {
         const key = parts.slice(0, len).join("_");
         if (getMuscleInfo(key)) return key;
     }
+
     return parts[0];
 };
+
 
 export function MuscleMap({ view = "front", onMuscleSelect }) {
     const containerRef = useRef(null);

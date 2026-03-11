@@ -101,22 +101,39 @@ async function callGemini(prompt, apiKey) {
     return 'Bản nháp kế hoạch (demo, thiếu GEMINI_API_KEY)\n\n- Mục tiêu: theo yêu cầu\n- Bữa sáng/trưa/tối + snack: gợi ý mẫu\n- Macro ước tính theo mục tiêu\n\nHãy cấu hình GEMINI_API_KEY ở backend để nhận đề xuất chi tiết từ AI.';
   }
 
-  const model = (process.env.GEMINI_MODEL || 'gemini-2.0-flash').trim();
-  const temp = Number.isFinite(+process.env.GEMINI_TEMPERATURE) ? +process.env.GEMINI_TEMPERATURE : 0.7;
-  const maxTok = Number.isFinite(+process.env.GEMINI_MAX_TOKENS) ? +process.env.GEMINI_MAX_TOKENS : 2048;
-  const topP = Number.isFinite(+process.env.GEMINI_TOP_P) ? +process.env.GEMINI_TOP_P : undefined;
-  const topK = Number.isFinite(+process.env.GEMINI_TOP_K) ? +process.env.GEMINI_TOP_K : undefined;
-  dbg('model in use', { model, temp, maxTok, ...(topP!=null?{topP}:{}) , ...(topK!=null?{topK}:{}) });
-  const versions = ['v1', 'v1beta'];
+  // ── Model priority list ──────────────────────────────────────────────────
+  // Env GEMINI_MODEL is tried first; remaining are the fallback chain.
+  const FALLBACK_MODELS = [
+    'gemini-2.5-flash',
+    'gemini-2.0-flash',
+    'gemini-2.0-flash-lite',
+    'gemini-2.5-pro',
+  ];
+
+  // Put the env-configured model at the front (de-dup the rest)
+  const envModel = (process.env.GEMINI_MODEL || '').trim();
+  const modelQueue = envModel
+    ? [envModel, ...FALLBACK_MODELS.filter(m => m !== envModel)]
+    : FALLBACK_MODELS;
+
+  const temp    = Number.isFinite(+process.env.GEMINI_TEMPERATURE) ? +process.env.GEMINI_TEMPERATURE : 0.7;
+  const maxTok  = Number.isFinite(+process.env.GEMINI_MAX_TOKENS)  ? +process.env.GEMINI_MAX_TOKENS  : 2048;
+  const topP    = Number.isFinite(+process.env.GEMINI_TOP_P)       ? +process.env.GEMINI_TOP_P       : undefined;
+  const topK    = Number.isFinite(+process.env.GEMINI_TOP_K)       ? +process.env.GEMINI_TOP_K       : undefined;
+
   const genCfg = { temperature: temp, maxOutputTokens: maxTok };
   if (topP != null) genCfg.topP = topP;
   if (topK != null) genCfg.topK = topK;
+
   const body = {
     contents: [{ role: 'user', parts: [{ text: prompt }] }],
     generationConfig: genCfg,
     safetySettings: [],
   };
 
+  const versions = ['v1', 'v1beta'];
+
+  // ── HTTP helper ──────────────────────────────────────────────────────────
   const postJson = async (fullUrl, payloadObj) => {
     const payload = JSON.stringify(payloadObj);
     if (typeof fetch === 'function') {
@@ -149,23 +166,65 @@ async function callGemini(prompt, apiKey) {
     return data;
   };
 
+  // ── Retryable status codes (quota / overloaded) ──────────────────────────
+  const isRetryable = (status) => status === 429 || status === 503;
+  // Fail fast on auth / bad-request errors
+  const isHardFail  = (status) => status === 400 || status === 401 || status === 403;
+
   let lastErr = null;
-  for (const v of versions) {
-    const url = `https://generativelanguage.googleapis.com/${v}/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`;
-    try {
-      dbg('request', { version: v, model, promptLen: String(prompt).length });
-      const data = await postJson(url, body);
-      const text = data?.candidates?.[0]?.content?.parts?.map(p => p.text).join('\n') || '';
-      dbg('success', { version: v, model, textLen: text.length });
-      return text;
-    } catch (e) {
-      dbg('error', { version: v, model, status: e?.status, message: e?.message });
-      lastErr = e;
-      if (e?.status !== 404) break; // only fallback to next version on 404
+
+  // ── Outer loop: rotate through models ───────────────────────────────────
+  for (let mi = 0; mi < modelQueue.length; mi++) {
+    const model = modelQueue[mi];
+    dbg('trying model', { model, attempt: mi + 1, ofTotal: modelQueue.length });
+
+    let modelSucceeded = false;
+
+    // ── Inner loop: rotate through API versions ──────────────────────────
+    for (const v of versions) {
+      const url = `https://generativelanguage.googleapis.com/${v}/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`;
+      try {
+        dbg('request', { version: v, model, promptLen: String(prompt).length });
+        const data = await postJson(url, body);
+        const text = data?.candidates?.[0]?.content?.parts?.map(p => p.text).join('\n') || '';
+        dbg('success', { version: v, model, textLen: text.length });
+        return text;   // ✅ done
+      } catch (e) {
+        dbg('error', { version: v, model, status: e?.status, message: e?.message });
+        lastErr = e;
+
+        if (isHardFail(e?.status)) {
+          // Bad key / bad request — no point retrying any model
+          throw e;
+        }
+
+        if (isRetryable(e?.status)) {
+          // Quota / overload — skip remaining versions, try next model
+          const nextModel = modelQueue[mi + 1];
+          if (nextModel) {
+            dbg('fallback-switch', { from: model, to: nextModel, reason: e?.status });
+          } else {
+            dbg('all-models-exhausted', { lastStatus: e?.status });
+          }
+          break; // break inner (versions) loop → advance to next model
+        }
+
+        if (e?.status === 404) {
+          // Model not found on this version → try next version
+          continue;
+        }
+
+        // Unknown error — stop immediately
+        throw e;
+      }
     }
+
+    if (modelSucceeded) break;
   }
-  throw lastErr || new Error('Gemini API call failed');
+
+  throw lastErr || new Error('All Gemini models exhausted');
 }
+
 
 router.post('/plan', aiQuota('nutrition_plan'), async (req, res) => {
   try {
