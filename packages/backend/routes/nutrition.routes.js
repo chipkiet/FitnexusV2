@@ -429,9 +429,9 @@ router.post('/plan/from-onboarding', authOrSession, aiQuota('nutrition_plan'), a
   }
 });
 
-// ─── POST /api/nutrition/sync-ai ────────────────────────────────────
+// ─── POST /api/nutrition/extract-to-meals ────────────────────────────────────
 // Sync Gemini AI Menu to Meal Planner using USDA API
-router.post('/sync-ai', authOrSession, async (req, res) => {
+router.post('/extract-to-meals', authOrSession, async (req, res) => {
   try {
     const { meals, startDate } = req.body;
     const userId = req.userId;
