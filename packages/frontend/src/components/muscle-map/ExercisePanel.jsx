@@ -1,14 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { motion, AnimatePresence } from "framer-motion";
 import { fetchExercisesForMuscle } from "./exerciseService";
 import { getMuscleInfo } from "./muscleMapData";
 
 export function ExercisePanel({ selectedMuscleId }) {
-
     const navigate = useNavigate();
     const [exercises, setExercises] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -16,102 +12,189 @@ export function ExercisePanel({ selectedMuscleId }) {
     const muscleInfo = selectedMuscleId ? getMuscleInfo(selectedMuscleId) : null;
 
     useEffect(() => {
-        if (!selectedMuscleId) {
-            setExercises([]);
-            return;
-        }
+        if (!selectedMuscleId) { setExercises([]); return; }
         setLoading(true);
         fetchExercisesForMuscle(selectedMuscleId)
             .then(setExercises)
             .finally(() => setLoading(false));
     }, [selectedMuscleId]);
 
+    const cardStyle = {
+        background: "#FFFFFF",
+        border: "1px solid #E2E8F0",
+        borderRadius: "18px",
+        boxShadow: "0 2px 12px rgba(0,0,0,0.07)",
+        minHeight: "320px",
+        overflow: "hidden",
+    };
+
+    const topBar = <div style={{ height: "3px", background: "#6366F1" }} />;
+
     // ─── Empty state ──────────────────────────────────────────────────────────
     if (!selectedMuscleId) {
         return (
-            <Card className="h-full rounded-xl border shadow-sm">
-                <CardContent className="flex flex-col items-center justify-center h-full min-h-[280px] gap-3 text-center p-8">
-                    <span className="text-5xl">🫀</span>
-                    <p className="font-medium text-base">Select a muscle</p>
-                    <p className="text-sm text-muted-foreground">
-                        Click any highlighted region on the body map to see exercises
-                    </p>
-                </CardContent>
-            </Card>
+            <motion.div
+                style={cardStyle}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+            >
+                {topBar}
+                <div style={{
+                    display: "flex", flexDirection: "column", alignItems: "center",
+                    justifyContent: "center", minHeight: "320px", padding: "40px 24px",
+                    gap: "14px", textAlign: "center"
+                }}>
+                    <motion.div
+                        animate={{ y: [0, -8, 0] }}
+                        transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
+                        style={{
+                            width: "64px", height: "64px", borderRadius: "50%",
+                            background: "#EEF2FF", display: "flex",
+                            alignItems: "center", justifyContent: "center", fontSize: "28px",
+                        }}
+                    >
+                        🫀
+                    </motion.div>
+                    <div>
+                        <p style={{ fontSize: "15px", fontWeight: 700, color: "#1E293B", marginBottom: "6px" }}>
+                            Select a Muscle Group
+                        </p>
+                        <p style={{ fontSize: "13px", color: "#94A3B8", maxWidth: "210px", lineHeight: 1.6 }}>
+                            Click any highlighted region on the body map to discover exercises
+                        </p>
+                    </div>
+                    <div style={{ display: "flex", gap: "6px" }}>
+                        {[0, 1, 2].map(i => (
+                            <motion.span
+                                key={i}
+                                animate={{ opacity: [0.3, 1, 0.3] }}
+                                transition={{ repeat: Infinity, duration: 1.4, delay: i * 0.2 }}
+                                style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#6366F1", display: "inline-block" }}
+                            />
+                        ))}
+                    </div>
+                </div>
+            </motion.div>
         );
     }
 
     // ─── Loading skeleton ─────────────────────────────────────────────────────
     if (loading) {
         return (
-            <Card className="h-full rounded-xl border shadow-sm">
-                <CardHeader className="pb-3">
-                    <div className="h-5 w-32 rounded bg-muted animate-pulse" />
-                    <div className="h-3.5 w-20 rounded bg-muted animate-pulse mt-1" />
-                </CardHeader>
-                <Separator />
-                <CardContent className="pt-4 space-y-3">
-                    {[1, 2, 3, 4].map(i => (
-                        <div key={i} className="flex items-center gap-3">
-                            <div className="h-2 w-2 rounded-full bg-muted animate-pulse shrink-0" />
-                            <div className="h-4 rounded bg-muted animate-pulse" style={{ width: `${50 + i * 10}%` }} />
+            <motion.div style={cardStyle} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                {topBar}
+                <div style={{ padding: "20px 24px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px" }}>
+                        <motion.div
+                            animate={{ opacity: [0.4, 0.9, 0.4] }}
+                            transition={{ repeat: Infinity, duration: 1.4 }}
+                            style={{ width: "40px", height: "40px", borderRadius: "10px", background: "#E2E8F0" }}
+                        />
+                        <div>
+                            {[120, 70].map((w, i) => (
+                                <motion.div key={i} animate={{ opacity: [0.4, 0.9, 0.4] }} transition={{ repeat: Infinity, duration: 1.4, delay: i * 0.1 }}
+                                    style={{ width: `${w}px`, height: i === 0 ? 14 : 10, borderRadius: "6px", background: "#E2E8F0", marginBottom: i === 0 ? 6 : 0 }}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                    <div style={{ height: "1px", background: "#F1F5F9", marginBottom: "16px" }} />
+                    {[70, 50, 60, 45].map((w, i) => (
+                        <div key={i} style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "12px" }}>
+                            <motion.div animate={{ opacity: [0.4, 0.9, 0.4] }} transition={{ repeat: Infinity, duration: 1.4, delay: i * 0.1 }}
+                                style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#E2E8F0", flexShrink: 0 }}
+                            />
+                            <motion.div animate={{ opacity: [0.4, 0.9, 0.4] }} transition={{ repeat: Infinity, duration: 1.4, delay: i * 0.12 }}
+                                style={{ width: `${w}%`, height: 12, borderRadius: "6px", background: "#E2E8F0" }}
+                            />
                         </div>
                     ))}
-                </CardContent>
-            </Card>
+                </div>
+            </motion.div>
         );
     }
 
     // ─── Populated state ──────────────────────────────────────────────────────
     return (
-        <Card className="h-full rounded-xl border shadow-sm">
-            <CardHeader className="pb-3">
-                <div className="flex items-center gap-2">
-                    <span className="text-2xl">{muscleInfo?.icon}</span>
-                    <div>
-                        <CardTitle className="text-base leading-tight">
+        <motion.div style={cardStyle} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
+            {topBar}
+
+            {/* Header */}
+            <div style={{ padding: "18px 24px 14px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+                    <motion.div
+                        initial={{ scale: 0.7, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ type: "spring", stiffness: 280, damping: 18 }}
+                        style={{
+                            width: "44px", height: "44px", borderRadius: "12px",
+                            background: "#EEF2FF", display: "flex", alignItems: "center",
+                            justifyContent: "center", fontSize: "22px", flexShrink: 0,
+                        }}
+                    >
+                        {muscleInfo?.icon}
+                    </motion.div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ fontSize: "16px", fontWeight: 700, color: "#1E293B" }}>
                             {muscleInfo?.name ?? selectedMuscleId}
-                        </CardTitle>
+                        </p>
                         {muscleInfo?.nameVi && (
-                            <p className="text-xs text-muted-foreground">{muscleInfo.nameVi}</p>
+                            <p style={{ fontSize: "12px", color: "#94A3B8", marginTop: "2px" }}>{muscleInfo.nameVi}</p>
                         )}
                     </div>
-                    <Badge variant="secondary" className="ml-auto text-xs">
+                    <div style={{
+                        padding: "4px 12px", borderRadius: "999px",
+                        background: "#EEF2FF", fontSize: "12px", fontWeight: 600, color: "#6366F1",
+                    }}>
                         {exercises.length} exercises
-                    </Badge>
+                    </div>
                 </div>
-            </CardHeader>
+            </div>
 
-            <Separator />
+            <div style={{ height: "1px", background: "#F1F5F9", margin: "0 24px" }} />
 
-            <CardContent className="pt-4 p-0">
-                <ScrollArea className="h-72 px-6 pb-4">
-                    <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-                        Exercises
-                    </p>
+            {/* Exercise list */}
+            <div style={{ padding: "14px 24px 20px" }}>
+                <p style={{ fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#6366F1", marginBottom: "10px" }}>
+                    Exercises
+                </p>
+                <div style={{ maxHeight: "420px", overflowY: "auto", display: "flex", flexDirection: "column", gap: "2px" }}>
                     {exercises.length === 0 ? (
-                        <p className="text-sm text-muted-foreground italic">
-                            No exercises found for this muscle.
-                        </p>
+                        <p style={{ fontSize: "13px", color: "#94A3B8", fontStyle: "italic" }}>No exercises found for this muscle.</p>
                     ) : (
-                        <ul className="space-y-1.5">
-                            {exercises.map((ex) => (
-                                <li key={ex.id}>
-                                    <button
-                                        onClick={() => navigate(`/exercises/${ex.id}`)}
-                                        className="w-full flex items-center gap-3 text-sm text-left group rounded-lg px-2 py-1.5 hover:bg-primary/10 transition-colors cursor-pointer"
-                                    >
-                                        <span className="h-1.5 w-1.5 rounded-full bg-primary shrink-0 group-hover:scale-125 transition-transform" />
-                                        <span className="group-hover:text-primary transition-colors">
-                                            {ex.name}
-                                        </span>
-                                    </button>
-                                </li>
+                        <AnimatePresence>
+                            {exercises.map((ex, i) => (
+                                <motion.button
+                                    key={ex.id}
+                                    initial={{ opacity: 0, x: -12 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: i * 0.04, duration: 0.25 }}
+                                    whileHover={{ x: 6, backgroundColor: "#F5F3FF" }}
+                                    whileTap={{ scale: 0.98 }}
+                                    onClick={() => navigate(`/exercises/${ex.id}`)}
+                                    style={{
+                                        width: "100%", display: "flex", alignItems: "center", gap: "12px",
+                                        padding: "9px 10px", borderRadius: "10px", background: "transparent",
+                                        border: "none", cursor: "pointer", textAlign: "left",
+                                    }}
+                                >
+                                    <span style={{
+                                        width: "7px", height: "7px", borderRadius: "50%",
+                                        background: "#6366F1", flexShrink: 0,
+                                    }} />
+                                    <span style={{ fontSize: "13px", color: "#334155", flex: 1 }}>{ex.name}</span>
+                                    <motion.span
+                                        initial={{ opacity: 0 }}
+                                        whileHover={{ opacity: 1 }}
+                                        style={{ fontSize: "14px", color: "#6366F1" }}
+                                    >›</motion.span>
+                                </motion.button>
                             ))}
-                        </ul>
+                        </AnimatePresence>
                     )}
-                </ScrollArea>
-            </CardContent>
-        </Card>
+                </div>
+            </div>
+        </motion.div>
     );
 }

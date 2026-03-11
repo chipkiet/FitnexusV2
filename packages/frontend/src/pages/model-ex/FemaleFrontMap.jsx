@@ -1,80 +1,117 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { MuscleMap } from '../../components/muscle-map/MuscleMap';
 import { ExercisePanel } from '../../components/muscle-map/ExercisePanel';
-import { Button } from '../../components/ui/button';
 import HeaderLogin from '../../components/header/HeaderLogin.jsx';
 
 const FemaleFrontMap = () => {
-
     const [viewMode, setViewMode] = useState("front");
     const [selectedMuscle, setSelectedMuscle] = useState(null);
 
     return (
-        <>
+        <div style={{ minHeight: "100vh", background: "#F8F9FC", color: "#1E293B" }}>
             <HeaderLogin />
 
-            <main className="min-h-screen bg-zinc-50 dark:bg-zinc-950 pt-20 pb-12 px-4">
-                <div className="max-w-6xl mx-auto space-y-6">
+            <main style={{ paddingTop: "80px", paddingBottom: "64px", paddingLeft: "24px", paddingRight: "24px" }}>
+                <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
 
-                    {/* ── Page Header ─────────────────────────────────────── */}
-                    <div className="text-center space-y-1.5 pt-4">
-                        <h1 className="text-3xl font-bold tracking-tight">Muscle Explorer</h1>
-                        <p className="text-muted-foreground text-sm">
-                            Hover a muscle group to preview · Click to load exercises
+                    {/* ── Hero Header ──────────────────────────────── */}
+                    <motion.div
+                        initial={{ opacity: 0, y: -24 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, ease: "easeOut" }}
+                        style={{ textAlign: "center", paddingTop: "32px", marginBottom: "32px" }}
+                    >
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: 0.1, duration: 0.4 }}
+                            style={{
+                                display: "inline-flex", alignItems: "center", gap: "6px",
+                                padding: "4px 14px", borderRadius: "999px", marginBottom: "12px",
+                                background: "#EEF2FF", color: "#6366F1", fontSize: "12px", fontWeight: 600,
+                            }}
+                        >
+                            <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: "#6366F1" }} />
+                            Interactive Body Map
+                        </motion.div>
+
+                        <h1 style={{ fontSize: "48px", fontWeight: 800, color: "#0F172A", letterSpacing: "-0.03em", margin: 0 }}>
+                            Muscle Explorer
+                        </h1>
+                        <p style={{ fontSize: "15px", color: "#64748B", marginTop: "10px" }}>
+                            Hover a muscle to preview · Click to discover exercises
                         </p>
-                    </div>
+                    </motion.div>
 
-                    {/* ── Front / Back Toggle ──────────────────────────────── */}
-                    <div className="flex justify-center">
-                        <div className="inline-flex gap-1 rounded-xl border bg-muted p-1 shadow-sm">
-                            <Button
-                                variant={viewMode === "front" ? "default" : "ghost"}
-                                size="sm"
-                                className="rounded-lg px-5"
-                                onClick={() => {
-                                    setViewMode("front");
-                                    setSelectedMuscle(null);
-                                }}
-                            >
-                                Front
-                            </Button>
-                            <Button
-                                variant={viewMode === "back" ? "default" : "ghost"}
-                                size="sm"
-                                className="rounded-lg px-5"
-                                onClick={() => {
-                                    setViewMode("back");
-                                    setSelectedMuscle(null);
-                                }}
-                            >
-                                Back
-                            </Button>
+                    {/* ── Front / Back Toggle ──────────────────────── */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2, duration: 0.4 }}
+                        style={{ display: "flex", justifyContent: "center", marginBottom: "36px" }}
+                    >
+                        <div style={{
+                            display: "inline-flex", padding: "4px", borderRadius: "14px",
+                            background: "#FFFFFF", border: "1px solid #E2E8F0",
+                            boxShadow: "0 1px 4px rgba(0,0,0,0.06)"
+                        }}>
+                            {["front", "back"].map((mode) => (
+                                <motion.button
+                                    key={mode}
+                                    onClick={() => { setViewMode(mode); setSelectedMuscle(null); }}
+                                    whileTap={{ scale: 0.96 }}
+                                    style={{
+                                        position: "relative", padding: "8px 28px", borderRadius: "10px",
+                                        fontSize: "14px", fontWeight: 600, border: "none", cursor: "pointer",
+                                        textTransform: "capitalize", transition: "color 0.2s ease",
+                                        background: viewMode === mode ? "#6366F1" : "transparent",
+                                        color: viewMode === mode ? "#FFFFFF" : "#64748B",
+                                    }}
+                                >
+                                    {mode === "front" ? "⬛ Front" : "⬜ Back"}
+                                </motion.button>
+                            ))}
                         </div>
-                    </div>
+                    </motion.div>
 
-                    {/* ── Main Content: 2-column on desktop, stacked on mobile ── */}
-                    <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] gap-6 items-start">
+                    {/* ── Main 2-column Layout ─────────────────────── */}
+                    <div style={{ display: "grid", gridTemplateColumns: "420px 1fr", gap: "28px", alignItems: "start" }}>
 
                         {/* Left: Muscle Map */}
-                        <div className="w-full md:w-[380px] lg:w-[420px] mx-auto md:mx-0">
-                            <MuscleMap
-                                view={viewMode}
-                                onMuscleSelect={setSelectedMuscle}
-                            />
-                            <p className="text-center text-xs text-muted-foreground mt-3">
-                                Click a muscle to view exercises
+                        <motion.div
+                            initial={{ opacity: 0, x: -32 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.3, duration: 0.5, ease: "easeOut" }}
+                        >
+                            <MuscleMap view={viewMode} onMuscleSelect={setSelectedMuscle} />
+                            <p style={{ textAlign: "center", fontSize: "12px", color: "#94A3B8", marginTop: "10px" }}>
+                                ☝️ Click any region to load exercises
                             </p>
-                        </div>
+                        </motion.div>
 
                         {/* Right: Exercise Panel */}
-                        <div className="w-full">
-                            <ExercisePanel selectedMuscleId={selectedMuscle} />
-                        </div>
-
+                        <motion.div
+                            initial={{ opacity: 0, x: 32 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.35, duration: 0.5, ease: "easeOut" }}
+                        >
+                            <AnimatePresence mode="wait">
+                                <motion.div
+                                    key={selectedMuscle ?? "empty"}
+                                    initial={{ opacity: 0, y: 16 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -8 }}
+                                    transition={{ duration: 0.3 }}
+                                >
+                                    <ExercisePanel selectedMuscleId={selectedMuscle} />
+                                </motion.div>
+                            </AnimatePresence>
+                        </motion.div>
                     </div>
                 </div>
             </main>
-        </>
+        </div>
     );
 };
 

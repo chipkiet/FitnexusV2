@@ -1,6 +1,6 @@
 export const defaultStyle = {
     preFillColor: "transparent",
-    fillColor: "rgba(59, 130, 246, 0.25)",
+    fillColor: "rgba(99, 102, 241, 0.28)",
     strokeColor: "transparent",
     strokeWidth: 0
 };
