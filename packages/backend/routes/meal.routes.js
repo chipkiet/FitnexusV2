@@ -35,7 +35,7 @@ const NID = { calories: 1008, protein: 1003, carbs: 1005, fat: 1004 };
 // ─── USDA helpers ─────────────────────────────────────────────────────────────
 
 /** Simple fetch via Node https (no extra deps) */
-const usdaGet = (path) => new Promise((resolve, reject) => {
+export const usdaGet = (path) => new Promise((resolve, reject) => {
     const url = `${USDA_BASE}${path}${path.includes('?') ? '&' : '?'}api_key=${USDA_KEY}`;
     https.get(url, { headers: { 'Accept': 'application/json' } }, (res) => {
         let data = '';
@@ -54,7 +54,7 @@ const getNutrient = (nutrients, nid) => {
 };
 
 /** Normalize a USDA search hit or food detail → { id, name, calories, protein, carbs, fat } */
-const normalize = (item) => ({
+export const normalize = (item) => ({
     id:       item.fdcId,
     name:     item.description || item.lowercaseDescription || 'Unknown',
     calories: getNutrient(item.foodNutrients, NID.calories),
@@ -65,12 +65,12 @@ const normalize = (item) => ({
 
 // ─── CSV helpers ──────────────────────────────────────────────────────────────
 
-const loadFoodsLocal = () => {
+export const loadFoodsLocal = () => {
     try { return JSON.parse(fs.readFileSync(FOODS_PATH, 'utf8')); }
     catch { return []; }
 };
 
-const ensureCsv = () => {
+export const ensureCsv = () => {
     if (!fs.existsSync(CSV_PATH)) fs.writeFileSync(CSV_PATH, CSV_HEADER);
 };
 
@@ -78,7 +78,7 @@ const ensureCsv = () => {
  * Parse a single CSV line respecting RFC-4180 quoted fields.
  * Handles fields like: 123,"Sweet potato, canned",45
  */
-const parseCsvLine = (line) => {
+export const parseCsvLine = (line) => {
     const fields = [];
     let cur = '';
     let inQuote = false;
@@ -98,7 +98,7 @@ const parseCsvLine = (line) => {
     return fields;
 };
 
-const loadMeals = () => {
+export const loadMeals = () => {
     ensureCsv();
     const lines = fs.readFileSync(CSV_PATH, 'utf8').trim().split('\n');
     if (lines.length <= 1) return [];
@@ -113,7 +113,7 @@ const loadMeals = () => {
         });
 };
 
-const appendRow = (row) => {
+export const appendRow = (row) => {
     ensureCsv();
     const line = [
         row.id, row.user_id, row.meal_type, row.food_id,
@@ -123,7 +123,7 @@ const appendRow = (row) => {
     fs.appendFileSync(CSV_PATH, line);
 };
 
-const rewriteCsv = (rows) => {
+export const rewriteCsv = (rows) => {
     const lines = rows.map(r =>
         [r.id, r.user_id, r.meal_type, r.food_id,
          `"${r.food_name}"`, r.quantity_g,
@@ -152,8 +152,8 @@ const shuffle = (arr) => {
     return arr;
 };
 
-const todayStr = () => new Date().toISOString().slice(0, 10);
-const genId    = () => `${Date.now()}${Math.floor(Math.random() * 900) + 100}`;
+export const todayStr = () => new Date().toISOString().slice(0, 10);
+export const genId    = () => `${Date.now()}${Math.floor(Math.random() * 900) + 100}`;
 
 // Popular keywords rotated for the default food list
 const POPULAR_TERMS = [

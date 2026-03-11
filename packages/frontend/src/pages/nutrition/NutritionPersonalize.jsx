@@ -171,6 +171,8 @@ export default function NutritionPersonalize() {
   const [plan, setPlan] = useState('');
   const [usedChips, setUsedChips] = useState(new Set());
   const [showHelper, setShowHelper] = useState(false);
+  const [extracting, setExtracting] = useState(false);
+  const [extractSuccess, setExtractSuccess] = useState(false);
   const containerRef = useRef(null);
   const textareaRef = useRef(null);
 
@@ -213,9 +215,93 @@ export default function NutritionPersonalize() {
     }
   };
 
+  const extractToMeals = async () => {
+    if (!plan || extracting) return;
+    try {
+      setExtracting(true);
+      setError(null);
+
+      // Attempt to clean markdown if present before parsing
+      let jsonRaw = plan;
+      const match = jsonRaw.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+      if (match) jsonRaw = match[1].trim();
+
+      const parsedPlan = JSON.parse(jsonRaw);
+      if (!Array.isArray(parsedPlan)) throw new Error('Dữ liệu trả về không phải mảng thực đơn');
+
+      const todayStr = new Date().toISOString().slice(0, 10);
+      await api.post(endpoints.nutrition.extractToMeals || '/api/nutrition/sync-ai', {
+        meals: parsedPlan,
+        startDate: todayStr
+      });
+      setExtractSuccess(true);
+      setTimeout(() => navigate('/meal-planner'), 1500);
+    } catch (e) {
+      const msg = e?.response?.data?.error || e?.message || 'Không thể trích xuất thực đơn';
+      setError(msg);
+    } finally {
+      setExtracting(false);
+    }
+  };
+
+  // Safe parse plan for UI rendering
+  const parsedUIPlan = useMemo(() => {
+    if (!plan) return null;
+    try {
+      let jsonRaw = plan;
+      const match = jsonRaw.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+      if (match) jsonRaw = match[1].trim();
+      
+      const parsed = JSON.parse(jsonRaw);
+      return Array.isArray(parsed) ? parsed : null;
+    } catch {
+      return null;
+    }
+  }, [plan]);
+
+  // Group UI plan by days
+  const groupedPlan = useMemo(() => {
+    if (!parsedUIPlan) return {};
+    const grouped = {};
+    parsedUIPlan.forEach(p => {
+      if (!grouped[p.dayOffset]) grouped[p.dayOffset] = [];
+      grouped[p.dayOffset].push(p);
+    });
+    return grouped;
+  }, [parsedUIPlan]);
+
   return (
     <div style={{ minHeight: '100vh', background: '#F8FAFC', color: '#0F172A' }}>
       <HeaderLogin />
+
+      {/* Toast Notification */}
+      <AnimatePresence>
+        {extractSuccess && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, x: '-50%' }}
+            animate={{ opacity: 1, y: 0, x: '-50%' }}
+            exit={{ opacity: 0, y: -20, x: '-50%' }}
+            style={{
+              position: 'fixed',
+              top: 80,
+              left: '50%',
+              zIndex: 9999,
+              background: '#10B981',
+              color: '#FFFFFF',
+              padding: '12px 24px',
+              borderRadius: '999px',
+              fontWeight: 600,
+              fontSize: 14,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
+            }}
+          >
+            <span style={{ fontSize: 18 }}>✅</span> Thêm vào sổ tay thành công! Đang chuyển hướng...
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <ScreenshotCapture
         targetRef={containerRef}
@@ -567,11 +653,73 @@ export default function NutritionPersonalize() {
 
                 <div style={{ height: 1, background: '#F1F5F9', marginBottom: 18 }} />
 
-                <div
-                  className="markdown-body"
-                  style={{ lineHeight: 1.8, maxHeight: '70vh', overflowY: 'auto', fontSize: 14, color: '#334155' }}
-                  dangerouslySetInnerHTML={{ __html: renderMarkdown(plan) }}
-                />
+                {parsedUIPlan ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                    {Object.keys(groupedPlan).map(day => (
+                      <div key={day} style={{ background: '#F8FAFC', padding: 16, borderRadius: 12, border: '1px solid #E2E8F0' }}>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: '#334155', marginBottom: 12 }}>Ngày {parseInt(day) + 1}</div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12 }}>
+                          {groupedPlan[day].map((m, idx) => {
+                            const bgMap = { breakfast: '#FEF3C7', lunch: '#D1FAE5', dinner: '#E0E7FF', snack: '#FCE7F3' };
+                            const colorMap = { breakfast: '#D97706', lunch: '#059669', dinner: '#4338CA', snack: '#DB2777' };
+                            const nameMap = { breakfast: 'Sáng', lunch: 'Trưa', dinner: 'Tối', snack: 'Phụ' };
+
+                            return (
+                              <div key={idx} style={{ background: '#FFFFFF', padding: 12, borderRadius: 8, border: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                <div style={{ display: 'inline-block', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', padding: '2px 8px', borderRadius: 4, background: bgMap[m.meal_type] || '#F1F5F9', color: colorMap[m.meal_type] || '#475569', alignSelf: 'flex-start' }}>
+                                  {nameMap[m.meal_type] || m.meal_type}
+                                </div>
+                                <div style={{ fontSize: 14, fontWeight: 600, color: '#1E293B' }}>{m.name_vi}</div>
+                                <div style={{ fontSize: 12, color: '#64748B' }}>{m.quantity_g}g</div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div
+                    className="markdown-body"
+                    style={{ lineHeight: 1.8, maxHeight: '70vh', overflowY: 'auto', fontSize: 14, color: '#334155' }}
+                    dangerouslySetInnerHTML={{ __html: renderMarkdown(plan) }}
+                  />
+                )}
+
+                {/* Extraction CTA */}
+                <div style={{ marginTop: 24, paddingTop: 20, borderTop: '1px solid #F1F5F9', display: 'flex', justifyContent: 'flex-end' }}>
+                  <motion.button
+                    whileHover={!extracting && !extractSuccess && parsedUIPlan ? { y: -2, boxShadow: '0 4px 12px rgba(99,102,241,0.2)' } : {}}
+                    whileTap={!extracting && !extractSuccess && parsedUIPlan ? { scale: 0.97 } : {}}
+                    onClick={extractToMeals}
+                    disabled={extracting || extractSuccess || !parsedUIPlan}
+                    style={{
+                      padding: '10px 24px', borderRadius: '999px', fontSize: 14, fontWeight: 600,
+                      border: 'none', cursor: (extracting || extractSuccess || !parsedUIPlan) ? 'not-allowed' : 'pointer',
+                      background: extractSuccess ? '#10B981' : (extracting || !parsedUIPlan ? '#E2E8F0' : '#6366F1'),
+                      color: extractSuccess ? '#FFFFFF' : (extracting || !parsedUIPlan ? '#94A3B8' : '#FFFFFF'),
+                      display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.2s',
+                    }}
+                  >
+                    {extractSuccess ? (
+                      <><span>✓</span> Đã thêm vào sổ tay</>
+                    ) : extracting ? (
+                      <>
+                        <motion.span
+                          animate={{ rotate: 360 }}
+                          transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
+                          style={{
+                            display: 'inline-block', width: 14, height: 14,
+                            border: '2px solid rgba(255,255,255,0.4)', borderTop: '2px solid #fff', borderRadius: '50%',
+                          }}
+                        />
+                        Đang đồng bộ dữ liệu USDA…
+                      </>
+                    ) : (
+                      <><span>🔍</span> Thêm vào Meal Planner với dữ liệu USDA chính xác</>
+                    )}
+                  </motion.button>
+                </div>
               </div>
             </motion.div>
           )}
