@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -8,6 +9,7 @@ import { getMuscleInfo } from "./muscleMapData";
 
 export function ExercisePanel({ selectedMuscleId }) {
 
+    const navigate = useNavigate();
     const [exercises, setExercises] = useState([]);
     const [loading, setLoading] = useState(false);
 
@@ -87,17 +89,27 @@ export function ExercisePanel({ selectedMuscleId }) {
                     <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-3">
                         Exercises
                     </p>
-                    <ul className="space-y-2">
-                        {exercises.map((ex, i) => (
-                            <li
-                                key={i}
-                                className="flex items-center gap-3 text-sm group cursor-default"
-                            >
-                                <span className="h-1.5 w-1.5 rounded-full bg-primary shrink-0 group-hover:scale-125 transition-transform" />
-                                <span className="group-hover:text-primary transition-colors">{ex}</span>
-                            </li>
-                        ))}
-                    </ul>
+                    {exercises.length === 0 ? (
+                        <p className="text-sm text-muted-foreground italic">
+                            No exercises found for this muscle.
+                        </p>
+                    ) : (
+                        <ul className="space-y-1.5">
+                            {exercises.map((ex) => (
+                                <li key={ex.id}>
+                                    <button
+                                        onClick={() => navigate(`/exercises/${ex.id}`)}
+                                        className="w-full flex items-center gap-3 text-sm text-left group rounded-lg px-2 py-1.5 hover:bg-primary/10 transition-colors cursor-pointer"
+                                    >
+                                        <span className="h-1.5 w-1.5 rounded-full bg-primary shrink-0 group-hover:scale-125 transition-transform" />
+                                        <span className="group-hover:text-primary transition-colors">
+                                            {ex.name}
+                                        </span>
+                                    </button>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
                 </ScrollArea>
             </CardContent>
         </Card>

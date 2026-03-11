@@ -1,7 +1,11 @@
-import { mockExercisesDataset } from "./mockExercises";
+import { muscleExerciseMap } from "./muscleExerciseMap";
 
 const cache = {};
 
+/**
+ * Returns a list of { id, name } exercise objects for the given muscle key.
+ * Results are cached per key for the session.
+ */
 export const fetchExercisesForMuscle = async (muscleKey) => {
 
   if (cache[muscleKey]) {
@@ -12,7 +16,7 @@ export const fetchExercisesForMuscle = async (muscleKey) => {
 
     setTimeout(() => {
 
-      const data = mockExercisesDataset[muscleKey] || [];
+      const data = muscleExerciseMap[muscleKey] || [];
 
       cache[muscleKey] = data;
 
