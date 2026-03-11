@@ -1,0 +1,15 @@
+id,user_id,meal_type,food_id,food_name,quantity_g,calories,protein,carbs,fat,date
+1773216902608441,4,breakfast,1,"Chicken Breast",100,165,31,0,3.6,2026-03-11
+1773216907020460,4,breakfast,2,"Brown Rice (cooked)",100,215,5,45,1.8,2026-03-11
+1773216910508733,4,breakfast,4,"Salmon Fillet",100,208,20,0,13,2026-03-11
+1773216918340744,4,breakfast,5,"Oatmeal (cooked)",100,158,6,27,3.2,2026-03-11
+1773216921845298,4,breakfast,5,"Oatmeal (cooked)",100,158,6,27,3.2,2026-03-11
+1773217252375806,4,lunch,1,"Chicken Breast",100,165,31,0,3.6,2026-02-25
+1773217255232308,4,breakfast,3,"Egg (whole)",100,70,6,0.5,5,2026-02-25
+1773218694095770,guest,breakfast,169305,"Sweet potato, canned, mashed",100,101,2,23.2,0.2,2026-03-11
+1773218715319711,guest,dinner,173573,"Oil, avocado",100,884,0,0,100,2026-03-11
+1773218724919810,guest,breakfast,171707,"Avocados, raw, Florida",100,120,2.2,7.8,10.1,2026-03-11
+1773218744776198,guest,breakfast,171707,"Avocados, raw, Florida",100,120,2.2,7.8,10.1,2026-03-11
+1773218748658940,guest,breakfast,171707,"Avocados, raw, Florida",100,120,2.2,7.8,10.1,2026-03-11
+1773218753654417,guest,breakfast,171707,"Avocados, raw, Florida",100,120,2.2,7.8,10.1,2026-03-11
+1773219175269382,4,breakfast,173706,"Fish, tuna, fresh, bluefin, raw",100,144,23.3,0,4.9,2026-03-10
