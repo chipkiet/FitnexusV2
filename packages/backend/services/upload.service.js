@@ -1,29 +1,15 @@
-import { createClient } from "@supabase/supabase-js";
-import fs from "fs";
+import { supabase } from "../lib/supabase.js";
 import path from "path";
-import dotenv from "dotenv";
-import { fileURLToPath } from "url";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-dotenv.config({ path: path.join(__dirname, "../.env") });
-
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
-
-if (!supabaseUrl || !supabaseKey) {
-  console.error(
-    "Lỗi: Không tìm thấy SUPABASE_URL hoặc SUPABASE_SERVICE_KEY trong file .env"
-  );
-}
-
-const supabase = createClient(supabaseUrl, supabaseKey);
+// Không cần gọi dotenv ở đây nữa nếu đã có trong main app hoặc lib/supabase
+// Nhưng để chắc chắn lib/supabase lấy được env, có thể cần đảm bảo nó được config
 
 /**
- * Upload một file từ đường dẫn local lên Supabase
- * @param {string} localFilePath - Đường dẫn file trên máy tính
- * @param {string} destinationFolder - Thư mục trên cloud
+ * Upload một file từ buffer lên Supabase
+ * @param {Buffer} fileBuffer - Dữ liệu file
+ * @param {string} originalName - Tên file gốc
+ * @param {string} bucketName - Tên bucket (mặc định exercises_image)
+ * @param {string} folderName - Thư mục con
  * @returns {Promise<string>} - URL công khai của file
  */
 
@@ -34,6 +20,10 @@ export const uploadBufferToSupabase = async (
   folderName = "misc" // Mặc định thư mục con
 ) => {
   try {
+    if (!supabase) {
+      console.warn(`[Supabase] Skip upload ${originalName}: SUPABASE_URL or SUPABASE_SERVICE_KEY is missing.`);
+      return null;
+    }
     const fileExt = path.extname(originalName);
     // Tạo tên file unique
     const uniqueFileName = `${path.basename(
