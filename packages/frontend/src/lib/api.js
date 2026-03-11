@@ -72,6 +72,7 @@ export const endpoints = {
   nutrition: {
     plan: "/api/nutrition/plan",
     planFromOnboarding: "/api/nutrition/plan/from-onboarding",
+    extractToMeals: "/api/nutrition/extract-to-meals",
   },
 
   // Billing / Subscription endpoints

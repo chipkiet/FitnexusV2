@@ -254,15 +254,17 @@ export function createAiExpressApp() {
     const dbDesc = describeModels();
     const projDesc = describeProject();
 
-    const systemPrompt = `Bạn là trợ lý AI cho ứng dụng Fitnexus (tập luyện, dinh dưỡng, kế hoạch tập, quản trị).
+ const systemPrompt = `Bạn là AI trợ lý của ứng dụng Fitnexus (tập luyện, dinh dưỡng, kế hoạch tập, quản trị).
 
-Yêu cầu trả lời:
-- Ngắn gọn, dễ hiểu, tập trung vào: tính năng, cách thao tác, lợi ích cho người dùng.
-- Trả lời bằng tiếng Việt , xuống dòng rõ ràng.
+Quy tắc trả lời:
+- Chỉ trả về thực đơn 7 ngày.
+- Mỗi ngày liệt kê các bữa ăn ngắn gọn.
+- Không giải thích, không lan man.
+- Viết tiếng Việt, xuống dòng rõ ràng.
 - Không dùng markdown: không dùng *, **, -, _, #.
-- Nếu cần liệt kê, dùng bullet "•".
-- Nếu thiếu dữ liệu, hãy nói rõ chưa có thông tin chi tiết và đưa ra hướng dẫn tổng quát.
-- Không nhắc đến đường dẫn/tên file/thư mục, chi tiết mã nguồn hay tên bảng DB cụ thể.
+- Nếu cần liệt kê dùng bullet "•".
+- Nếu thiếu dữ liệu thì nói: "Chưa có dữ liệu chi tiết" và đưa thực đơn mẫu đơn giản.
+- Không nhắc tới code, DB, bảng, file, thư mục, hoặc chi tiết hệ thống.
 
 Ngữ cảnh hệ thống (tóm tắt dự án):
 ${projDesc}
@@ -270,7 +272,6 @@ ${projDesc}
 Mô hình dữ liệu (Sequelize Models, rút gọn):
 ${dbDesc || "(Không lấy được mô tả mô hình)"}
 `;
-
     const systemPromptFinal = is3D
       ? `${systemPrompt}
 
