@@ -12,13 +12,20 @@ dotenv.config({ path: path.join(__dirname, "../.env") });
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
 
+let supabase = null;
+
 if (!supabaseUrl || !supabaseKey) {
   console.error(
-    "Lỗi: Không tìm thấy SUPABASE_URL hoặc SUPABASE_SERVICE_KEY trong file .env"
+    "Lỗi: Không tìm thấy SUPABASE_URL hoặc SUPABASE_SERVICE_KEY trong file .env. Các tính năng upload sẽ không hoạt động."
   );
+} else {
+  try {
+    supabase = createClient(supabaseUrl, supabaseKey);
+  } catch (err) {
+    console.error("Lỗi khi khởi tạo Supabase client:", err.message);
+  }
 }
 
-const supabase = createClient(supabaseUrl, supabaseKey);
 
 /**
  * Upload một file từ đường dẫn local lên Supabase
@@ -33,7 +40,12 @@ export const uploadBufferToSupabase = async (
   bucketName = "exercises_image", // Mặc định nếu không truyền
   folderName = "misc" // Mặc định thư mục con
 ) => {
+  if (!supabase) {
+    console.warn("Supabase client is not initialized. Skipping upload.");
+    return null;
+  }
   try {
+
     const fileExt = path.extname(originalName);
     // Tạo tên file unique
     const uniqueFileName = `${path.basename(

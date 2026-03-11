@@ -4,7 +4,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "r
 import { AuthProvider, useAuth } from "./context/auth.context.jsx";
 import { ThemeProvider } from "./context/theme.context.jsx";
 
-
+// Auth & Landing
 import Register from "./pages/authentication/Register.jsx";
 import Login from "./pages/authentication/Login.jsx";
 import GoogleOtp from "./pages/authentication/GoogleOtp.jsx";
@@ -12,89 +12,40 @@ import ForgotPassword from "./pages/authentication/ForgotPassword.jsx";
 import VerifyCode from "./pages/authentication/VerifyCode.jsx";
 import ResetPassword from "./pages/authentication/ResetPassword.jsx";
 import Landing from "./pages/landing/Landing.jsx";
-import NutritionAI from "./pages/nutrition/NutritionAI.jsx";
-import NutritionDemo from "./pages/nutrition/NutritionDemo.jsx";
-import NutritionPersonalize from "./pages/nutrition/NutritionPersonalize.jsx";
-import Dashboard from "./pages/dashboard/Dashboard.jsx";
-import ScreenshotLibrary from "./pages/user/ScreenshotLibrary.jsx";
-import Modeling from "./pages/model3D/Modeling.jsx";
-import ModelingDemo from "./pages/model3D/ModelingDemo.jsx";
-import AiTrainer from "./components/AiTrainer.jsx";
-import AiTrainerGuide from "./pages/AITrainer/AiTrainerGuide.jsx";
-import ExerciseDetail from "./pages/exercises/ExerciseDetail.jsx";
-import ExercisesDemo from "./pages/exercises/ExercisesDemo.jsx";
-import Exercise from "./pages/exercises/Exercise.jsx";
-import PlanNew from "./pages/plans/PlanNew.jsx";
-import PlanPicker from "./pages/plans/PlanPicker.jsx";
-import PlanDetail from "./pages/plans/PlanDetail.jsx";
-import PlanEdit from "./pages/plans/PlanEdit.jsx"; // Thêm import
 import Logout from "./pages/authentication/Logout.jsx";
 import NotFoundRedirect from "./pages/system/NotFoundRedirect.jsx";
-import WorkoutRun from "./pages/workout/WorkoutRun.jsx";
-import AdminPlanDetail from "./pages/admin/AdminPlanDetail.jsx";
+
+// Modern V2 Pages (Unified High-End UI)
+import ModernShell from "./pages/v2/ModernShell.jsx";
+import DashboardPage from "./pages/v2/DashboardPage.jsx";
+import AITrainerPage from "./pages/v2/AITrainerPage.jsx";
+import TrainingPage from "./pages/v2/TrainingPage.jsx";
+import ExerciseDetailPage from "./pages/v2/ExerciseDetailPage.jsx";
+import PlansPage from "./pages/v2/PlansPage.jsx";
+import NutritionPage from "./pages/v2/NutritionPage.jsx";
+import ProfilePage from "./pages/v2/ProfilePage.jsx";
+
+// Pricing & Payment
 import Pricing from "./pages/pricing/Pricing.jsx";
 import PaymentSuccess from "./pages/payment/PaymentSuccess.jsx";
 import PaymentCancel from "./pages/payment/PaymentCancel.jsx";
-// Onboarding
-import OnboardingAge from "./pages/boardings/OnboardingAge.jsx";
-import OnboardingBody from "./pages/boardings/OnboardingBody.jsx";
-import OnboardingGoal from "./pages/boardings/OnboardingGoal.jsx";
-import OnboardingWeight from "./pages/boardings/OnboardingWeight.jsx";
-import OnboardingHeight from "./pages/boardings/OnboardingHeight.jsx";
-import OnboardingBodyFat from "./pages/boardings/OnboardingBodyFat.jsx";
-import OnboardingExperience from "./pages/boardings/OnboardingExperience.jsx";
-import OnboardingFrequency from "./pages/boardings/OnboardingFrequency.jsx";
-import OnboardingEntry from "./pages/boardings/OnboardingEntry.jsx";
 
 // Admin
 import AdminLayout from "./layouts/AdminLayout.jsx";
 import AdminOverview from "./pages/admin/Overview.jsx";
-import AdminUserDetail from "./pages/admin/UserDetail.jsx";
-import AdminContentManage from "./pages/admin/exercise/ContentManage.jsx";
-import AdminFinancialManage from "./pages/admin/AdminRevenue.jsx";
-import Role from "./pages/admin/Role.jsx";
-import Plan from "./pages/admin/Plan.jsx";
-import AdminLockUnlock from "./pages/admin/LockUnlock.jsx";
-import AdminResetPassword from "./pages/admin/ResetPassword.jsx";
-import AdminUserPlans from "./pages/admin/UserPlans.jsx";
-import UserPlanDetails from "./pages/admin/UserPlanDetails.jsx";
-import AdminRevenue from "./pages/admin/AdminRevenue.jsx";
-
-import AdminUsers from "./pages/admin/AdminUsers.jsx";
-import AdminPopularExercises from "./pages/admin/PopularExercises.jsx";
-import AdminSupportReports from "./pages/admin/SupportReports.jsx";
-import AdminExerciseList from "./pages/admin/exercise/AdminExerciseList.jsx";
-import AdminExerciseRight from "./pages/admin/exercise/AdminExerciseRight.jsx";
-
-import AdminHeroSettings from "./pages/admin/content/AdminHeroSettings.jsx";
-
-// Account pages
-import PersonalInfo from "./pages/account/PersonalInfo.jsx";
-import ChangePassword from "./pages/account/ChangePassword.jsx";
-import NotificationsCenter from "./pages/account/NotificationsCenter.jsx";
-// import Activity from "./pages/account/Activity.jsx";
-
-// Profile pages (only Avatar kept)
-import Avatar from "./pages/profile/Avatar.jsx";
-
-// Support pages
-import FAQ from "./pages/support/FAQ.jsx";
-// Settings pages
-import Theme from "./pages/settings/Theme.jsx";
-import FemaleFrontMap from "./pages/model-ex/FemaleFrontMap.jsx";
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
   const location = useLocation();
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        Loading...
+      <div className="flex items-center justify-center h-screen bg-white">
+        <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
   return user ? (
-    children
+    <ModernShell>{children}</ModernShell>
   ) : (
     <Navigate to="/login" replace state={{ from: location.pathname }} />
   );
@@ -102,289 +53,51 @@ function PrivateRoute({ children }) {
 
 function AdminRoute({ children }) {
   const { user, loading } = useAuth();
-  const location = useLocation();
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        Loading...
-      </div>
-    );
-  }
-  if (!user) {
-    return <Navigate to="/login" replace state={{ from: location }} />;
-  }
+  if (loading) return null;
   const isAdmin = user && (user.role === "ADMIN" || user.isSuperAdmin === true);
   return isAdmin ? children : <Navigate to="/" replace />;
 }
 
 function App() {
-  useEffect(() => {
-    const handler = (e) => {
-      console.log("oauth msg:", e.origin, e.data);
-    };
-    window.addEventListener("message", handler);
-    return () => window.removeEventListener("message", handler);
-  }, []);
-
   return (
     <ThemeProvider>
       <AuthProvider>
         <Router>
           <Routes>
-            <Route path="/model-ex" element={<FemaleFrontMap />} />/
-
+            {/* Public Routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/login/otp" element={<GoogleOtp />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/onboarding" element={<OnboardingEntry />} />
-            <Route
-              path="/onboarding"
-              element={<Navigate to="/onboarding/age" replace />}
-            />
-            <Route path="/onboarding/age" element={<OnboardingAge />} />
-            <Route path="/onboarding/body_type" element={<OnboardingBody />} />
-            <Route path="/onboarding/goal" element={<OnboardingGoal />} />
-            <Route path="/onboarding/weight" element={<OnboardingWeight />} />
-            <Route path="/onboarding/height" element={<OnboardingHeight />} />
-            <Route
-              path="/onboarding/level_body_fat"
-              element={<OnboardingBodyFat />}
-            />
-            <Route
-              path="/onboarding/experience_level"
-              element={<OnboardingExperience />}
-            />
-            <Route
-              path="/onboarding/workout_frequency"
-              element={<OnboardingFrequency />}
-            />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/verify-code" element={<VerifyCode />} />
             <Route path="/reset-password" element={<ResetPassword />} />
-
             <Route path="/" element={<Landing />} />
-            <Route
-              path="/nutrition-ai"
-              element={
-                <PrivateRoute>
-                  <NutritionAI />
-                </PrivateRoute>
-              }
-            />
-            <Route path="/nutrition-demo" element={<NutritionDemo />} />
-            <Route
-              path="/nutrition-ai/personalize"
-              element={<NutritionPersonalize />}
-            />
+            <Route path="/logout" element={<Logout />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/payment/success" element={<PaymentSuccess />} />
             <Route path="/payment/cancel" element={<PaymentCancel />} />
 
-            <Route path="/modeling-demo" element={<ModelingDemo />} />
-            {/* Backward compat: redirect old preview path to new demo path */}
-            <Route
-              path="/modeling-preview"
-              element={<Navigate to="/modeling-demo" replace />}
-            />
-            <Route path="/exercises-demo" element={<ExercisesDemo />} />
-            <Route path="/ai-guide" element={<AiTrainerGuide />} />
-            <Route
-              path="/ai"
-              element={
-                <PrivateRoute>
-                  <AiTrainer />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/exercises"
-              element={
-                <PrivateRoute>
-                  <Exercise />
-                </PrivateRoute>
-              }
-            />
-            <Route path="/logout" element={<Logout />} />
-            <Route
-              path="/plans/select"
-              element={
-                <PrivateRoute>
-                  <PlanPicker />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/plans/:planId"
-              element={
-                <PrivateRoute>
-                  <PlanDetail />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/plans/new"
-              element={
-                <PrivateRoute>
-                  <PlanNew />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/plans/edit/:planId"
-              element={
-                <PrivateRoute>
-                  <PlanEdit />
-                </PrivateRoute>
-              }
-            />
-            <Route path="/exercises/:id" element={<ExerciseDetail />} />
+            {/* Main Application Routes (Private) */}
+            <Route path="/dashboard" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
+            <Route path="/ai-trainer" element={<PrivateRoute><AITrainerPage /></PrivateRoute>} />
+            <Route path="/exercises" element={<PrivateRoute><TrainingPage /></PrivateRoute>} />
+            <Route path="/exercises/:id" element={<PrivateRoute><ExerciseDetailPage /></PrivateRoute>} />
+            <Route path="/plans" element={<PrivateRoute><PlansPage /></PrivateRoute>} />
+            <Route path="/nutrition" element={<PrivateRoute><NutritionPage /></PrivateRoute>} />
+            <Route path="/profile" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
 
-            <Route
-              path="/workout-run/:sessionId"
-              element={
-                <PrivateRoute>
-                  <WorkoutRun />
-                </PrivateRoute>
-              }
-            />
-
-            <Route
-              path="/dashboard"
-              element={
-                <PrivateRoute>
-                  <Dashboard />
-                </PrivateRoute>
-              }
-            />
-
-            <Route
-              path="/screenshots"
-              element={
-                <PrivateRoute>
-                  <ScreenshotLibrary />
-                </PrivateRoute>
-              }
-            />
-
-            {/* Protected route without MainLayout (full control) */}
-            <Route
-              path="/modeling"
-              element={
-                <PrivateRoute>
-                  <FemaleFrontMap />
-                </PrivateRoute>
-              }
-            />
-
-            {/* Account Routes */}
-            <Route
-              path="/account/personal-info"
-              element={
-                <PrivateRoute>
-                  <PersonalInfo />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/account/change-password"
-              element={
-                <PrivateRoute>
-                  <ChangePassword />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/notifications"
-              element={
-                <PrivateRoute>
-                  <NotificationsCenter />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/settings/notifications"
-              element={
-                <PrivateRoute>
-                  <NotificationsCenter />
-                </PrivateRoute>
-              }
-            />
-            {/* Removed Security page */}
-            {/* Activity route removed */}
-
-            {/* Profile Routes (main profile removed) */}
-            <Route
-              path="/profile/avatar"
-              element={
-                <PrivateRoute>
-                  <Avatar />
-                </PrivateRoute>
-              }
-            />
-
-            {/* Support Routes */}
-            <Route path="/support" element={<FAQ />} />
-            <Route path="/support/faq" element={<FAQ />} />
-
-            {/* Settings Routes */}
-            <Route
-              path="/settings/theme"
-              element={
-                <PrivateRoute>
-                  <Theme />
-                </PrivateRoute>
-              }
-            />
-
-            <Route
-              path="/admin"
-              element={
-                <AdminRoute>
-                  <AdminLayout />
-                </AdminRoute>
-              }
-            >
+            {/* Default Redirects */}
+            <Route path="/premium/dashboard" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/premium/ai-trainer" element={<Navigate to="/ai-trainer" replace />} />
+            <Route path="/premium/exercises" element={<Navigate to="/exercises" replace />} />
+            <Route path="/premium/plans" element={<Navigate to="/plans" replace />} />
+            <Route path="/premium/nutrition" element={<Navigate to="/nutrition" replace />} />
+            <Route path="/premium/profile" element={<Navigate to="/profile" replace />} />
+            <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
               <Route index element={<AdminOverview />} />
-              <Route path="user-detail" element={<AdminUserDetail />} />
-              <Route path="role" element={<Role />} />
-              <Route path="plan" element={<Plan />} />
-              <Route path="lock-unlock" element={<AdminLockUnlock />} />
-              <Route path="reset-password" element={<AdminResetPassword />} />
-              <Route path="content" element={<AdminContentManage />} />
-              <Route path="finance" element={<AdminFinancialManage />} />
-              <Route path="revenue" element={<AdminRevenue />} />
-              <Route
-                path="popular-exercises"
-                element={<AdminPopularExercises />}
-              />
-              <Route path="user-plans" element={<AdminUserPlans />} />
-              <Route path="user-plans/:userId" element={<UserPlanDetails />} />
-              <Route
-                path="user-plans/:userId/plan/:planId"
-                element={<AdminPlanDetail />}
-              />
-
-              <Route path="users" element={<AdminUsers />} />
-              <Route path="support" element={<AdminSupportReports />} />
-
-              <Route path="content/exercises" element={<AdminExerciseList />} />
-              <Route
-                path="content/exercises/new"
-                element={<AdminExerciseRight />}
-              />
-
-              <Route
-                path="content/exercises/edit/:id"
-                element={<AdminExerciseRight />}
-              />
-
-              <Route path="content/hero" element={<AdminHeroSettings />} />
-
             </Route>
 
-
-            {/* Catch all: redirect based on auth status */}
+            {/* Catch all */}
             <Route path="*" element={<NotFoundRedirect />} />
           </Routes>
         </Router>
@@ -392,6 +105,5 @@ function App() {
     </ThemeProvider>
   );
 }
-
 
 export default App;
