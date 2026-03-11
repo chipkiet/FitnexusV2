@@ -1,4 +1,4 @@
-﻿// App.jsx
+// App.jsx
 import React, { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/auth.context.jsx";
@@ -15,6 +15,7 @@ import Landing from "./pages/landing/Landing.jsx";
 import NutritionAI from "./pages/nutrition/NutritionAI.jsx";
 import NutritionDemo from "./pages/nutrition/NutritionDemo.jsx";
 import NutritionPersonalize from "./pages/nutrition/NutritionPersonalize.jsx";
+import MealPlanner from "./pages/nutrition/MealPlanner.jsx";
 import Dashboard from "./pages/dashboard/Dashboard.jsx";
 import ScreenshotLibrary from "./pages/user/ScreenshotLibrary.jsx";
 import Modeling from "./pages/model3D/Modeling.jsx";
@@ -177,6 +178,7 @@ function App() {
               path="/nutrition-ai/personalize"
               element={<NutritionPersonalize />}
             />
+            <Route path="/meal-planner" element={<MealPlanner />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/payment/success" element={<PaymentSuccess />} />
             <Route path="/payment/cancel" element={<PaymentCancel />} />

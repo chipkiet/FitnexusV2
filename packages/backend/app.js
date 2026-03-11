@@ -37,6 +37,7 @@ import { ensureAiApp } from "./ai/index.js";
 import activityTracker from "./middleware/activity.tracker.js";
 
 import userScreenshotsRouter from "./routes/userScreenshots.routes.js";
+import mealRouter from "./routes/meal.routes.js";
 
 dotenv.config();
 
@@ -190,6 +191,7 @@ app.use("/api/user-screenshots", userScreenshotsRouter);
 app.use("/api/muscles", muscleRoutes);
 
 app.use("/api/content", contentRoutes);
+app.use("/api", mealRouter);  // Meal Planner: /api/foods and /api/meals
 
 /* -------------------- HEALTH CHECK -------------------- */
 app.get("/api/health", (_req, res) => {
