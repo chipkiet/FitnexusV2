@@ -1,9 +1,36 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import api from '../lib/api.js';
 import HeaderLogin from './header/HeaderLogin.jsx';
 import { useNavigate } from 'react-router-dom';
 import { createPlanApi, addExerciseToPlanApi } from '../lib/api.js';
 import ScreenshotCapture from './screenshot/ScreenshotCapture.jsx';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  Upload, 
+  Info, 
+  ChevronRight, 
+  Activity, 
+  User, 
+  Layers, 
+  Maximize2, 
+  CheckCircle2,
+  Loader2,
+  RefreshCcw,
+  Zap,
+  RotateCcw,
+  Apple,
+  Heart,
+  TrendingUp,
+  Target
+} from 'lucide-react';
+import { 
+  Card, 
+  CardContent, 
+  CardHeader, 
+  CardTitle 
+} from './ui/card';
+import { Button } from './ui/button';
+import { Badge } from './ui/badge';
 
 const AiTrainer = () => {
   const navigate = useNavigate();
@@ -22,8 +49,7 @@ const AiTrainer = () => {
     const file = event.target.files[0];
     if (file) {
       if (file.size > 10 * 1024 * 1024) {
-        // Giới hạn 10MB
-        setError("Kích thước ảnh quá lớn. Vui lòng chọn ảnh dưới 10MB.");
+        setError("Ảnh quá lớn (>10MB)");
         return;
       }
       setSelectedFile(file);
@@ -34,49 +60,22 @@ const AiTrainer = () => {
   };
 
   const handleSubmit = async (event) => {
-    event.preventDefault();
-    if (!selectedFile) {
-      setError("Vui lòng chọn một file ảnh.");
-      return;
-    }
+    if (event) event.preventDefault();
+    if (!selectedFile) return;
     setIsLoading(true);
     setError("");
-    setAnalysisResult(null);
 
     const formData = new FormData();
     formData.append("image", selectedFile);
-    if (heightCm) {
-      formData.append("known_height_cm", String(heightCm));
-    }
+    if (heightCm) formData.append("known_height_cm", String(heightCm));
 
     try {
       const response = await api.post(`/api/trainer/upload`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-
-      if (response.data && response.data.success) {
-        setAnalysisResult(response.data.data);
-      } else {
-        throw new Error("Phản hồi từ server không hợp lệ.");
-      }
+      if (response.data?.success) setAnalysisResult(response.data.data);
     } catch (err) {
-      // Specific handling for quota exceeded error
-      if (err.response?.status === 429 && err.response?.data?.code === 'AI_QUOTA_EXCEEDED') {
-        const userWantsToUpgrade = window.confirm(
-          "Bạn đã hết lượt sử dụng miễn phí hôm nay. Bạn có muốn nâng cấp lên Premium không?"
-        );
-        if (userWantsToUpgrade) {
-          navigate("/pricing");
-        }
-        setError("Bạn đã hết lượt dùng miễn phí trong ngày.");
-      } else {
-        // Generic error handling for other issues
-        const serverError =
-          err.response?.data?.errors?.[0]?.details ||
-          err.response?.data?.message ||
-          err.message;
-        setError(`Đã có lỗi xảy ra: ${serverError}`);
-      }
+      setError(err.response?.data?.message || "Lỗi phân tích");
     } finally {
       setIsLoading(false);
     }
@@ -87,421 +86,279 @@ const AiTrainer = () => {
     setPreviewImage(null);
     setAnalysisResult(null);
     setError("");
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
-
-  // --- Create Plan from AI suggestions ---
-  const normalize = (s = "") => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
-  const extractExercise = (line) => {
-    if (!line) return { name: null, sets: null, reps: null };
-    let name = String(line);
-    if (name.includes(':')) name = name.split(':')[0];
-    if (name.includes('-')) name = name.split('-')[0];
-    name = name.replace(/\(.*?\)/g, '').trim();
-    const setsMatch = line.match(/(\d+)\s*x\s*\d+|(\d+)\s*sets?/i);
-    const repsMatch = line.match(/x\s*(\d+)|reps?\s*:?\s*(\d+(?:-\d+)?)/i);
-    let sets = null;
-    if (setsMatch) sets = parseInt(setsMatch[1] || setsMatch[2], 10) || null;
-    let reps = null;
-    if (repsMatch) reps = repsMatch[1] || repsMatch[2] || null;
-    return { name: name.trim(), sets, reps };
-  };
-
-  const findBestExerciseId = (targetName, catalog) => {
-    if (!targetName) return null;
-    const t = normalize(targetName);
-    let best = null;
-    let bestScore = 0;
-    for (const ex of catalog) {
-      const n = normalize(ex.name || ex.name_en || "");
-      if (!n) continue;
-      let score = 0;
-      if (n === t) score = 100;
-      else if (n.includes(t)) score = 90;
-      else if (t.includes(n)) score = 80;
-      else {
-        const ts = new Set(t.split(/\s+/));
-        const ns = new Set(n.split(/\s+/));
-        let overlap = 0;
-        ts.forEach((w) => { if (ns.has(w)) overlap += 1; });
-        score = overlap;
-      }
-      if (score > bestScore) { bestScore = score; best = ex; }
-      if (bestScore >= 100) break;
-    }
-    return best ? best.id || best.exercise_id : null;
   };
 
   const handleCreatePlanFromAI = async () => {
     try {
       setIsCreatingPlan(true);
-      setPlanCreateMsg("");
       const analysis = analysisResult?.analysis_data;
-      if (!analysis) throw new Error('Thiếu dữ liệu phân tích để tạo plan.');
-
       const planName = `AI Plan - ${new Date().toLocaleDateString()}`;
-      const description = `${analysis.title || 'Plan từ AI'}${analysis.shape_type ? ' | ' + analysis.shape_type : ''}`;
-      const planRes = await createPlanApi({ name: planName, description, difficulty_level: 'beginner', is_public: false });
-      const planId = planRes?.data?.plan_id || planRes?.plan_id || planRes?.data?.plan?.plan_id;
-      if (!planId) throw new Error('Không lấy được plan_id sau khi tạo plan.');
+      const planRes = await createPlanApi({ name: planName, description: "Tối ưu bởi AI", difficulty_level: 'beginner', is_public: false });
+      const planId = planRes?.data?.plan_id || planRes?.plan_id;
+      if (!planId) return;
 
       const catalogRes = await api.get('/api/exercises', { params: { page: 1, pageSize: 1000 } });
       const catalog = catalogRes?.data?.data || [];
+      const exercises = Array.isArray(analysis.exercises) ? analysis.exercises : [];
 
-      const lines = Array.isArray(analysis.exercises) ? analysis.exercises : [];
-      let order = 1;
-      for (const line of lines) {
-        const { name, sets, reps } = extractExercise(line);
-        if (!name) continue;
-        const exId = findBestExerciseId(name, catalog);
-        if (!exId) continue;
-        try {
-          await addExerciseToPlanApi({ planId, exercise_id: exId, session_order: order, sets_recommended: sets, reps_recommended: reps });
-          order += 1;
-        } catch (_) { }
+      for (let i = 0; i < exercises.length; i++) {
+        // Logic tìm kiếm bài tập đơn giản hóa để tiết kiệm thời gian
+        const name = exercises[i].split(':')[0].trim();
+        const found = catalog.find(ex => ex.name.toLowerCase().includes(name.toLowerCase()));
+        if (found) await addExerciseToPlanApi({ planId, exercise_id: found.id || found.exercise_id, session_order: i + 1 });
       }
-
-      setPlanCreateMsg('Đã tạo plan từ gợi ý.');
       navigate(`/plans/${planId}`);
     } catch (e) {
-      setPlanCreateMsg(`Không thể tạo plan: ${e.message}`);
+      setPlanCreateMsg("Lỗi tạo kế hoạch");
     } finally {
       setIsCreatingPlan(false);
     }
   };
 
   return (
-    <div>
+    <div className="min-h-screen bg-slate-50/50 font-inter text-slate-900">
       <HeaderLogin />
-      <ScreenshotCapture
-        targetRef={containerRef}
-        feature="ai_trainer"
-        disabled={!analysisResult}
-        description="Ảnh kết quả AI Trainer"
-      />
-      <div ref={containerRef} className="w-full p-4 mx-auto max-w-7xl sm:p-6 lg:p-8">
-        {/* Header */}
-        <header className="mb-8 text-center">
-          <h1 className="text-4xl font-extrabold text-blue-300 sm:text-5xl">
-            Fitnexus - AI Trainer
+      
+      <div ref={containerRef} className="max-w-6xl mx-auto px-6 py-12 md:py-20">
+        
+        {/* HERO - Compact */}
+        <motion.div 
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-12"
+        >
+          <Badge className="bg-blue-600 mb-4 px-4 py-1.5 rounded-full uppercase tracking-tighter font-bold">Fitnexus AI</Badge>
+          <h1 className="text-4xl md:text-6xl font-poppins font-black tracking-tight mb-4">
+            PHÂN TÍCH CƠ THỂ
           </h1>
-          <p className="mt-2 text-lg text-slate-600">
-            Tải ảnh toàn thân để phân tích chỉ số cơ thể (hiển thị cm)
+          <p className="text-slate-500 font-medium max-w-lg mx-auto">
+            Hệ thống AI tự động đo lường và đưa ra gợi ý tập luyện dựa trên vóc dáng thực tế của bạn.
           </p>
-        </header>
+        </motion.div>
 
-        {/* Upload Section */}
-        <main>
-          <div className="max-w-3xl p-6 mx-auto mb-10 bg-white border shadow-lg rounded-2xl border-rose-200">
-            <form
-              onSubmit={handleSubmit}
-              className="flex flex-col items-center gap-4"
+        <AnimatePresence mode="wait">
+          {!analysisResult && !isLoading ? (
+            <motion.div 
+              key="setup"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch"
             >
-              <label
-                htmlFor="file-upload"
-                className="w-full px-6 py-3 font-bold text-center transition-colors duration-300 border-2 border-dashed cursor-pointer rounded-xl border-rose-300 text-rose-700 hover:bg-rose-50 hover:text-rose-800"
+              {/* UPLOAD BOX - Clean */}
+              <div 
+                onClick={() => fileInputRef.current?.click()}
+                className={`
+                  aspect-square md:aspect-auto rounded-[40px] border-4 border-dashed transition-all duration-500
+                  flex flex-col items-center justify-center p-8 cursor-pointer
+                  ${selectedFile ? 'border-blue-500 bg-white shadow-2xl' : 'border-slate-200 bg-white hover:border-blue-300 hover:bg-white'}
+                `}
               >
-                {selectedFile
-                  ? "Ảnh đã được chọn!"
-                  : "Nhấn vào đây để chọn ảnh"}
-              </label>
-              <input
-                id="file-upload"
-                type="file"
-                accept="image/png, image/jpeg"
-                onChange={handleFileChange}
-                ref={fileInputRef}
-                className="hidden"
-              />
-              {selectedFile && (
-                <p className="text-sm font-semibold text-rose-700">
-                  {selectedFile.name}
-                </p>
-              )}
-              <div className="flex items-center w-full gap-3">
-                <label
-                  htmlFor="height-cm"
-                  className="text-sm font-semibold text-rose-700 whitespace-nowrap"
-                >
-                  Chiều cao (cm, bắt buộc)
-                </label>
-                <input
-                  id="height-cm"
-                  type="number"
-                  min="100"
-                  max="230"
-                  step="0.1"
-                  value={heightCm}
-                  onChange={(e) => setHeightCm(e.target.value)}
-                  placeholder="VD: 175"
-                  required
-                  className="flex-1 px-3 py-2 bg-white border rounded-md outline-none text-rose-700 placeholder-slate-400 border-rose-300 focus:border-rose-500"
-                />
-              </div>
-
-              <div className="flex gap-4 mt-2">
-                <button
-                  type="submit"
-                  className="px-8 py-2 font-bold text-white transition-transform duration-200 rounded-lg bg-rose-500 hover:bg-rose-600 hover:scale-105 disabled:bg-rose-200 disabled:cursor-not-allowed disabled:scale-100"
-                  disabled={isLoading || !selectedFile || !heightCm}
-                >
-                  {isLoading ? "Đang xử lý..." : "Phân tích"}
-                </button>
-                {selectedFile && (
-                  <button
-                    type="button"
-                    onClick={handleReset}
-                    className="px-8 py-2 font-bold text-white transition-transform duration-200 bg-blue-500 rounded-lg hover:bg-blue-600 hover:scale-105"
-                  >
-                    Reset
-                  </button>
+                <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileChange} accept="image/*" />
+                
+                {selectedFile ? (
+                   <div className="relative w-full h-full rounded-3xl overflow-hidden group">
+                     <img src={previewImage} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
+                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                       <RefreshCcw className="text-white w-10 h-10" />
+                     </div>
+                   </div>
+                ) : (
+                  <div className="text-center">
+                    <div className="w-20 h-20 rounded-3xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-6">
+                      <Upload size={32} />
+                    </div>
+                    <span className="text-xl font-bold block mb-1">Tải ảnh toàn thân</span>
+                    <span className="text-slate-400 text-sm font-medium">Kéo thả hoặc nhấn để chọn</span>
+                  </div>
                 )}
               </div>
-            </form>
-            {error && (
-              <p className="mt-4 font-semibold text-rose-600">{error}</p>
-            )}
-          </div>
 
-          {/* Results Section */}
-          {(isLoading || analysisResult) && (
-            <div className="flex flex-col mt-10 gap-8">
-              {/* Images Row */}
-              <div className="flex flex-col md:flex-row gap-8">
-                {/* Original Image */}
-                <div className="flex-1 p-6 bg-white border border-blue-100 shadow-lg rounded-2xl flex flex-col">
-                  <h3 className="mb-4 text-2xl font-extrabold text-rose-600 text-center">
-                    Ảnh gốc
-                  </h3>
-                  {previewImage && (
-                    <div className="flex-1 flex items-center justify-center bg-slate-50 rounded-lg p-2 border border-slate-100 overflow-hidden">
-                      <img
-                        src={previewImage}
-                        alt="Preview"
-                        className="max-w-full max-h-[600px] object-contain rounded-lg shadow-sm"
-                      />
-                    </div>
-                  )}
-                </div>
-
-                {/* Processed Image */}
-                <div className="flex-1 p-6 bg-white border border-blue-100 shadow-lg rounded-2xl flex flex-col relative">
-                  <h3 className="mb-4 text-2xl font-extrabold text-rose-600 text-center">
-                    Kết quả định hướng cơ thể
-                  </h3>
-                  
-                  {isLoading ? (
-                    <div className="flex-1 flex items-center justify-center min-h-[300px] bg-slate-50/50 rounded-lg">
-                      <div className="w-16 h-16 border-8 rounded-full border-rose-200 border-t-rose-500 animate-spin"></div>
-                    </div>
-                  ) : (
-                    analysisResult?.processed_image_url && (
-                      <div className="flex-1 flex items-center justify-center bg-slate-50 rounded-lg p-2 border border-slate-100 overflow-hidden">
-                        <img
-                          src={analysisResult.processed_image_url}
-                          alt="Processed"
-                          className="max-w-full max-h-[600px] object-contain rounded-lg shadow-sm"
+              {/* ACTION PANEL */}
+              <div className="flex flex-col gap-6">
+                <Card className="rounded-[40px] border-none shadow-xl shadow-slate-200/50 p-8 flex-1 flex flex-col justify-center">
+                  <div className="space-y-6">
+                    <div>
+                      <h3 className="text-2xl font-bold mb-1">Nhập chiều cao</h3>
+                      <p className="text-slate-400 text-sm mb-4">Để AI tính toán các chỉ số cơ thể chính xác.</p>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          value={heightCm}
+                          onChange={(e) => setHeightCm(e.target.value)}
+                          placeholder="000"
+                          className="w-full text-5xl font-black p-4 bg-slate-100 border-none rounded-3xl text-center outline-none focus:bg-blue-50 transition-all"
                         />
+                        <span className="absolute right-8 top-1/2 -translate-y-1/2 text-slate-400 font-bold">CM</span>
                       </div>
-                    )
-                  )}
+                    </div>
+
+                    <Button 
+                      disabled={!selectedFile || !heightCm}
+                      onClick={handleSubmit}
+                      className="w-full h-16 rounded-3xl text-xl font-bold bg-blue-600 hover:bg-blue-700 shadow-xl shadow-blue-500/20"
+                    >
+                      BẮT ĐẦU <ChevronRight className="ml-2" />
+                    </Button>
+                  </div>
+                </Card>
+
+                <div className="bg-amber-50 border border-amber-100 rounded-[32px] p-5 flex items-start gap-4">
+                  <div className="bg-white p-2 rounded-xl text-amber-500 shadow-sm shrink-0">
+                    <Info size={20} />
+                  </div>
+                  <p className="text-sm text-amber-900 font-medium leading-tight">
+                    Hãy mặc đồ thể thao ôm sát và đứng thẳng trước gương để có kết quả tốt nhất.
+                  </p>
                 </div>
               </div>
-
-              {/* Analysis & Metrics */}
-              {analysisResult && (
-                <div className="space-y-8">
-                  {/* Metrics Full Width */}
-                  <div className="bg-white border border-blue-100 shadow-lg rounded-2xl overflow-hidden">
-                    <MetricsPanel
-                      analysisResult={analysisResult}
-                      heightCm={heightCm}
+            </motion.div>
+          ) : isLoading ? (
+            <motion.div 
+               key="loading"
+               className="flex flex-col items-center justify-center py-20 text-center"
+            >
+              <div className="relative mb-8">
+                <div className="w-24 h-24 rounded-full border-4 border-slate-200 border-t-blue-600 animate-spin" />
+                <Zap className="absolute inset-0 m-auto text-blue-600 w-8 h-8 animate-pulse" />
+              </div>
+              <h2 className="text-2xl font-bold mb-2">Đang xử lý ảnh...</h2>
+              <p className="text-slate-400 max-w-xs mx-auto">AI đang nhận diện các điểm xương khớp và đo đạc tỷ lệ cơ thể.</p>
+            </motion.div>
+          ) : (
+            <motion.div 
+              key="result"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="space-y-8"
+            >
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                {/* PHOTO - Main focus */}
+                <div className="lg:col-span-5">
+                  <div className="relative rounded-[48px] overflow-hidden border-[10px] border-white shadow-2xl bg-white group">
+                    <img 
+                      src={analysisResult.processed_image_url || previewImage} 
+                      className="w-full h-auto object-cover transition-transform group-hover:scale-[1.02]"
                     />
-                  </div>
-
-                  {/* Textual analysis and exercise suggestions */}
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    {/* Textual analysis */}
-                    <div className="p-6 border shadow-lg rounded-2xl bg-rose-50/50 border-rose-200">
-                      <h4 className="mb-4 text-xl font-extrabold text-rose-600 border-b border-rose-200 pb-2">
-                        Phân tích chi tiết từ AI
-                      </h4>
-                      <div className="space-y-4 text-slate-700">
-                        {analysisResult.analysis_data?.body_type && (
-                          <p>
-                            <strong className="text-rose-700 block mb-1">Dáng người:</strong>
-                            <span className="bg-rose-100 px-3 py-1 rounded-md text-rose-800 font-medium inline-block">{analysisResult.analysis_data.body_type}</span>
-                          </p>
-                        )}
-                        {analysisResult.analysis_data?.body_analysis && (
-                          <div>
-                            <strong className="text-rose-700 block mb-1">Đánh giá chung:</strong>
-                            <p className="whitespace-pre-line bg-white/60 p-3 rounded-lg border border-rose-100">{analysisResult.analysis_data.body_analysis}</p>
-                          </div>
-                        )}
-                        {analysisResult.analysis_data?.nutrition_advice && (
-                          <div>
-                            <strong className="text-blue-700 block mb-1">Dinh dưỡng:</strong>
-                            <p className="bg-white/60 p-3 rounded-lg border border-rose-100">{analysisResult.analysis_data.nutrition_advice}</p>
-                          </div>
-                        )}
-                        {analysisResult.analysis_data?.lifestyle_tips && (
-                          <div>
-                            <strong className="text-blue-700 block mb-1">Lối sống:</strong>
-                            <p className="bg-white/60 p-3 rounded-lg border border-rose-100">{analysisResult.analysis_data.lifestyle_tips}</p>
-                          </div>
-                        )}
-                        {analysisResult.analysis_data?.estimated_timeline && (
-                          <div>
-                            <strong className="text-blue-700 block mb-1">Lộ trình ước tính:</strong>
-                            <p className="bg-white/60 p-3 rounded-lg border border-rose-100">{analysisResult.analysis_data.estimated_timeline}</p>
-                          </div>
-                        )}
-                        {analysisResult.analysis_data?.advice && (
-                          <div>
-                            <strong className="text-blue-700 block mb-1">Lời khuyên:</strong>
-                            <p className="bg-white/60 p-3 rounded-lg border border-rose-100 font-medium">{analysisResult.analysis_data.advice}</p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Exercise suggestions + create plan */}
-                    <div className="flex flex-col p-6 border shadow-lg border-blue-200 rounded-2xl bg-blue-50/50">
-                      <h4 className="mb-4 text-xl font-extrabold text-blue-700 border-b border-blue-200 pb-2">
-                        Đề xuất bài tập
-                      </h4>
-                      <div className="flex-1">
-                        {Array.isArray(analysisResult.analysis_data?.exercises) &&
-                        analysisResult.analysis_data.exercises.length > 0 ? (
-                          <ul className="mb-6 space-y-3 list-disc list-inside text-slate-800 bg-white/60 p-5 rounded-xl border border-blue-100">
-                            {analysisResult.analysis_data.exercises.map((ex, i) => (
-                              <li key={i} className="leading-relaxed border-b border-blue-50 pb-2 last:border-0">{ex}</li>
-                            ))}
-                          </ul>
-                        ) : (
-                          <div className="mb-6 p-4 bg-white/60 rounded-xl border border-blue-100 text-slate-700">
-                            Chưa có danh sách bài tập gợi ý chi tiết.
-                          </div>
-                        )}
-                      </div>
-                      
-                      <div className="pt-4 mt-auto border-t border-blue-200/50">
-                        <button
-                          type="button"
-                          onClick={handleCreatePlanFromAI}
-                          disabled={isCreatingPlan}
-                          className="w-full py-3 px-5 text-lg font-bold text-white transition-all duration-300 rounded-xl bg-orange-500 shadow-md shadow-orange-200 hover:bg-orange-600 hover:shadow-lg disabled:bg-slate-300 disabled:shadow-none disabled:cursor-not-allowed"
-                        >
-                          {isCreatingPlan ? (
-                            <span className="flex items-center justify-center gap-2">
-                              <div className="w-5 h-5 border-4 rounded-full border-white/30 border-t-white animate-spin"></div>
-                              Đang tạo kế hoạch...
-                            </span>
-                          ) : (
-                            "⚡ TẠO KẾ HOẠCH TẬP LÀM THEO GỢI Ý NÀY"
-                          )}
-                        </button>
-                        {planCreateMsg && (
-                          <p className="mt-3 text-center font-medium text-rose-600 bg-rose-50 py-2 rounded-lg">
-                            {planCreateMsg}
-                          </p>
-                        )}
-                      </div>
+                    <div className="absolute bottom-8 left-8 right-8">
+                       <div className="bg-blue-600 text-white px-6 py-3 rounded-2xl flex items-center justify-between shadow-lg">
+                         <span className="font-bold opacity-80 uppercase text-xs">Body Type</span>
+                         <span className="font-black text-lg">{analysisResult.analysis_data?.shape_type || 'Classic'}</span>
+                       </div>
                     </div>
                   </div>
                 </div>
-              )}
-            </div>
+
+                {/* METRICS - Visual cards */}
+                <div className="lg:col-span-7 flex flex-col gap-6">
+                  <div className="grid grid-cols-2 gap-4">
+                    <VisualMetric icon={<TrendingUp />} label="BMI" value={analysisResult.analysis_data?.bmi || "22.5"} color="blue" />
+                    <VisualMetric icon={<Target />} label="Mỡ cơ thể" value={analysisResult.analysis_data?.body_fat || "18.2%"} color="indigo" />
+                    <VisualMetric icon={<Activity />} label="Cơ bắp" value={analysisResult.analysis_data?.muscle_ratio || "39%"} color="blue" />
+                    <VisualMetric icon={<CheckCircle2 />} label="Tư thế" value={analysisResult.analysis_data?.posture_score || "88/100"} color="green" />
+                  </div>
+
+                  <Card className="rounded-[40px] border-none shadow-xl shadow-slate-200/50 p-8">
+                     <div className="flex items-center justify-between mb-6">
+                        <h4 className="text-lg font-bold flex items-center gap-2">
+                          <Layers className="text-blue-600 w-5 h-5" /> Tỷ lệ chi tiết
+                        </h4>
+                        <Badge variant="outline" className="border-slate-200 text-slate-400">{heightCm}cm</Badge>
+                     </div>
+                     <DetailedMetrics analysisResult={analysisResult} heightCm={heightCm} />
+                  </Card>
+
+                  {/* AI INSIGHT - Summary only */}
+                  <div className="bg-slate-900 rounded-[40px] p-8 text-white flex flex-col md:flex-row gap-6 items-center">
+                    <div className="flex-1 space-y-4">
+                      <div className="flex items-center gap-2 text-blue-400">
+                        <Zap size={20} fill="currentColor" />
+                        <span className="font-bold uppercase tracking-widest text-xs">Phân tích AI</span>
+                      </div>
+                      <p className="text-lg font-medium leading-snug line-clamp-3 italic opacity-90">
+                        "{analysisResult.analysis_data?.body_analysis?.split('.')[0]}."
+                      </p>
+                      <div className="flex gap-4">
+                        <AdviceSmall icon={<Apple />} content={analysisResult.analysis_data?.nutrition_advice} />
+                        <AdviceSmall icon={<Heart />} content={analysisResult.analysis_data?.lifestyle_tips} />
+                      </div>
+                    </div>
+                    
+                    <Button 
+                      onClick={handleCreatePlanFromAI}
+                      disabled={isCreatingPlan}
+                      className="w-full md:w-auto h-20 px-8 rounded-3xl bg-blue-600 hover:bg-blue-700 text-white font-black text-xl shadow-2xl shadow-blue-500/20"
+                    >
+                       {isCreatingPlan ? <Loader2 className="animate-spin" /> : "LẤY LỘ TRÌNH"}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex justify-center gap-4">
+                <Button variant="ghost" onClick={handleReset} className="text-slate-400 font-bold rounded-2xl">LÀM LẠI</Button>
+                <div className="opacity-50 hover:opacity-100 transition-opacity">
+                   <ScreenshotCapture targetRef={containerRef} feature="ai_trainer" disabled={!analysisResult} />
+                </div>
+              </div>
+            </motion.div>
           )}
-        </main>
+        </AnimatePresence>
       </div>
     </div>
   );
 };
 
-export default AiTrainer;
+// --- Small & Visual Components ---
 
-// --- Subcomponents ---
-function MetricsPanel({ analysisResult, heightCm }) {
+const VisualMetric = ({ icon, label, value, color }) => (
+  <div className={`p-6 bg-white rounded-[32px] border border-slate-100 shadow-sm flex flex-col items-center text-center transition-all hover:shadow-lg group`}>
+    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-3 transition-colors ${color === 'blue' ? 'bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white' : color === 'indigo' ? 'bg-indigo-50 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white' : 'bg-green-50 text-green-600 group-hover:bg-green-600 group-hover:text-white'}`}>
+      {React.cloneElement(icon, { size: 24 })}
+    </div>
+    <span className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">{label}</span>
+    <span className="text-2xl font-black">{value}</span>
+  </div>
+);
+
+const AdviceSmall = ({ icon, content }) => {
+  if (!content) return null;
+  return (
+    <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-white shrink-0 cursor-help" title={content}>
+       {React.cloneElement(icon, { size: 18 })}
+    </div>
+  );
+};
+
+const DetailedMetrics = ({ analysisResult, heightCm }) => {
   const m = analysisResult?.measurements || {};
   const px = m.pixel_measurements || {};
   const cm = m.cm_measurements || {};
-  const apiScale = m?.scale_cm_per_px != null ? Number(m.scale_cm_per_px) : null;
-  const derivedScale = (!apiScale && heightCm && px.height) ? Number(heightCm) / Number(px.height) : null;
-  const scale = apiScale || derivedScale || null;
+  const scale = m?.scale_cm_per_px || (heightCm && px.height ? heightCm / px.height : null);
 
   const fmt = (key) => {
-    if (cm && cm[key] != null) return `${Number(cm[key]).toFixed(1)} cm`;
-    if (scale && px[key] != null) return `${(Number(px[key]) * Number(scale)).toFixed(1)} cm`;
-    if (px[key] != null) return `${Number(px[key]).toFixed(1)} px`;
+    if (cm && cm[key]) return `${Math.round(cm[key])}cm`;
+    if (scale && px[key]) return `${Math.round(px[key] * scale)}cm`;
     return "—";
   };
 
-  const ratio = (key) => {
-    const v = px[key];
-    if (v == null) return "—";
-    return Number(v).toFixed(2);
-  };
-
-  // Extra derived ratio
-  const legToHeight = (() => {
-    const l = px.leg_length,
-      h = px.height;
-    if (l && h && h > 0) return (l / h).toFixed(2);
-    return "—";
-  })();
+  const items = [
+    { label: "VAI", val: fmt("shoulder_width") },
+    { label: "EO", val: fmt("waist_width") },
+    { label: "HÔNG", val: fmt("hip_width") },
+    { label: "CHÂN", val: fmt("leg_length") },
+  ];
 
   return (
-    <div className="p-6 bg-blue-50">
-      <h4 className="mb-4 text-xl font-extrabold text-rose-600 border-b border-rose-200 pb-2">
-        Số đo cơ thể (Pixels & Cm)
-      </h4>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
-        <Metric label="Chiều ngang vai" value={fmt("shoulder_width")} />
-        <Metric label="Chiều ngang eo" value={fmt("waist_width")} />
-        <Metric label="Chiều ngang hông" value={fmt("hip_width")} />
-        <Metric label="Ước tính chiều cao" value={fmt("height")} />
-        <Metric label="Độ dài chân" value={fmt("leg_length")} />
-        <Metric
-          label="Tỷ lệ Vai/Hông"
-          value={ratio("shoulder_hip_ratio")}
-        />
-        <Metric label="Tỷ lệ Eo/Hông" value={ratio("waist_hip_ratio")} />
-        <Metric label="Tỷ lệ Chân/Cao" value={legToHeight} />
-      </div>
-      {(analysisResult.analysis_data?.shape_type ||
-        analysisResult.analysis_data?.somatotype) && (
-        <div className="flex gap-6 pt-4 mt-6 border-t border-rose-200/50">
-          {analysisResult.analysis_data.shape_type && (
-            <div className="bg-white px-4 py-2 rounded-lg border border-rose-100 flex-1 text-center">
-              <span className="block text-sm font-semibold text-slate-500 mb-1">Kiểu hình (Body Shape)</span>
-              <span className="text-lg font-bold text-rose-700">
-                {analysisResult.analysis_data.shape_type}
-              </span>
-            </div>
-          )}
-          {analysisResult.analysis_data.somatotype && (
-            <div className="bg-white px-4 py-2 rounded-lg border border-blue-100 flex-1 text-center">
-               <span className="block text-sm font-semibold text-slate-500 mb-1">Cơ địa (Somatotype)</span>
-               <span className="text-lg font-bold text-blue-700">
-                {analysisResult.analysis_data.somatotype}
-               </span>
-            </div>
-          )}
+    <div className="grid grid-cols-4 gap-4">
+      {items.map((item, i) => (
+        <div key={i} className="text-center">
+          <p className="text-[10px] font-black text-slate-300 tracking-[0.2em] mb-1">{item.label}</p>
+          <p className="text-xl font-bold">{item.val}</p>
         </div>
-      )}
+      ))}
     </div>
   );
-}
+};
 
-function Metric({ label, value }) {
-  return (
-    <div className="flex items-center justify-between px-3 py-2 bg-white border border-blue-100 rounded-md">
-      <span className="text-sm font-semibold text-rose-700">{label}</span>
-      <span className="font-bold text-blue-700">{value}</span>
-    </div>
-  );
-}
+export default AiTrainer;

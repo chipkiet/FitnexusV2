@@ -92,3 +92,5 @@ npm run dev
 ### 💡 Một số lệnh hữu ích bổ sung:
 - **Tắt Server AITrainer:** Nhấn tổ hợp phím `Ctrl + C` tại cửa sổ Terminal đang chạy `uvicorn`.
 - **Thoát venv:** Sau khi làm việc xong, nếu muốn thoát môi trường ảo, gõ lệnh: `deactivate`.
+deactivate
+uvicorn
