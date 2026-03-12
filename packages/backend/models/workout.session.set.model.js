@@ -9,6 +9,7 @@ const WorkoutSessionSet = sequelize.define(
     set_index: { type: DataTypes.INTEGER, allowNull: false },
     actual_reps: { type: DataTypes.INTEGER, allowNull: true },
     actual_weight_kg: { type: DataTypes.DECIMAL(10, 2), allowNull: true },
+    rpe: { type: DataTypes.DECIMAL(4, 1), allowNull: true }, // Rate of Perceived Exertion 1-10
     rest_seconds: { type: DataTypes.INTEGER, allowNull: true },
     completed_at: { type: DataTypes.DATE, allowNull: true },
     notes: { type: DataTypes.TEXT, allowNull: true },

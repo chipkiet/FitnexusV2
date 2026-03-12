@@ -30,6 +30,7 @@ function EditExerciseModal({ exercise, onClose, onSave }) {
   const [sets, setSets] = useState(exercise?.sets_recommended ?? "");
   const [reps, setReps] = useState(exercise?.reps_recommended ?? "");
   const [rest, setRest] = useState(exercise?.rest_period_seconds ?? "");
+  const [weight, setWeight] = useState(exercise?.target_weight_kg ?? "");
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
@@ -39,6 +40,7 @@ function EditExerciseModal({ exercise, onClose, onSave }) {
         sets_recommended: sets !== "" ? parseInt(sets, 10) : null,
         reps_recommended: reps !== "" ? String(reps) : null,
         rest_period_seconds: rest !== "" ? parseInt(rest, 10) : null,
+        target_weight_kg: weight !== "" ? parseFloat(weight) : null,
       });
       onClose();
     } catch (e) {
@@ -48,51 +50,111 @@ function EditExerciseModal({ exercise, onClose, onSave }) {
     }
   };
 
+  const inputCls = "w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-transparent transition";
+  const labelCls = "block mb-1 text-sm font-semibold text-gray-700";
+  const helperCls = "mt-1 text-xs text-gray-400 leading-snug";
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onClose}>
-      <div className="w-full max-w-md p-6 mx-4 bg-white rounded-xl" onClick={(e) => e.stopPropagation()}>
-        <h3 className="mb-2 text-lg font-semibold">Chỉnh sửa bài tập</h3>
-        <p className="mb-4 text-sm text-gray-600">{exercise?.exercise?.name || `#${exercise?.exercise_id}`}</p>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={onClose}>
+      <div className="w-full max-w-md p-6 mx-4 bg-white rounded-2xl shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        {/* Header */}
+        <div className="mb-5">
+          <h3 className="text-lg font-bold text-gray-900">Thiết lập Mục tiêu</h3>
+          <p className="mt-0.5 text-sm text-gray-500">
+            {exercise?.exercise?.name || `Bài tập #${exercise?.exercise_id}`}
+          </p>
+          <p className="mt-2 text-xs text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg inline-block">
+            ℹ️ Đây là mục tiêu (Target) — không phải ghi log thực tế
+          </p>
+        </div>
+
         <div className="space-y-4">
+          {/* Sets + Reps — 2 cột trên cùng hàng */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className={labelCls}>Mục tiêu số Sets</label>
+              <input
+                type="number"
+                min="1"
+                value={sets}
+                onChange={(e) => setSets(e.target.value)}
+                className={inputCls}
+                placeholder="VD: 3"
+              />
+              <p className={helperCls}>Số hiệp cần thực hiện.</p>
+            </div>
+            <div>
+              <label className={labelCls}>Khoảng Reps mục tiêu</label>
+              <input
+                type="text"
+                value={reps}
+                onChange={(e) => setReps(e.target.value)}
+                className={inputCls}
+                placeholder="VD: 8-12"
+              />
+              <p className={helperCls}>Có thể nhập khoảng, VD "8-12".</p>
+            </div>
+          </div>
+
+          {/* Target Weight */}
           <div>
-            <label className="block mb-1 text-sm font-medium text-gray-700">Số sets</label>
+            <label className={labelCls}>
+              Mức tạ khởi điểm (kg)
+              <span className="ml-1 text-xs font-normal text-gray-400">— Tùy chọn</span>
+            </label>
             <input
               type="number"
               min="0"
-              value={sets}
-              onChange={(e) => setSets(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-              placeholder="VD: 3"
-            />
-          </div>
-          <div>
-            <label className="block mb-1 text-sm font-medium text-gray-700">Số reps</label>
-            <input
-              type="text"
-              value={reps}
-              onChange={(e) => setReps(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-              placeholder="VD: 8-12 hoặc 15"
-            />
-          </div>
-          <div>
-            <label className="block mb-1 text-sm font-medium text-gray-700">Nghỉ (giây)</label>
-            <input
-              type="number"
-              min="0"
-              value={rest}
-              onChange={(e) => setRest(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+              step="0.5"
+              value={weight}
+              onChange={(e) => setWeight(e.target.value)}
+              className={inputCls}
               placeholder="VD: 60"
             />
+            <p className={helperCls}>
+              Gợi ý mức tạ sẽ hiển thị sẵn trong trang ghi log buổi tập.
+            </p>
+          </div>
+
+          {/* Rest */}
+          <div>
+            <label className={labelCls}>Thời gian nghỉ giữa hiệp (giây)</label>
+            <input
+              type="number"
+              min="0"
+              step="5"
+              value={rest}
+              onChange={(e) => setRest(e.target.value)}
+              className={inputCls}
+              placeholder="VD: 90"
+            />
+            <p className={helperCls}>
+              Thời gian nghỉ khuyến nghị sau mỗi set (giây).
+            </p>
           </div>
         </div>
+
+        {/* Actions */}
         <div className="flex gap-3 mt-6">
-          <button onClick={onClose} disabled={saving} className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50">
+          <button
+            onClick={onClose}
+            disabled={saving}
+            className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-50 disabled:opacity-50 transition-colors"
+          >
             Hủy
           </button>
-          <button onClick={handleSave} disabled={saving} className="flex-1 px-4 py-2 text-sm font-semibold text-white bg-green-600 rounded-lg hover:bg-green-800 disabled:opacity-50">
-            {saving ? 'Đang lưu...' : 'Lưu'}
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-indigo-600 rounded-xl hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+          >
+            {saving && (
+              <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+              </svg>
+            )}
+            {saving ? 'Đang lưu...' : 'Lưu mục tiêu'}
           </button>
         </div>
       </div>
@@ -148,9 +210,8 @@ function ResumeRestartModal({ activeSession, onClose, onResume, onRestart }) {
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">Trạng thái:</span>
-              <span className={`font-medium ${
-                activeSession.status === 'paused' ? 'text-amber-600' : 'text-green-600'
-              }`}>
+              <span className={`font-medium ${activeSession.status === 'paused' ? 'text-amber-600' : 'text-green-600'
+                }`}>
                 {activeSession.status === 'paused' ? 'Đã tạm dừng' : 'Đang tập'}
               </span>
             </div>
@@ -318,7 +379,7 @@ export default function PlanDetail() {
         const r2 = await listWorkoutSessionsApi({ planId: Number(planId), status: 'completed' });
         setActiveSessions(r1?.data?.items || []);
         setCompletedSessions(r2?.data?.items || []);
-      } catch {}
+      } catch { }
     })();
 
     return () => { alive = false; };
@@ -500,7 +561,7 @@ export default function PlanDetail() {
     setStartingWorkout(true);
     try {
       if (activeSession?.session_id) {
-        try { await api.post(`/api/workout/${activeSession.session_id}/complete`); } catch {}
+        try { await api.post(`/api/workout/${activeSession.session_id}/complete`); } catch { }
       }
       await createNewSession();
     } catch (err) {
@@ -521,7 +582,7 @@ export default function PlanDetail() {
     setStartingWorkout(true);
     try {
       if (activeSession?.session_id) {
-        try { await api.post(`/api/workout/${activeSession.session_id}/complete`); } catch {}
+        try { await api.post(`/api/workout/${activeSession.session_id}/complete`); } catch { }
       }
       await createNewSession();
     } catch (e) {
@@ -555,12 +616,24 @@ export default function PlanDetail() {
         )}
         {plan && !loading && (
           <div className="space-y-6">
-            <div className="p-5 bg-white border rounded-xl">
+            <div className="p-5 bg-white border rounded-xl shadow-sm">
               <div className="flex items-start justify-between gap-4">
+                {/* Plan title + edit hint */}
                 <div>
-                  <h1 className="text-2xl font-semibold text-gray-900">{plan.name || "(Không có tên)"}</h1>
+                  <div className="flex items-center gap-2">
+                    <h1 className="text-2xl font-semibold text-gray-900">{plan.name || "Kế hoạch tập luyện"}</h1>
+                    <button
+                      title="Chỉnh sửa tên kế hoạch"
+                      className="p-1 rounded hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+                      onClick={() => navigate(`/plans/${planId}/edit`)}
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                      </svg>
+                    </button>
+                  </div>
                   {plan.description && (
-                    <p className="mt-1 text-sm text-gray-600">{plan.description}</p>
+                    <p className="mt-1 text-sm text-gray-500">{plan.description}</p>
                   )}
                   <div className="mt-2">
                     {plan.difficulty_level && (
@@ -568,34 +641,62 @@ export default function PlanDetail() {
                     )}
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+
+                {/* Action buttons */}
+                <div className="flex items-center gap-2 shrink-0">
                   <button
-                    className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+                    className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                     onClick={() => {
                       try {
-                        const ctx = {
-                          plan_id: Number(planId),
-                          name: plan?.name || '',
-                        };
+                        const ctx = { plan_id: Number(planId), name: plan?.name || '' };
                         sessionStorage.setItem('current_plan_context', JSON.stringify(ctx));
-                      } catch {}
+                      } catch { }
                       navigate('/exercises');
                     }}
                   >
-                    Thêm bài tập từ Thư viện
+                    + Thêm bài tập
                   </button>
+
+                  {/* Smart CTA: "Tiếp tục tập" if active session exists, else "Bắt đầu tập" */}
+                  {activeSessions.length > 0 ? (
+                    <button
+                      className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-amber-500 rounded-lg hover:bg-amber-600 shadow-sm transition-all"
+                      onClick={() => navigate(`/workout-run/${activeSessions[0].session_id}`)}
+                    >
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+                      </svg>
+                      Tiếp tục tập
+                    </button>
+                  ) : (
+                    <button
+                      className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      onClick={startWorkout}
+                      disabled={startingWorkout || !items.length}
+                    >
+                      {startingWorkout ? (
+                        <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                        </svg>
+                      ) : (
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+                        </svg>
+                      )}
+                      {startingWorkout ? 'Đang chuẩn bị...' : 'Bắt đầu tập'}
+                    </button>
+                  )}
+
+                  {/* Icon-only delete — gray, hover:red */}
                   <button
-                    className="px-4 py-2 text-sm font-semibold text-white bg-green-600 rounded-lg hover:bg-green-800 disabled:opacity-50 disabled:cursor-not-allowed"
-                    onClick={startWorkout}
-                    disabled={startingWorkout || !items.length}
-                  >
-                    {startingWorkout ? 'Đang chuẩn bị...' : 'Bắt đầu tập'}
-                  </button>
-                  <button
-                    className="px-4 py-2 text-sm font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50 disabled:opacity-50"
+                    title="Xóa kế hoạch"
+                    className="p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
                     onClick={() => setShowDeleteModal(true)}
                   >
-                    Xóa kế hoạch
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
                   </button>
                 </div>
               </div>
@@ -616,9 +717,8 @@ export default function PlanDetail() {
                       onDragStart={(e) => handleDragStart(e, index)}
                       onDragOver={(e) => handleDragOver(e, index)}
                       onDragEnd={handleDragEnd}
-                      className={`flex items-start justify-between gap-3 p-3 border rounded-lg cursor-move transition-all ${
-                        draggedIndex === index ? 'opacity-50 border-blue-400' : 'hover:border-gray-400'
-                      }`}
+                      className={`flex items-start justify-between gap-3 p-3 border rounded-lg cursor-move transition-all ${draggedIndex === index ? 'opacity-50 border-blue-400' : 'hover:border-gray-400'
+                        }`}
                     >
                       <div className="flex items-start flex-1 min-w-0 gap-3">
                         <div className="flex flex-col items-center justify-center pt-1 text-gray-400">
@@ -690,42 +790,72 @@ export default function PlanDetail() {
               )}
             </div>
 
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              <div className="p-5 bg-white border rounded-xl">
-                <h3 className="mb-2 text-base font-semibold text-gray-900">Chưa hoàn thành</h3>
-                {!activeSessions.length ? (
-                  <div className="text-sm text-gray-600">Chưa có buổi tập nào hoặc không có buổi đang dở.</div>
-                ) : (
-                  <div className="space-y-2">
-                    {activeSessions.map((s) => (
-                      <div key={s.session_id} className="flex items-center justify-between p-3 border rounded-lg">
-                        <div>
-                          <div className="text-sm font-medium text-gray-900">Bắt đầu: {new Date(s.started_at).toLocaleString()}</div>
-                          <div className="text-xs text-gray-600">Tiến độ: {s.completed_exercises}/{s.total_exercises}</div>
+            {/* In-progress banner (full-width, amber) — only shown if active sessions exist */}
+            {activeSessions.length > 0 && (
+              <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-semibold text-amber-900">🏋️ Đang tập dang dở</h3>
+                  <span className="text-xs text-amber-600 font-medium">{activeSessions.length} buổi</span>
+                </div>
+                <div className="space-y-2">
+                  {activeSessions.map((s) => (
+                    <div
+                      key={s.session_id}
+                      className="flex items-center justify-between p-3 bg-white border border-amber-200 rounded-lg cursor-pointer hover:bg-amber-50 transition-colors group"
+                      onClick={() => navigate(`/workout-run/${s.session_id}`)}
+                    >
+                      <div>
+                        <div className="text-sm font-semibold text-gray-800">
+                          Bắt đầu: {new Date(s.started_at).toLocaleString('vi-VN')}
                         </div>
-                        <button className="px-3 py-1.5 text-xs text-blue-600 border border-blue-200 rounded hover:bg-blue-50" onClick={() => navigate(`/workout-run/${s.session_id}`)}>Tiếp tục</button>
+                        <div className="text-xs text-amber-600 mt-0.5">⏸ Chạm để tiếp tục buổi tập này</div>
                       </div>
-                    ))}
-                  </div>
-                )}
+                      <span className="px-3 py-1.5 text-xs font-semibold text-amber-700 bg-amber-100 rounded-lg group-hover:bg-amber-500 group-hover:text-white transition-colors">
+                        Tiếp tục →
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
+            )}
 
-              <div className="p-5 bg-white border rounded-xl">
-                <h3 className="mb-2 text-base font-semibold text-gray-900">Đã hoàn thành</h3>
-                {!completedSessions.length ? (
-                  <div className="text-sm text-gray-600">Chưa có buổi hoàn thành.</div>
-                ) : (
-                  <div className="space-y-2">
-                    {completedSessions.map((s) => (
-                      <div key={s.session_id} className="p-3 border rounded-lg">
-                        <div className="text-sm font-medium text-gray-900">Ngày tập: {new Date(s.ended_at || s.started_at).toLocaleString()}</div>
-                        <div className="text-xs text-gray-600">Tổng thời gian: {formatDuration(s.total_duration_seconds)}</div>
-                        <div className="text-xs text-gray-600">Hoàn thành: {s.completed_exercises}/{s.total_exercises}</div>
+            {/* Workout history — vertical, white cards */}
+            <div className="p-5 bg-white border rounded-xl">
+              <h3 className="mb-3 text-base font-semibold text-gray-900">📋 Lịch sử tập luyện</h3>
+              {!completedSessions.length ? (
+                <div className="flex items-center gap-2 py-6 text-sm text-gray-400">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                  </svg>
+                  Chưa có buổi tập nào hoàn thành.
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {completedSessions.map((s) => (
+                    <div
+                      key={s.session_id}
+                      className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                      <div>
+                        <div className="text-sm font-medium text-gray-800">
+                          {new Date(s.ended_at || s.started_at).toLocaleDateString('vi-VN', {
+                            weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric'
+                          })}
+                        </div>
+                        <div className="flex items-center gap-4 mt-1">
+                          <span className="text-xs text-gray-500">⏱ {formatDuration(s.total_duration_seconds)}</span>
+                          <span className="text-xs text-gray-500">
+                            <span className="text-green-500 font-semibold">✓</span> {s.completed_exercises} bài
+                          </span>
+                        </div>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+                      <svg className="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}

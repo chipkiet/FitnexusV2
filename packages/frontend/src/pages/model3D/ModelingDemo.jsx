@@ -2,7 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import ModelViewer from "../../components/ModelViewer.jsx";
 import useModelingController from "../../features/modeling/useModelingController.js";
-import HeaderDemo from "../../components/header/HeaderDemo.jsx";
+
 import HeaderLogin from "../../components/header/HeaderLogin.jsx";
 import { useAuth } from "../../context/auth.context.jsx";
 
@@ -29,7 +29,7 @@ function ModelingDemo() {
 
   return (
     <div className="min-h-screen bg-white text-black">
-      {isAuthenticated ? <HeaderLogin /> : <HeaderDemo />}
+      <HeaderLogin />
 
       <main className="max-w-6xl px-4 py-10 mx-auto">
         {/* HERO */}

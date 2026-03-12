@@ -105,25 +105,6 @@ export async function getPlanById(req, res) {
       ],
     });
 
-    // Prefer primary image from image_exercise if available
-    const exIds = items
-      .map((it) => it.exercise_id)
-      .filter((v, i, a) => a.indexOf(v) === i);
-    let imgMap = new Map();
-    if (exIds.length) {
-      const [rows] = await sequelize.query(
-        `SELECT exercise_id, image_url
-         FROM (
-           SELECT exercise_id, image_url,
-                  ROW_NUMBER() OVER (PARTITION BY exercise_id ORDER BY is_primary DESC, display_order ASC, image_id ASC) AS rn
-           FROM image_exercise
-           WHERE exercise_id = ANY($1)
-         ) s WHERE rn = 1`,
-        { bind: [exIds] }
-      );
-      imgMap = new Map(rows.map((r) => [r.exercise_id, r.image_url]));
-    }
-
     const payloadItems = items.map((it) => ({
       plan_exercise_id: it.plan_exercise_id,
       plan_id: it.plan_id,
@@ -132,18 +113,15 @@ export async function getPlanById(req, res) {
       sets_recommended: it.sets_recommended,
       reps_recommended: it.reps_recommended,
       rest_period_seconds: it.rest_period_seconds,
+      target_weight_kg: it.target_weight_kg ? parseFloat(it.target_weight_kg) : null,
       exercise: it.exercise
         ? {
-            id: it.exercise.get("id"),
-            name: it.exercise.name,
-            difficulty: it.exercise.difficulty_level,
-            equipment: it.exercise.equipment_needed,
-            imageUrl:
-              imgMap.get(it.exercise_id) ||
-              it.exercise.thumbnail_url ||
-              it.exercise.gif_demo_url ||
-              null,
-          }
+          id: it.exercise.get("id"),
+          name: it.exercise.name,
+          difficulty: it.exercise.difficulty_level,
+          equipment: it.exercise.equipment_needed,
+          imageUrl: it.exercise.thumbnail_url || it.exercise.gif_demo_url || null,
+        }
         : null,
     }));
 
@@ -455,6 +433,12 @@ export async function updatePlanExercise(req, res) {
         Number.isFinite(rest) && rest >= 0 ? rest : null;
     }
 
+    if (req.body?.target_weight_kg !== undefined) {
+      const weight = parseFloat(req.body.target_weight_kg);
+      updateData.target_weight_kg =
+        Number.isFinite(weight) && weight > 0 ? weight : null;
+    }
+
     // Update the record
     await planExercise.update(updateData);
 
@@ -465,6 +449,7 @@ export async function updatePlanExercise(req, res) {
         sets_recommended: planExercise.sets_recommended,
         reps_recommended: planExercise.reps_recommended,
         rest_period_seconds: planExercise.rest_period_seconds,
+        target_weight_kg: planExercise.target_weight_kg ? parseFloat(planExercise.target_weight_kg) : null,
       },
     });
   } catch (err) {

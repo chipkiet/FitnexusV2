@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/auth.context.jsx";
 import { getMyPlansApi, addExerciseToPlanApi, listWorkoutSessionsApi, deletePlanApi, createPlanApi } from "../../lib/api.js";
+import HeaderLogin from "../../components/header/HeaderLogin.jsx";
 
 // shadcn components
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
@@ -262,8 +263,9 @@ export default function PlanPicker() {
   const completedPlans = items.filter((p) => completedPlanIds.has(p.plan_id));
 
   return (
-    <div className="min-h-screen bg-slate-50 py-10">
-      <div className="max-w-[800px] mx-auto px-4">
+    <div className="min-h-screen bg-slate-50">
+      <HeaderLogin />
+      <div className="max-w-[800px] mx-auto px-4 py-10">
 
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold text-slate-900">Chọn kế hoạch để thêm bài tập</h1>

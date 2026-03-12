@@ -12,8 +12,8 @@ const QUOTA_CONFIG = {
     // premium_user, trainer, admin, etc. are unlimited via RBAC
   },
   default: {
-    guest: { limit: 5, period: 'day' },
-    user: { limit: 10, period: 'day' },
+    guest: { limit: 100, period: 'day' },
+    user: { limit: 100, period: 'day' },
   }
 };
 // === END: Quota Configuration ===

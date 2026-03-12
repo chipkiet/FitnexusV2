@@ -57,7 +57,6 @@ import ImgExercise from "../../assets/dashboard/Exercise.png";
 import ImgModel from "../../assets/dashboard/Model.png";
 import ImgNutrition from "../../assets/dashboard/Nutrition.png";
 import { normalize } from "three/src/math/MathUtils.js";
-import { raw } from "body-parser";
 
 // Simple route map to trigger navbar or navigate
 const VXP_ROUTE_MAP = {

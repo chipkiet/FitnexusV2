@@ -2,7 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/auth.context.jsx";
 import HeaderLogin from "../../components/header/HeaderLogin.jsx";
-import HeaderDemo from "../../components/header/HeaderDemo.jsx";
+
 import aiGuider from "../../assets/aitrainer/B1.png";
 import b2 from "../../assets/aitrainer/B2.png";
 import b3 from "../../assets/aitrainer/B3.png";
@@ -18,7 +18,7 @@ export default function AiTrainerGuide() {
 
   return (
     <div className="min-h-screen bg-white">
-      {isAuthenticated ? <HeaderLogin /> : <HeaderDemo />}
+      <HeaderLogin />
 
       <main className="max-w-6xl px-4 py-10 mx-auto">
         {/* HERO */}

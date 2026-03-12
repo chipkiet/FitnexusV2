@@ -17,6 +17,7 @@ import {
   createExercise,
   exerciseUploadMiddleware,
   updateExercise,
+  deleteExercise,
 } from "../controllers/exercise.controller.js";
 
 const router = Router();
@@ -43,6 +44,6 @@ router.get("/detail/:slug", getExerciseDetail);
 router.post("/", authGuard, exerciseUploadMiddleware, createExercise);
 
 router.put("/:id", exerciseUploadMiddleware, updateExercise);
-
+router.delete("/:id", authGuard, deleteExercise);
 
 export default router;

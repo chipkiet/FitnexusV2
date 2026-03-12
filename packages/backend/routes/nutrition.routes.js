@@ -6,6 +6,7 @@ import OnboardingAnswer from '../models/onboarding.answer.model.js';
 import OnboardingStep from '../models/onboarding.step.model.js';
 import User from '../models/user.model.js';
 import aiQuota from '../middleware/ai.quota.js';
+import { loadMeals, rewriteCsv, appendRow, genId } from './meal.routes.js';
 
 const router = express.Router();
 
@@ -101,22 +102,39 @@ async function callGemini(prompt, apiKey) {
     return 'Bản nháp kế hoạch (demo, thiếu GEMINI_API_KEY)\n\n- Mục tiêu: theo yêu cầu\n- Bữa sáng/trưa/tối + snack: gợi ý mẫu\n- Macro ước tính theo mục tiêu\n\nHãy cấu hình GEMINI_API_KEY ở backend để nhận đề xuất chi tiết từ AI.';
   }
 
-  const model = (process.env.GEMINI_MODEL || 'gemini-2.0-flash').trim();
-  const temp = Number.isFinite(+process.env.GEMINI_TEMPERATURE) ? +process.env.GEMINI_TEMPERATURE : 0.7;
-  const maxTok = Number.isFinite(+process.env.GEMINI_MAX_TOKENS) ? +process.env.GEMINI_MAX_TOKENS : 2048;
-  const topP = Number.isFinite(+process.env.GEMINI_TOP_P) ? +process.env.GEMINI_TOP_P : undefined;
-  const topK = Number.isFinite(+process.env.GEMINI_TOP_K) ? +process.env.GEMINI_TOP_K : undefined;
-  dbg('model in use', { model, temp, maxTok, ...(topP!=null?{topP}:{}) , ...(topK!=null?{topK}:{}) });
-  const versions = ['v1', 'v1beta'];
+  // ── Model priority list ──────────────────────────────────────────────────
+  // Env GEMINI_MODEL is tried first; remaining are the fallback chain.
+  const FALLBACK_MODELS = [
+    'gemini-2.5-flash',
+    'gemini-2.0-flash',
+    'gemini-2.0-flash-lite',
+    'gemini-2.5-pro',
+  ];
+
+  // Put the env-configured model at the front (de-dup the rest)
+  const envModel = (process.env.GEMINI_MODEL || '').trim();
+  const modelQueue = envModel
+    ? [envModel, ...FALLBACK_MODELS.filter(m => m !== envModel)]
+    : FALLBACK_MODELS;
+
+  const temp    = Number.isFinite(+process.env.GEMINI_TEMPERATURE) ? +process.env.GEMINI_TEMPERATURE : 0.7;
+  const maxTok  = Number.isFinite(+process.env.GEMINI_MAX_TOKENS)  ? +process.env.GEMINI_MAX_TOKENS  : 8192;
+  const topP    = Number.isFinite(+process.env.GEMINI_TOP_P)       ? +process.env.GEMINI_TOP_P       : undefined;
+  const topK    = Number.isFinite(+process.env.GEMINI_TOP_K)       ? +process.env.GEMINI_TOP_K       : undefined;
+
   const genCfg = { temperature: temp, maxOutputTokens: maxTok };
   if (topP != null) genCfg.topP = topP;
   if (topK != null) genCfg.topK = topK;
+
   const body = {
     contents: [{ role: 'user', parts: [{ text: prompt }] }],
     generationConfig: genCfg,
     safetySettings: [],
   };
 
+  const versions = ['v1', 'v1beta'];
+
+  // ── HTTP helper ──────────────────────────────────────────────────────────
   const postJson = async (fullUrl, payloadObj) => {
     const payload = JSON.stringify(payloadObj);
     if (typeof fetch === 'function') {
@@ -149,23 +167,65 @@ async function callGemini(prompt, apiKey) {
     return data;
   };
 
+  // ── Retryable status codes (quota / overloaded) ──────────────────────────
+  const isRetryable = (status) => status === 429 || status === 503;
+  // Fail fast on auth / bad-request errors
+  const isHardFail  = (status) => status === 400 || status === 401 || status === 403;
+
   let lastErr = null;
-  for (const v of versions) {
-    const url = `https://generativelanguage.googleapis.com/${v}/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`;
-    try {
-      dbg('request', { version: v, model, promptLen: String(prompt).length });
-      const data = await postJson(url, body);
-      const text = data?.candidates?.[0]?.content?.parts?.map(p => p.text).join('\n') || '';
-      dbg('success', { version: v, model, textLen: text.length });
-      return text;
-    } catch (e) {
-      dbg('error', { version: v, model, status: e?.status, message: e?.message });
-      lastErr = e;
-      if (e?.status !== 404) break; // only fallback to next version on 404
+
+  // ── Outer loop: rotate through models ───────────────────────────────────
+  for (let mi = 0; mi < modelQueue.length; mi++) {
+    const model = modelQueue[mi];
+    dbg('trying model', { model, attempt: mi + 1, ofTotal: modelQueue.length });
+
+    let modelSucceeded = false;
+
+    // ── Inner loop: rotate through API versions ──────────────────────────
+    for (const v of versions) {
+      const url = `https://generativelanguage.googleapis.com/${v}/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`;
+      try {
+        dbg('request', { version: v, model, promptLen: String(prompt).length });
+        const data = await postJson(url, body);
+        const text = data?.candidates?.[0]?.content?.parts?.map(p => p.text).join('\n') || '';
+        dbg('success', { version: v, model, textLen: text.length });
+        return text;   // ✅ done
+      } catch (e) {
+        dbg('error', { version: v, model, status: e?.status, message: e?.message });
+        lastErr = e;
+
+        if (isHardFail(e?.status)) {
+          // Bad key / bad request — no point retrying any model
+          throw e;
+        }
+
+        if (isRetryable(e?.status)) {
+          // Quota / overload — skip remaining versions, try next model
+          const nextModel = modelQueue[mi + 1];
+          if (nextModel) {
+            dbg('fallback-switch', { from: model, to: nextModel, reason: e?.status });
+          } else {
+            dbg('all-models-exhausted', { lastStatus: e?.status });
+          }
+          break; // break inner (versions) loop → advance to next model
+        }
+
+        if (e?.status === 404) {
+          // Model not found on this version → try next version
+          continue;
+        }
+
+        // Unknown error — stop immediately
+        throw e;
+      }
     }
+
+    if (modelSucceeded) break;
   }
-  throw lastErr || new Error('Gemini API call failed');
+
+  throw lastErr || new Error('All Gemini models exhausted');
 }
+
 
 router.post('/plan', aiQuota('nutrition_plan'), async (req, res) => {
   try {
@@ -207,6 +267,7 @@ router.post('/plan', aiQuota('nutrition_plan'), async (req, res) => {
     if (!prompt) {
       const goalText = goal === 'LOSE_WEIGHT' ? 'giảm cân' : goal === 'GAIN_WEIGHT' ? 'tăng cân' : 'giữ cân đối';
       prompt = `Cung cấp cho tôi menu ăn uống trong 1 tuần với Mục tiêu: ${goalText}${extra ? ` + lưu ý: ${extra}` : ''}`;
+      prompt += `\nSTRICTLY OUTPUT ONLY A VALID JSON ARRAY (Do not wrap in markdown or add explanations). Each item must have: { "dayOffset": 0, "meal_type": "breakfast|lunch|dinner|snack", "name_vi": "tên tiếng việt", "usda_keyword": "english keyword for USDA search", "quantity_g": 100 }`;
     }
     dbg('prompt', { usingOnboarding, promptLen: prompt.length });
     const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '';
@@ -330,12 +391,16 @@ async function buildPromptFromOnboarding(userId, extraText = '') {
   if (profile.workout_days_per_week != null) lines.push(`- Số buổi tập/tuần: ${profile.workout_days_per_week}`);
   if (extraText && isNutritionRelated(extraText)) lines.push(`- Ràng buộc/ưu tiên thêm: ${extraText.trim()}`);
 
-  lines.push('Yêu cầu phản hồi:');
-  lines.push('- Tính/ước lượng tổng calo khuyến nghị mỗi ngày (nêu rõ giả định).');
-  lines.push('- Đề xuất phân bổ macro (protein/carb/fat) theo gram mỗi ngày.');
-  lines.push('- Gợi ý thực đơn mẫu 1–3 ngày theo bữa (sáng/trưa/tối + snack) với khẩu phần gần đúng.');
+  lines.push('Yêu cầu phản hồi (STRICTLY OUTPUT ONLY A VALID JSON ARRAY):');
+  lines.push('- Trả về CHỈ MỘT MẢNG JSON thuần túy (không bọc trong markdown tick, không kèm text giải thích).');
+  lines.push('- Mỗi object trong mảng đại diện cho 1 món ăn của 1 bữa trong 7 ngày.');
+  lines.push('- Phải có các trường sau:');
+  lines.push('  - `"dayOffset"` (number): 0 cho ngày 1, 1 cho ngày 2, ... tối đa 6 cho ngày 7.');
+  lines.push('  - `"meal_type"` (string): "breakfast", "lunch", "dinner", hoặc "snack".');
+  lines.push('  - `"name_vi"` (string): Tên tiếng Việt hiển thị trên UI (vd: "Ức gà luộc").');
+  lines.push('  - `"usda_keyword"` (string): Từ khóa tìm kiếm bằng tiếng Anh tốt nhất để dò API USDA (vd: "raw chicken breast").');
+  lines.push('  - `"quantity_g"` (number): Lượng ăn theo gram ước tính.');
   lines.push('- Nếu có dị ứng/ưu tiên, điều chỉnh món cho phù hợp.');
-  lines.push('- Trình bày ngắn gọn, có bullet, đơn vị quen thuộc (g, ml, kcal).');
 
   const finalPrompt = lines.join('\n');
   dbg('onboarding:prompt:ready', { length: finalPrompt.length });
@@ -361,6 +426,97 @@ router.post('/plan/from-onboarding', authOrSession, aiQuota('nutrition_plan'), a
     } catch (_) {}
     const fallback = `Kế hoạch (fallback do lỗi gọi AI)${extra}\n- Gợi ý: ăn cân bằng, ưu tiên thực phẩm tươi, tránh đồ siêu chế biến.\n- Bữa sáng/trưa/tối kèm snack, khẩu phần vừa đủ.\n(Thiết lập GEMINI_API_KEY và đảm bảo model hợp lệ để nhận gợi ý chi tiết.)`;
     return res.json({ success: true, data: { text: fallback }, meta: { fallback: true, error: err?.message || 'unknown' } });
+  }
+});
+
+// ─── POST /api/nutrition/extract-to-meals ────────────────────────────────────
+// Sync Gemini AI Menu to Meal Planner using USDA API
+router.post('/extract-to-meals', authOrSession, async (req, res) => {
+  try {
+    const { meals, startDate } = req.body;
+    const userId = req.userId;
+
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+    if (!meals || !Array.isArray(meals)) return res.status(400).json({ error: 'Missing or invalid JSON array in meals field' });
+
+    const start = startDate ? new Date(startDate) : new Date();
+
+    // 1. Map through the JSON array and fetch USDA accurately
+    const enrichedMeals = [];
+    const datesToOverwrite = new Set();
+    const { usdaGet, normalize } = await import('./meal.routes.js');
+
+    for (const m of meals) {
+      if (!m.name_vi || !m.usda_keyword || !m.meal_type) continue;
+      
+      const d = new Date(start);
+      d.setDate(d.getDate() + (m.dayOffset || 0));
+      const dateStr = d.toISOString().slice(0, 10);
+      datesToOverwrite.add(dateStr);
+
+      const VALID_MEALS = ['breakfast', 'lunch', 'dinner', 'snack'];
+      const mealType = VALID_MEALS.includes(m.meal_type) ? m.meal_type : 'snack';
+      const qty = m.quantity_g || 100;
+
+      let calories = 0, protein = 0, carbs = 0, fat = 0;
+      let foodId = `ai_${Date.now()}_${Math.floor(Math.random()*1000)}`;
+
+      // Fetch USDA data
+      try {
+        dbg('sync-ai: fetching usda for', m.usda_keyword);
+        const searchRes = await usdaGet(`/foods/search?query=${encodeURIComponent(m.usda_keyword)}&pageSize=1`);
+        if (searchRes.foods && searchRes.foods.length > 0) {
+          const firstHit = searchRes.foods[0];
+          const normalized = normalize(firstHit);
+          foodId = `usda_${normalized.id}`;
+          // USDA values are typically per 100g, so if quantity is different, adjust.
+          const ratio = qty / 100;
+          calories = +(normalized.calories * ratio).toFixed(1);
+          protein = +(normalized.protein * ratio).toFixed(1);
+          carbs = +(normalized.carbs * ratio).toFixed(1);
+          fat = +(normalized.fat * ratio).toFixed(1);
+        } else {
+          dbg('sync-ai: usda no hits for', m.usda_keyword);
+        }
+      } catch (err) {
+        console.error(`sync-ai: Error fetching USDA for ${m.usda_keyword}`, err);
+      }
+
+      enrichedMeals.push({
+        id: genId(),
+        user_id: userId,
+        meal_type: mealType,
+        food_id: foodId,
+        food_name: String(m.name_vi).replace(/"/g, '""'),
+        quantity_g: qty,
+        calories: calories,
+        protein: protein,
+        carbs: carbs,
+        fat: fat,
+        date: dateStr
+      });
+    }
+
+    // 2. Load existing CSV meals
+    let allMeals = loadMeals();
+
+    // 3. Remove existing meals for this user on those dates (overwrite)
+    allMeals = allMeals.filter(m => !(String(m.user_id) === String(userId) && datesToOverwrite.has(m.date)));
+
+    // Rewrite CSV without those dates
+    rewriteCsv(allMeals);
+
+    // 4. Append new enriched meals
+    let addedCount = 0;
+    for (const em of enrichedMeals) {
+      appendRow(em);
+      addedCount++;
+    }
+
+    res.json({ success: true, message: `Synced and saved ${addedCount} meals with USDA data.`, dates: Array.from(datesToOverwrite) });
+  } catch (err) {
+    console.error('Extraction/Sync error:', err);
+    res.status(500).json({ error: 'Lỗi khi đồng bộ thực đơn với USDA', detail: err.message });
   }
 });
 

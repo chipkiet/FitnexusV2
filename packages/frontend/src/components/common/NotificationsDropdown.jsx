@@ -61,7 +61,7 @@ export default function NotificationsDropdown({ buttonClassName = "", popoverCla
       <button
         type="button"
         onClick={toggleOpen}
-        className={`relative inline-flex items-center justify-center rounded-full border px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-50 ${buttonClassName}`}
+        className={`relative inline-flex items-center justify-center rounded-full border border-gray-200 px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 ${buttonClassName}`}
         aria-label="Thông báo"
         aria-expanded={open}
       >
@@ -76,17 +76,17 @@ export default function NotificationsDropdown({ buttonClassName = "", popoverCla
 
       {open && (
         <div
-          className={`absolute right-0 mt-3 w-80 rounded-2xl border border-slate-200 bg-white shadow-xl z-50 ${popoverClassName}`}
+          className={`absolute right-0 mt-3 w-80 rounded-2xl border border-gray-200/60 bg-white/90 backdrop-blur-2xl shadow-xl z-50 ${popoverClassName}`}
         >
-          <div className="flex items-center justify-between px-4 py-3 border-b">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
             <div>
-              <p className="text-xs uppercase text-slate-400">Thông báo</p>
-              <p className="text-sm font-semibold text-slate-800">{unreadCount} chưa đọc</p>
+              <p className="text-xs uppercase text-gray-400">Thông báo</p>
+              <p className="text-sm font-semibold text-gray-900">{unreadCount} chưa đọc</p>
             </div>
             <button
               type="button"
               onClick={() => markAll()}
-              className="text-xs font-medium text-blue-600 hover:underline disabled:opacity-50"
+              className="text-xs font-medium text-teal-600 hover:underline disabled:opacity-50"
               disabled={!items.length}
             >
               Đánh dấu đã đọc
@@ -95,19 +95,19 @@ export default function NotificationsDropdown({ buttonClassName = "", popoverCla
           <button
             type="button"
             onClick={() => navigate("/settings/notifications")}
-            className="w-full border-b border-slate-100 px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-blue-600 hover:bg-slate-50"
+            className="w-full border-b border-gray-100 px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-teal-600 hover:bg-gray-50"
           >
             Xem trang thông báo
           </button>
           <div className="max-h-96 overflow-y-auto">
             {loading ? (
               <div className="flex items-center justify-center py-8">
-                <Loader2 className="w-5 h-5 animate-spin text-slate-400" />
+                <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
               </div>
             ) : error ? (
               <p className="px-4 py-6 text-sm text-rose-600">{error}</p>
             ) : items.length === 0 ? (
-              <p className="px-4 py-6 text-sm text-slate-500">Chưa có thông báo nào.</p>
+              <p className="px-4 py-6 text-sm text-gray-500">Chưa có thông báo nào.</p>
             ) : (
               items.map((item) => {
                 const Icon = ICON_MAP[item.type] || ICON_MAP.general;
@@ -116,7 +116,7 @@ export default function NotificationsDropdown({ buttonClassName = "", popoverCla
                   <button
                     key={item.notification_id}
                     onClick={() => handleItemClick(item)}
-                    className={`flex w-full items-start gap-3 px-4 py-3 text-left hover:bg-slate-50 ${
+                    className={`flex w-full items-start gap-3 px-4 py-3 text-left hover:bg-gray-50 ${
                       item.read_at ? "opacity-75" : ""
                     }`}
                   >
@@ -124,13 +124,13 @@ export default function NotificationsDropdown({ buttonClassName = "", popoverCla
                       <Icon className="w-4 h-4" />
                     </span>
                     <span className="flex-1">
-                      <span className="block text-sm font-semibold text-slate-900 line-clamp-1">
+                      <span className="block text-sm font-semibold text-gray-900 line-clamp-1">
                         {item.title}
                       </span>
                       {item.body && (
-                        <span className="block text-xs text-slate-600 line-clamp-2">{item.body}</span>
+                        <span className="block text-xs text-gray-600 line-clamp-2">{item.body}</span>
                       )}
-                      <span className="text-[11px] text-slate-400">
+                      <span className="text-[11px] text-gray-500">
                         {new Date(item.created_at).toLocaleString("vi-VN", {
                           hour: "2-digit",
                           minute: "2-digit",
@@ -139,7 +139,7 @@ export default function NotificationsDropdown({ buttonClassName = "", popoverCla
                         })}
                       </span>
                     </span>
-                    {item.metadata?.url && <ChevronRight className="w-4 h-4 text-slate-400" />}
+                    {item.metadata?.url && <ChevronRight className="w-4 h-4 text-gray-500" />}
                   </button>
                 );
               })

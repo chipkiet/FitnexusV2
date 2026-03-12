@@ -1,4 +1,7 @@
 node_modules/
+__pycache__/
+*.pyc
+.venv/
 
 dist/
 build/
@@ -19,3 +22,4 @@ coverage/
 .DS_Store
 
 npm-debug.log*
+fitnexus_db_dump.sql
