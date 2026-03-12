@@ -291,7 +291,7 @@ const AiTrainer = () => {
                   <h3 className="mb-4 text-2xl font-extrabold text-rose-600 text-center">
                     Kết quả định hướng cơ thể
                   </h3>
-                  
+
                   {isLoading ? (
                     <div className="flex-1 flex items-center justify-center min-h-[300px] bg-slate-50/50 rounded-lg">
                       <div className="w-16 h-16 border-8 rounded-full border-rose-200 border-t-rose-500 animate-spin"></div>
@@ -375,7 +375,7 @@ const AiTrainer = () => {
                       </h4>
                       <div className="flex-1">
                         {Array.isArray(analysisResult.analysis_data?.exercises) &&
-                        analysisResult.analysis_data.exercises.length > 0 ? (
+                          analysisResult.analysis_data.exercises.length > 0 ? (
                           <ul className="mb-6 space-y-3 list-disc list-inside text-slate-800 bg-white/60 p-5 rounded-xl border border-blue-100">
                             {analysisResult.analysis_data.exercises.map((ex, i) => (
                               <li key={i} className="leading-relaxed border-b border-blue-50 pb-2 last:border-0">{ex}</li>
@@ -387,7 +387,7 @@ const AiTrainer = () => {
                           </div>
                         )}
                       </div>
-                      
+
                       <div className="pt-4 mt-auto border-t border-blue-200/50">
                         <button
                           type="button"
@@ -474,25 +474,25 @@ function MetricsPanel({ analysisResult, heightCm }) {
       </div>
       {(analysisResult.analysis_data?.shape_type ||
         analysisResult.analysis_data?.somatotype) && (
-        <div className="flex gap-6 pt-4 mt-6 border-t border-rose-200/50">
-          {analysisResult.analysis_data.shape_type && (
-            <div className="bg-white px-4 py-2 rounded-lg border border-rose-100 flex-1 text-center">
-              <span className="block text-sm font-semibold text-slate-500 mb-1">Kiểu hình (Body Shape)</span>
-              <span className="text-lg font-bold text-rose-700">
-                {analysisResult.analysis_data.shape_type}
-              </span>
-            </div>
-          )}
-          {analysisResult.analysis_data.somatotype && (
-            <div className="bg-white px-4 py-2 rounded-lg border border-blue-100 flex-1 text-center">
-               <span className="block text-sm font-semibold text-slate-500 mb-1">Cơ địa (Somatotype)</span>
-               <span className="text-lg font-bold text-blue-700">
-                {analysisResult.analysis_data.somatotype}
-               </span>
-            </div>
-          )}
-        </div>
-      )}
+          <div className="flex gap-6 pt-4 mt-6 border-t border-rose-200/50">
+            {analysisResult.analysis_data.shape_type && (
+              <div className="bg-white px-4 py-2 rounded-lg border border-rose-100 flex-1 text-center">
+                <span className="block text-sm font-semibold text-slate-500 mb-1">Kiểu hình (Body Shape)</span>
+                <span className="text-lg font-bold text-rose-700">
+                  {analysisResult.analysis_data.shape_type}
+                </span>
+              </div>
+            )}
+            {analysisResult.analysis_data.somatotype && (
+              <div className="bg-white px-4 py-2 rounded-lg border border-blue-100 flex-1 text-center">
+                <span className="block text-sm font-semibold text-slate-500 mb-1">Cơ địa (Somatotype)</span>
+                <span className="text-lg font-bold text-blue-700">
+                  {analysisResult.analysis_data.somatotype}
+                </span>
+              </div>
+            )}
+          </div>
+        )}
     </div>
   );
 }
