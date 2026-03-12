@@ -76,6 +76,8 @@ const AiTrainer = () => {
     try {
       setIsCreatingPlan(true);
       const analysis = analysisResult?.analysis_data;
+      if (!analysis) return;
+
       const planRes = await createPlanApi({
         name: `AI Plan - ${new Date().toLocaleDateString()}`,
         description: "Tối ưu bởi AI",
@@ -86,16 +88,75 @@ const AiTrainer = () => {
       const planId = planRes?.data?.plan_id || planRes?.plan_id;
       if (!planId) return;
 
-      const catalogRes = await api.get('/api/exercises', { params: { page: 1, pageSize: 1000 } });
+      // Tăng pageSize để đảm bảo load đủ bài tập để match
+      const catalogRes = await api.get('/api/exercises', { params: { page: 1, pageSize: 2000 } });
       const catalog = catalogRes?.data?.data || [];
-      const exercises = Array.isArray(analysis?.exercises) ? analysis.exercises : [];
+      
+      const exercisesVi = Array.isArray(analysis?.exercises) ? analysis.exercises : [];
+      const exercisesEn = Array.isArray(analysis?.exercises_en) ? analysis.exercises_en : [];
 
-      for (let i = 0; i < exercises.length; i++) {
-        const name = exercises[i].split(':')[0].trim();
-        const found = catalog.find(ex => ex.name.toLowerCase().includes(name.toLowerCase()));
-        if (found) await addExerciseToPlanApi({ planId, exercise_id: found.id || found.exercise_id, session_order: i + 1 });
+      const normalize = (s) => (s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+
+      // Kết hợp cả tên VN và EN để tìm kiếm (vì AI có thể trả về lẫn lộn)
+      const queriesVi = exercisesVi.map(e => e.split(':')[0].trim()).filter(Boolean);
+      const queriesEn = exercisesEn.filter(Boolean);
+      const uniqueQueries = [...new Set([...queriesVi, ...queriesEn])];
+
+      console.log("DEBUG: AI Queries:", uniqueQueries);
+      console.log("DEBUG: Catalog Size:", catalog.length);
+
+      let matchedCount = 0;
+      const addedExerciseIds = new Set();
+
+      for (const queryRaw of uniqueQueries) {
+        const query = normalize(queryRaw);
+        if (!query || query.length < 3) continue; // Bỏ qua query quá ngắn
+
+        console.log(`DEBUG: Matching query: "${query}" (${queryRaw})`);
+
+        // Tìm kiếm thông minh hơn: 
+        // 1. Tìm khớp chính xác (sau khi normalize)
+        // 2. Nếu không thấy, tìm khớp một phần (includes)
+        let found = catalog.find(ex => 
+          normalize(ex.name) === query || 
+          normalize(ex.name_en) === query
+        );
+
+        if (!found) {
+          found = catalog.find(ex => 
+            normalize(ex.name).includes(query) || 
+            normalize(ex.name_en).includes(query) ||
+            query.includes(normalize(ex.name)) ||
+            query.includes(normalize(ex.name_en))
+          );
+        }
+
+        if (found && !addedExerciseIds.has(found.id || found.exercise_id)) {
+          const exerciseId = found.id || found.exercise_id;
+          console.log(`DEBUG: Matched "${query}" to catalog item: "${found.name}" (ID: ${exerciseId})`);
+          
+          await addExerciseToPlanApi({ 
+            planId, 
+            exercise_id: exerciseId, 
+            session_order: matchedCount + 1 
+          });
+          
+          addedExerciseIds.add(exerciseId);
+          matchedCount++;
+        } else if (!found) {
+          console.warn(`DEBUG: No match found for "${query}"`);
+        }
       }
-      navigate(`/plans/${planId}`);
+
+      console.log(`DEBUG: Successfully matched ${matchedCount} exercises.`);
+
+      if (matchedCount === 0) {
+        const debugMsg = `Không tìm thấy bài tập phù hợp cho: ${uniqueQueries.slice(0, 3).join(", ")}...`;
+        setError(debugMsg);
+        console.error("DEBUG: Failed to match any exercises from queries:", uniqueQueries);
+      } else {
+        navigate(`/plans/${planId}`);
+      }
     } catch (e) {
       setError("Lỗi tạo kế hoạch. Vui lòng thử lại sau.");
     } finally {

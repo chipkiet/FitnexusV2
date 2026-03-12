@@ -122,18 +122,21 @@ def get_ai_recommendations(measurements_data):
     
     **Yêu cầu phân tích:**
     1. Đánh giá vóc dáng hiện tại (dáng chữ V, chữ A, chữ H, chữ O...)
-    2. Đề xuất 4-6 bài tập gym phù hợp để cải thiện tỷ lệ cơ thể cân đối hơn
-    3. Đưa ra lời khuyên dinh dưỡng và lối sống
-    4. Ước tính thời gian để thấy kết quả (nếu tập đều đặn)
-    
+    2. Đề xuất 4-6 bài tập gym phù hợp nhất để cải thiện tỷ lệ cơ thể cân đối hơn.
+    3. Trả về tên bài tập bằng cả tiếng Anh (vô cùng quan trọng để hệ thống tìm kiếm được bài tập gốc) và tiếng Việt.
+    4. Đưa ra lời khuyên dinh dưỡng và lối sống.
+    5. Ước tính thời gian để thấy kết quả.
+
     Vui lòng trả lời bằng tiếng Việt, định dạng JSON với cấu trúc:
     {{
         "body_type": "Loại vóc dáng (VD: Dáng chữ V, Dáng táo...)",
         "body_analysis": "Phân tích chi tiết vóc dáng hiện tại",
         "title": "Tiêu đề chương trình tập luyện",
         "exercises": [
-            "Tên bài tập 1: Mô tả chi tiết, số lượng set/rep",
-            "Tên bài tập 2: Mô tả chi tiết, số lượng set/rep"
+            "Tên bài tập tiếng Việt: Mô tả chi tiết, số lượng set/rep"
+        ],
+        "exercises_en": [
+            "Exact Exercise English Name (VD: Push-up, Bench Press, Squat)"
         ],
         "nutrition_advice": "Lời khuyên dinh dưỡng cụ thể",
         "lifestyle_tips": "Lời khuyên về lối sống, nghỉ ngơi",
