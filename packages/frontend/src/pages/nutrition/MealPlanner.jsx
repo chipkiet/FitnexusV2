@@ -1253,7 +1253,17 @@ export default function MealPlanner() {
                           color: editType === m.key ? "#6366F1" : "#64748B",
                         }}
                       >
-                        <div>{m.icon}</div>
+                        <img
+                          src={m.icon}
+                          alt={m.label}
+                          style={{
+                            width: 28,
+                            height: 28,
+                            objectFit: "contain",
+                            margin: "0 auto 4px auto",
+                            display: "block",
+                          }}
+                        />
                         <div style={{ marginTop: 2 }}>{m.label}</div>
                       </button>
                     ))}
