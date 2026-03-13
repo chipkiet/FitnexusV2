@@ -117,31 +117,57 @@ def get_ai_recommendations(measurements_data):
     - Chiều rộng eo: {measurements.get("waist_width", "N/A")} {unit}
     - Chiều rộng hông: {measurements.get("hip_width", "N/A")} {unit}
     - Chiều cao: {measurements.get("height", "N/A")} {unit}
-    - Độ dài chân: {measurements.get("leg_length", "N/A")} {unit}
-    - Tỷ lệ vai/hông: {measurements_data.get("pixel_measurements", {}).get("shoulder_hip_ratio", "N/A")}
-    
+      **DANH SÁCH BÀI TẬP CÓ SẴN (BẮT BUỘC CHỌN TRONG DANH SÁCH NÀY):**
+    - Ngực: 1. Đẩy Ngực Ngang Thanh Đòn (Barbell Bench Press), 2. Đẩy Ngực Ngang Tạ Tay (Dumbbell Bench Press), 3. Hít Đất (Push Up), 94. Đẩy Ngực Dốc Lên Thanh Đòn (Incline Barbell Bench Press), 97. Ép Ngực Với Cáp (Cable Pec Fly), 134. Đẩy Ngực Dốc Xuống Thanh Đòn (Barbell Decline Bench Press), 178. Đẩy Ngực Dốc Lên Với Tạ Tay (Dumbbell Incline Bench Press), 179. Ép Ngực Với Máy (Pec Deck) (Machine Pec Fly), 180. Nằm Dang Tạ Tay Tập Ngực (Dumbbell Fly), 181. Xà Kép Tập Ngực (Chest Dips), 416. Hít Đất Chân Cao (Decline Push-ups), 417. Ép Cáp Từ Cao Đến Thấp (High-to-Low Cable Fly).
+    - Lưng/Xô: 40. Hít Xà Đơn (Pull Ups), 41. Kéo Xô Máy (Machine Pulldown), 95. Chèo Tạ Đòn Cúi Người (Barbell Bent Over Row), 175. Kéo Cáp Một Tay Tập Xô (Lat Prayer) (Cable Single Arm Lat Prayer), 177. Hít Xà Ngược (Inverted Row), 201. Kéo Cáp Ngồi (Seated Cable Row), 202. Nằm Vớt Tạ (Dumbbell Pullover), 270. Siêu Nhân (Superman).
+    - Vai: 42. Đẩy Tạ Đòn Qua Đầu (Barbell Overhead Press), 43. Dang Tạ Tay Sang Bên (Dumbbell Lateral Raise), 98. Nâng Tạ Đơn Trước Mặt (Dumbbell Front Raise), 102. Kéo Cáp Cho Vai Sau (Machine Face Pulls), 171. Đẩy Tạ Đơn Qua Đầu Khi Ngồi (Dumbbell Seated Overhead Press), 172. Dang Một Tay Với Cáp Thấp (Cable Low Single Arm Lateral Raise), 173. Hít Đất Pike Chân Trên Cao (Elevated Pike Press), 174. Ép Tạ Đơn Vai Sau Khi Ngồi (Dumbbell Seated Rear Delt Fly), 190. Kéo Tạ Đòn Thẳng Đứng (Barbell Upright Row), 415. Dang Tạ Tay Ngược (Reverse Fly) (Dumbbell Reverse Fly).
+    - Chân/Mông: 16. Squat Với Tạ Đòn (Barbell Squat), 21. Romanian Deadlift Với Tạ Đòn (Barbell Romanian Deadlift), 39. Hip Thrust Với Tạ Đòn (Barbell Hip Thrust), 96. Deadlift Với Tạ Đòn (Barbell Deadlift), 99. Đạp Đùi Với Máy (Machine Leg Press), 100. Đá Đùi Với Máy (Machine Leg Extension), 133. Cuốn Chân Nằm Với Máy (Machine Lying Leg Curl), 135. Lunge Bước Đi (Bodyweight Walking Lunges), 176. Kéo Cáp Qua Chân (Pull Through) (Cable Pull Through), 199. Vung Tạ Ấm (Kettlebell Swing), 200. Squat Với Tạ Tay (Goblet Squat) (Dumbbell Goblet Squat), 271. Cầu Mông (Glute Bridge) (Bodyweight Glute Bridge), 272. Đá Chân Sang Bên (Fire Hydrant).
+    - Tay: 64. Cuốn Tạ Đòn (Barbell Curl), 65. Cuốn Tạ Đơn (Dumbbell Curl), 66. Đẩy Tạ Đơn Sau Đầu (Dumbbell Seated Overhead Tricep Extension), 67. Đẩy Cáp Tay Sau V-Bar (Machine Cable V Bar Push Downs), 70. Cuốn Cổ Tay Tạ Đơn (Dumbbell Wrist Curl), 71. Cuốn Cổ Tay Tạ Đòn (Barbell Wrist Curl), 182. Cuốn Tạ Tay Kiểu Búa (Hammer Curl) (Dumbbell Hammer Curl), 183. Chống Đẩy Sau Với Ghế (Bench Dips), 184. Đá Tạ Tay Sau (Dumbbell Kickback), 185. Cuốn Tạ Tập Trung (Concentration Curl), 191. Cuốn Cổ Tay Tạ Đòn Sau Lưng (Barbell Behind The Back Wrist Curl), 192. Nằm Đẩy Tạ Đòn Sau Đầu (Skull Crusher) (Barbell Skull Crusher), 197. Cuốn Tay Trước Với Cáp (Cable Bicep Curl), 198. Chống Xà Kép Tập Tay Sau (Tricep Dips).
+    - Bụng/Core: 68. Gập Bụng (Crunches), 69. Plank Với Bóng (Medicine Ball Plank), 101. Vặn Người Kiểu Nga (Bodyweight Russian Twist), 136. Treo Người Nhấc Chân (Bodyweight Hanging Leg Raise), 186. Nằm Nhấc Chân (Leg Raises) (Laying Leg Raises), 187. Plank Cẳng Tay (Forearm Plank), 193. Treo Người Co Gối (Hanging Knee Raises), 194. Leo Núi Tại Chỗ (Mountain Climber), 195. Giữ Thân Hình Chuối (Hollow Hold), 413. Gập Bụng Đạp Xe (Bicycle Crunches), 414. Kéo Cáp Chặt Gỗ (Cable Woodchop).
+    - Khác: 72. Nhón Bắp Chân Ngồi (Seated Calf Raise), 73. Nhón Bắp Chân Với Máy Smith (Smith Machine Calf Raise), 188. Nhón Bắp Chân Đứng Với Máy (Machine Standing Calf Raises), 189. Nhún Cầu Vai Với Tạ Tay (Dumbbell Shrug), 196. Nhón Bắp Chân Với Tạ Ấm (Kettlebell Calf Raise), 269. Burpees (Nhảy Hít Đất).
+
     **Yêu cầu phân tích:**
-    1. Đánh giá vóc dáng hiện tại (dáng chữ V, chữ A, chữ H, chữ O...)
-    2. Đề xuất 4-6 bài tập gym phù hợp nhất để cải thiện tỷ lệ cơ thể cân đối hơn.
-    3. Trả về tên bài tập bằng cả tiếng Anh (vô cùng quan trọng để hệ thống tìm kiếm được bài tập gốc) và tiếng Việt.
-    4. Đưa ra lời khuyên dinh dưỡng và lối sống.
-    5. Ước tính thời gian để thấy kết quả.
+    1. Đánh giá vóc dáng hiện tại.
+    2. Chỉ định ĐÚNG 6 bài tập từ danh sách trên để cải thiện cơ thể. CẤM trả về tên chung chung như "Tập cơ tay".
+    3. Trả về đúng tên bài tập tiếng Việt (kèm tên tiếng Anh trong ngoặc) NHƯ TRONG DANH SÁCH TRÊN.
 
     Vui lòng trả lời bằng tiếng Việt, định dạng JSON với cấu trúc:
     {{
-        "body_type": "Loại vóc dáng (VD: Dáng chữ V, Dáng táo...)",
-        "body_analysis": "Phân tích chi tiết vóc dáng hiện tại",
-        "title": "Tiêu đề chương trình tập luyện",
+        "body_type": "Dáng vóc cụ thể",
+        "body_analysis": "Phân tích cụ thể...",
+        "title": "Kế hoạch tập luyện tối ưu",
         "exercises": [
-            "Tên bài tập tiếng Việt: Mô tả chi tiết, số lượng set/rep"
+            "Tên tiếng Việt (Tên tiếng Anh): reps x sets, hướng dẫn ngắn"
         ],
         "exercises_en": [
-            "Exact Exercise English Name (VD: Push-up, Bench Press, Squat)"
+            "Tên tiếng Anh chính xác từ danh sách (VD: Barbell Bench Press)"
         ],
-        "nutrition_advice": "Lời khuyên dinh dưỡng cụ thể",
-        "lifestyle_tips": "Lời khuyên về lối sống, nghỉ ngơi",
-        "estimated_timeline": "Thời gian ước tính để thấy kết quả",
-        "general_advice": "Lời khuyên chung"
+        "nutrition_advice": "...",
+        "lifestyle_tips": "...",
+        "estimated_timeline": "...",
+        "general_advice": "..."
+    }}
+
+    Chỉ trả về JSON, không có văn bản nào khác.
+70), Cầu Mông (Glute Bridge) (271).
+
+    **Yêu cầu phân tích:**
+    1. Đánh giá vóc dáng hiện tại.
+    2. Đề xuất đúng 6 bài tập gym từ danh sách trên để cải thiện cơ thể.
+    3. Trả về tên bài tập chính xác như trong danh sách trên (VD: "Hít Đất", "Squat Với Tạ Đòn").
+
+    Vui lòng trả lời bằng tiếng Việt, định dạng JSON với cấu trúc:
+    {{
+        "body_type": "...",
+        "body_analysis": "...",
+        "title": "...",
+        "exercises": [
+            "Tên bài tập chính xác từ danh sách: Mô tả ngắn gọn, reps/sets"
+        ],
+        "nutrition_advice": "...",
+        "lifestyle_tips": "...",
+        "estimated_timeline": "...",
+        "general_advice": "..."
     }}
     
     Chỉ trả về JSON, không có văn bản nào khác.

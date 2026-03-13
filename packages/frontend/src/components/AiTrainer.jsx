@@ -97,12 +97,13 @@ const AiTrainer = () => {
 
       const normalize = (s) => (s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 
-      // Kết hợp cả tên VN và EN để tìm kiếm (vì AI có thể trả về lẫn lộn)
-      const queriesVi = exercisesVi.map(e => e.split(':')[0].trim()).filter(Boolean);
+      const queriesVi = exercisesVi.map(e => e.split(':')[0].split('(')[0].trim()).filter(Boolean);
       const queriesEn = exercisesEn.filter(Boolean);
+      
+      // Tập hợp các query tiềm năng
       const uniqueQueries = [...new Set([...queriesVi, ...queriesEn])];
 
-      console.log("DEBUG: AI Queries:", uniqueQueries);
+      console.log("DEBUG: AI Queries (Consolidated):", uniqueQueries);
       console.log("DEBUG: Catalog Size:", catalog.length);
 
       let matchedCount = 0;
@@ -110,18 +111,18 @@ const AiTrainer = () => {
 
       for (const queryRaw of uniqueQueries) {
         const query = normalize(queryRaw);
-        if (!query || query.length < 3) continue; // Bỏ qua query quá ngắn
+        if (!query || query.length < 3) continue;
 
-        console.log(`DEBUG: Matching query: "${query}" (${queryRaw})`);
+        console.log(`DEBUG: Attempting to match: "${query}" (Original: ${queryRaw})`);
 
-        // Tìm kiếm thông minh hơn: 
-        // 1. Tìm khớp chính xác (sau khi normalize)
-        // 2. Nếu không thấy, tìm khớp một phần (includes)
+        // Tìm kiếm ưu tiên trong catalog:
+        // 1. Khớp chính xác hoàn toàn (VN hoặc EN)
         let found = catalog.find(ex => 
           normalize(ex.name) === query || 
           normalize(ex.name_en) === query
         );
 
+        // 2. Khớp một phần (VN hoặc EN)
         if (!found) {
           found = catalog.find(ex => 
             normalize(ex.name).includes(query) || 
@@ -133,7 +134,7 @@ const AiTrainer = () => {
 
         if (found && !addedExerciseIds.has(found.id || found.exercise_id)) {
           const exerciseId = found.id || found.exercise_id;
-          console.log(`DEBUG: Matched "${query}" to catalog item: "${found.name}" (ID: ${exerciseId})`);
+          console.log(`DEBUG: MATCHED! "${queryRaw}" -> "${found.name}" (ID: ${exerciseId})`);
           
           await addExerciseToPlanApi({ 
             planId, 
@@ -143,17 +144,18 @@ const AiTrainer = () => {
           
           addedExerciseIds.add(exerciseId);
           matchedCount++;
-        } else if (!found) {
-          console.warn(`DEBUG: No match found for "${query}"`);
+        } else if (found) {
+          console.log(`DEBUG: Already added or already matched: "${found.name}"`);
+        } else {
+          console.warn(`DEBUG: NO MATCH found for "${queryRaw}"`);
         }
       }
 
       console.log(`DEBUG: Successfully matched ${matchedCount} exercises.`);
 
       if (matchedCount === 0) {
-        const debugMsg = `Không tìm thấy bài tập phù hợp cho: ${uniqueQueries.slice(0, 3).join(", ")}...`;
+        const debugMsg = `Không tìm thấy bài tập phù hợp cho các gợi ý: ${uniqueQueries.slice(0, 2).join(", ")}...`;
         setError(debugMsg);
-        console.error("DEBUG: Failed to match any exercises from queries:", uniqueQueries);
       } else {
         navigate(`/plans/${planId}`);
       }
