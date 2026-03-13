@@ -6,7 +6,7 @@ import HeaderLogin from '../../components/header/HeaderLogin.jsx';
 
 const VIEWS = [
     { key: "front", label: "Trước", icon: "🫀" },
-    { key: "back",  label: "Sau",   icon: "🔙" },
+    { key: "back", label: "Sau", icon: "🔙" },
 ];
 
 const FemaleFrontMap = () => {
@@ -21,33 +21,7 @@ const FemaleFrontMap = () => {
                 <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
 
                     {/* ── Hero Header ──────────────────────────────── */}
-                    <motion.div
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.45, ease: "easeOut" }}
-                        style={{ textAlign: "center", paddingTop: "32px", marginBottom: "28px" }}
-                    >
-                        <div style={{
-                            display: "inline-flex", alignItems: "center", gap: "6px",
-                            padding: "4px 14px", borderRadius: "999px", marginBottom: "12px",
-                            background: "#EEF2FF", color: "#6366F1", fontSize: "12px", fontWeight: 600,
-                            border: "1px solid #C7D2FE",
-                        }}>
-                            <motion.span
-                                animate={{ scale: [1, 1.35, 1] }}
-                                transition={{ repeat: Infinity, duration: 2 }}
-                                style={{ width: 7, height: 7, borderRadius: "50%", background: "#6366F1", display: "inline-block" }}
-                            />
-                            Interactive Body Map
-                        </div>
 
-                        <h1 style={{ fontSize: "clamp(32px, 5vw, 52px)", fontWeight: 800, color: "#0F172A", letterSpacing: "-0.03em", margin: 0 }}>
-                            Muscle Explorer
-                        </h1>
-                        <p style={{ fontSize: "14px", color: "#64748B", marginTop: "8px" }}>
-                            Hover a muscle to see its name · Click to discover exercises
-                        </p>
-                    </motion.div>
 
                     {/* ── Front / Back Toggle ──────────────────────── */}
                     <motion.div
@@ -96,9 +70,9 @@ const FemaleFrontMap = () => {
                             transition={{ delay: 0.25, duration: 0.5, ease: "easeOut" }}
                         >
                             <MuscleMap view={viewMode} onMuscleSelect={setSelectedMuscle} />
-                            <p style={{ textAlign: "center", fontSize: "11px", color: "#CBD5E1", marginTop: "8px" }}>
+                            {/* <p style={{ textAlign: "center", fontSize: "11px", color: "#CBD5E1", marginTop: "8px" }}>
                                 Hover to preview · Click to select
-                            </p>
+                            </p> */}
                         </motion.div>
 
                         {/* Right: Exercise Panel */}
