@@ -1273,6 +1273,7 @@ export const createExercise = async (req, res) => {
       thumbnail_url = await uploadBufferToSupabase(
         files.thumbnail[0].buffer,
         files.thumbnail[0].originalname,
+        "exercises_image",
         "images"
       );
     }
@@ -1280,6 +1281,7 @@ export const createExercise = async (req, res) => {
       gif_demo_url = await uploadBufferToSupabase(
         files.gif[0].buffer,
         files.gif[0].originalname,
+        "exercises_image",
         "images"
       );
     }
@@ -1287,6 +1289,7 @@ export const createExercise = async (req, res) => {
       video_url = await uploadBufferToSupabase(
         files.video[0].buffer,
         files.video[0].originalname,
+        "exercises_image",
         "videos"
       );
     }
@@ -1342,6 +1345,7 @@ export const createExercise = async (req, res) => {
         const url = await uploadBufferToSupabase(
           file.buffer,
           file.originalname,
+          "exercises_image",
           "videos"
         );
         if (url) {
@@ -1422,6 +1426,7 @@ export const updateExercise = async (req, res) => {
       updates.thumbnail_url = await uploadBufferToSupabase(
         files.thumbnail[0].buffer,
         files.thumbnail[0].originalname,
+        "exercises_image",
         "images"
       );
     }
@@ -1429,6 +1434,7 @@ export const updateExercise = async (req, res) => {
       updates.gif_demo_url = await uploadBufferToSupabase(
         files.gif[0].buffer,
         files.gif[0].originalname,
+        "exercises_image",
         "images"
       );
     }
@@ -1436,6 +1442,7 @@ export const updateExercise = async (req, res) => {
       updates.video_url = await uploadBufferToSupabase(
         files.video[0].buffer,
         files.video[0].originalname,
+        "exercises_image",
         "videos"
       );
     }
@@ -1540,6 +1547,7 @@ export const updateExercise = async (req, res) => {
         const url = await uploadBufferToSupabase(
           file.buffer,
           file.originalname,
+          "exercises_image",
           "videos"
         );
 

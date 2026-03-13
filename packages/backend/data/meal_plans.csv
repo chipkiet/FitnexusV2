@@ -43,3 +43,31 @@ id,user_id,meal_type,food_id,food_name,quantity_g,calories,protein,carbs,fat,dat
 1773225457906646,4,lunch,usda_173312,"Salad đậu phụ nướng",300,243,30.9,10.8,9.3,2026-03-17
 1773225458209159,4,snack,usda_2607273,"Sữa chua Hy Lạp không đường",150,90,16,12,0,2026-03-17
 1773225458555120,4,dinner,usda_2705756,"Ức gà nhồi rau bina và phô mai ít béo",280,229.6,30.8,12,6.4,2026-03-17
+1773389779387785,1,breakfast,usda_174101,"Trứng ốp la rau bina cà chua, Bánh mì gạo lứt",250,745,13.5,128,20,2026-03-13
+1773389779847869,1,lunch,usda_2705969,"Ức gà nướng, Salad rau xanh",320,646.4,67.5,23.4,29.4,2026-03-13
+1773389780193249,1,dinner,usda_1869528,"Bò xào rau củ (bông cải xanh, cà rốt, ớt chuông), Cơm gạo lứt",350,542.5,11.5,85.4,16.4,2026-03-13
+1773389780513739,1,snack,usda_454004,"Táo",150,78,0,21.5,1,2026-03-13
+1773389780871731,1,breakfast,usda_2707590,"Yến mạch không gluten nấu với quả mọng và hạt chia",200,972,33,84.2,61.4,2026-03-14
+1773389781313860,1,lunch,usda_2705969,"Salad gà nướng với rau diếp, cà chua, dưa chuột và sốt dầu giấm",250,505,52.8,18.3,23,2026-03-14
+1773389781719249,1,dinner,usda_2709718,"Súp bí đỏ, Hạt bí rang",320,230.4,3.5,22.1,15,2026-03-14
+1773389782072786,1,snack,usda_2607273,"Sữa chua Hy Lạp không đường",150,90,16,12,0,2026-03-14
+1773389782417509,1,breakfast,usda_2708311,"Bánh kếp chuối không gluten",150,322.5,4.9,60.4,6.8,2026-03-15
+1773389782779125,1,lunch,usda_2707797,"Bánh mì kẹp rau củ nướng (ớt chuông, cà tím, zucchini) trên bánh mì gạo lứt",200,496,8.6,91.6,10.4,2026-03-15
+1773389783143372,1,dinner,usda_1869528,"Đậu phụ xào rau củ, Cơm gạo lứt",350,542.5,11.5,85.4,16.4,2026-03-15
+1773389783459730,1,snack,usda_2074342,"Hạnh nhân",30,189.9,7,4,17,2026-03-15
+1773389783798742,1,breakfast,usda_2707154,"Trứng luộc, Quả bơ, Cà chua",200,286,24.8,2,20,2026-03-16
+1773389784232936,1,lunch,usda_171149,"Súp gà rau củ (không mì)",350,213.5,10.2,24.5,8,2026-03-16
+1773389784649898,1,dinner,usda_2705829,"Bò bít tết nạc, Bông cải xanh hấp, Khoai tây nướng",420,1213.8,98.7,0,90.7,2026-03-16
+1773389784975670,1,snack,usda_2012128,"Chuối",120,374.4,15,48.7,7.6,2026-03-16
+1773389785339926,1,breakfast,usda_2707590,"Sinh tố xanh (rau bina, chuối, sữa hạnh nhân, hạt chia)",300,1458,49.5,126.3,92.1,2026-03-17
+1773389785686869,1,lunch,usda_2706221,"Salad quinoa với gà xé, dưa chuột, cà chua bi, rau mùi tây và sốt chanh dầu ô liu",250,500,29,18.5,33.8,2026-03-17
+1773389786049558,1,dinner,usda_2709772,"Gà nướng lò, Khoai lang, Cải Brussels",320,137.6,10.9,28.5,1,2026-03-17
+1773389786382804,1,snack,usda_2009386,"Quýt",100,57,0.7,12.9,0,2026-03-17
+1773389786836878,1,breakfast,usda_174101,"Trứng bác với nấm và ớt chuông, kèm bánh mì gạo lứt",250,745,13.5,128,20,2026-03-18
+1773389787190280,1,lunch,usda_2441214,"Gỏi cuốn chay (làm từ bột gạo) với rau sống và nước chấm chua ngọt không gluten",200,6340,0,1550,0,2026-03-18
+1773389787538805,1,dinner,usda_2706438,"Cà ri gà xanh (ít nước cốt dừa) với rau củ và cơm gạo lứt",350,406,17.5,52.9,14,2026-03-18
+1773389787875734,1,snack,usda_2709821,"Dưa chuột và cà rốt cắt lát",150,51,0.8,10.2,0.2,2026-03-18
+1773389788374968,1,breakfast,usda_168900,"Bánh ngô không gluten với quả bơ và salsa",150,189,3.9,41.8,1,2026-03-19
+1773389788717930,1,lunch,usda_2707431,"Salad đậu lăng với rau xanh, cà chua, dưa chuột và sốt chanh",250,277.5,9.3,30.8,14.3,2026-03-19
+1773389789065427,1,dinner,usda_2706133,"Gà tây băm nhỏ xào rau củ (ớt chuông, hành tây, cà rốt) với xà lách cuốn",250,527.5,67.3,0,28.8,2026-03-19
+1773389789397397,1,snack,usda_2291349,"Quả mọng hỗn hợp",100,0,0,0,0,2026-03-19

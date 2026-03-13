@@ -1,5 +1,6 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../config/database.js";
+
 const PlanExerciseDetail = sequelize.define(
   "PlanExerciseDetail",
   {
@@ -17,4 +18,5 @@ const PlanExerciseDetail = sequelize.define(
     timestamps: false,
   }
 );
+
 export default PlanExerciseDetail;

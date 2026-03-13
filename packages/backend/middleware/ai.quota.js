@@ -8,7 +8,7 @@ import { can } from '../config/rbac.policy.js';
 // === START: Quota Configuration ===
 const QUOTA_CONFIG = {
   trainer_image_analyze: {
-    user: { limit: 3, period: 'day' },
+    user: { limit: 9999, period: 'day' },
     // premium_user, trainer, admin, etc. are unlimited via RBAC
   },
   default: {
