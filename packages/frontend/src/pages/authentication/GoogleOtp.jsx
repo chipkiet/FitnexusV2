@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { verifyGoogleOtpApi, resendGoogleOtpApi } from "../../lib/api.js";
 import { useAuth } from "../../context/auth.context.jsx";
+import { setTokens } from "../../lib/tokenManager.js";
 
 const DIGIT_COUNT = 6;
 const RESEND_COOLDOWN = 60;
@@ -9,7 +10,7 @@ const RESEND_COOLDOWN = 60;
 export default function GoogleOtp() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { oauthLogin, redirectAfterAuth } = useAuth();
+  const { refreshUser, redirectAfterAuth } = useAuth();
 
   const [otpToken, setOtpToken] = useState("");
   const [email, setEmail] = useState("");
@@ -97,11 +98,19 @@ export default function GoogleOtp() {
       setLoading(true);
       setMessage({ type: "", text: "" });
       const res = await verifyGoogleOtpApi(code, otpToken);
-      await oauthLogin(true);
-      const target = res?.data?.redirectTo;
+      
+      const { user, token, refreshToken, redirectTo: target } = res?.data || {};
+      
+      if (token) {
+        setTokens(token, refreshToken, true);
+      }
+      
+      await refreshUser();
+      
       if (target) navigate(target, { replace: true });
       else await redirectAfterAuth(navigate);
     } catch (err) {
+      console.error("OTP Verification Error:", err?.response?.data || err.message);
       const text =
         err?.response?.data?.message || "Không thể xác thực OTP. Vui lòng thử lại.";
       setMessage({ type: "error", text });

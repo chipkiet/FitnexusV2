@@ -71,3 +71,8 @@ id,user_id,meal_type,food_id,food_name,quantity_g,calories,protein,carbs,fat,dat
 1773389788717930,1,lunch,usda_2707431,"Salad đậu lăng với rau xanh, cà chua, dưa chuột và sốt chanh",250,277.5,9.3,30.8,14.3,2026-03-19
 1773389789065427,1,dinner,usda_2706133,"Gà tây băm nhỏ xào rau củ (ớt chuông, hành tây, cà rốt) với xà lách cuốn",250,527.5,67.3,0,28.8,2026-03-19
 1773389789397397,1,snack,usda_2291349,"Quả mọng hỗn hợp",100,0,0,0,0,2026-03-19
+1773416128963618,1,breakfast,169886,"Chicken, meatless",100,224,23.6,3.6,12.7,2026-03-13
+1773416132530819,1,breakfast,172957,"Bratwurst, chicken, cooked",100,176,19.4,0,10.4,2026-03-13
+1773416135974346,1,lunch,171119,"Chicken, feet, boiled",100,215,19.4,0.2,14.6,2026-03-13
+1773416138162294,1,dinner,173321,"Fast foods, chicken tenders",100,271,19.2,17.2,14,2026-03-13
+1773416139761973,1,snack,172957,"Bratwurst, chicken, cooked",100,176,19.4,0,10.4,2026-03-13

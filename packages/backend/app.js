@@ -40,7 +40,7 @@ import activityTracker from "./middleware/activity.tracker.js";
 
 import userScreenshotsRouter from "./routes/userScreenshots.routes.js";
 import mealRouter from "./routes/meal.routes.js";
-
+console.log(FRONTEND_URL)
 dotenv.config();
 
 /* -------------------- INIT APP & PATHS -------------------- */

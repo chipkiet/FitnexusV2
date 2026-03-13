@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import api from "../lib/api.js";
 
 // Hàm helper để xây dựng cây (Logic thuần túy)
 const buildHierarchy = (flatList) => {
@@ -44,7 +44,7 @@ export function useMuscleTree() {
     const fetchMuscles = async () => {
       setLoading(true);
       try {
-        const res = await axios.get("/api/muscles");
+        const res = await api.get("/api/muscles");
         if (isMounted && res.data?.success) {
           // Xây dựng cây từ dữ liệu API
           const tree = buildHierarchy(res.data.data);

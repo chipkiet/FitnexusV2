@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import axios from "axios";
+import api from "../../lib/api.js";
 import { addExerciseToPlanApi, getPlanByIdApi } from "../../lib/api.js";
 import HeaderLogin from "../../components/header/HeaderLogin.jsx";
 import { useMuscleTree } from "../../hooks/muscleTree.js";
@@ -221,7 +221,7 @@ export default function Exercise() {
 
   // --- INIT & FETCH ---
   useEffect(() => {
-    axios
+    api
       .get("/api/exercises/filter/meta")
       .then((res) => {
         if (res.data?.success) setFilterOptions(res.data.data);
@@ -244,7 +244,7 @@ export default function Exercise() {
           url = `/api/exercises/muscle/${encodeURIComponent(slugToSend)}`;
         }
 
-        const res = await axios.get(url, {
+        const res = await api.get(url, {
           params: { page, pageSize, q, difficulty: level, equipment },
         });
         if (res.data?.success) {

@@ -11,7 +11,26 @@ import {
 import { recordLoginActivity } from "../services/streak.service.js";
 import { buildEmailOtpTemplate } from "../utils/emailTemplates.js";
 import { sendMail } from "../utils/mailer.js";
+import jwt from "jsonwebtoken";
 
+const generateTokens = (userId, role, rememberMe = false) => {
+  const accessTokenExpiry = rememberMe ? "30d" : "4h";
+  const accessToken = jwt.sign(
+    { sub: userId, role, type: "access", rememberMe },
+    process.env.JWT_SECRET,
+    { expiresIn: accessTokenExpiry }
+  );
+
+  let refreshToken = null;
+  if (rememberMe) {
+    refreshToken = jwt.sign(
+      { sub: userId, type: "refresh" },
+      process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET,
+      { expiresIn: "30d" }
+    );
+  }
+  return { accessToken, refreshToken, expiresIn: accessTokenExpiry };
+};
 const safeUser = (user) => {
   if (!user) return null;
   const values = typeof user.toJSON === "function" ? user.toJSON() : user;
@@ -93,10 +112,19 @@ export async function verifyGoogleOtp(req, res) {
     const redirectTo = pending.redirectTo || null;
     await recordLoginActivity(user, req);
 
+    const { accessToken, refreshToken } = generateTokens(
+      user.user_id, user.role, true
+    );
+
     return res.json({
       success: true,
       message: "Xác thực OTP thành công",
-      data: { user: safeUser(user), redirectTo },
+      data: { 
+        user: safeUser(user), 
+        redirectTo,
+        token: accessToken,
+        refreshToken 
+      },
     });
   } catch (err) {
     console.error("verifyGoogleOtp error:", err);
