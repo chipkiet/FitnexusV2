@@ -10,10 +10,11 @@ import PlanExerciseDetail from "../models/plan.exercise.detail.model.js";
  * GET /api/admin/users/:userId/plans
  * Get all plans of a specific user
  */
+
 export async function getUserPlans(req, res) {
   try {
     const { userId } = req.params;
-    
+
     // Get user
     const user = await User.findByPk(userId);
     if (!user) {
@@ -47,8 +48,8 @@ export async function getUserPlans(req, res) {
     return res.json({
       success: true,
       data: {
-    user,
-      plans
+        user,
+        plans
       }
     });
 
@@ -166,7 +167,7 @@ export async function getUserPlanById(req, res) {
 export async function getUserPlan(req, res) {
   try {
     const planId = req.params.id;
-    
+
     const plan = await UserPlan.findByPk(planId, {
       include: [{
         model: User,
@@ -228,7 +229,7 @@ export async function updatePlanStatus(req, res) {
 export async function deletePlan(req, res) {
   try {
     const planId = req.params.id;
-    
+
     const plan = await UserPlan.findByPk(planId);
     if (!plan) {
       return res.status(404).json({ success: false, message: 'Plan not found' });

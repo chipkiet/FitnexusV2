@@ -258,19 +258,23 @@ const AiTrainer = () => {
                   )}
                 </motion.div>
 
-                {/* FORM & ACTION ZONE */}
-                <Card className="rounded-3xl border border-slate-200 shadow-sm p-8 flex flex-col justify-between bg-white">
-                  <div className="space-y-6">
-                    <div>
-                      <h3 className="text-xl font-bold mb-2 text-slate-800">Thông tin cơ bản</h3>
-                      <p className="text-slate-500 text-sm mb-4">Nhập chiều cao để AI nội suy tỷ lệ khung xương chuẩn xác hơn.</p>
-                      <div className="relative">
-                        <input
-                          type="number"
-                          value={heightCm}
-                          onChange={(e) => setHeightCm(e.target.value)}
-                          placeholder="000"
-                          className="w-full text-3xl font-bold p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                {/* Processed Image */}
+                <div className="flex-1 p-6 bg-white border border-blue-100 shadow-lg rounded-2xl flex flex-col relative">
+                  <h3 className="mb-4 text-2xl font-extrabold text-rose-600 text-center">
+                    Kết quả định hướng cơ thể
+                  </h3>
+
+                  {isLoading ? (
+                    <div className="flex-1 flex items-center justify-center min-h-[300px] bg-slate-50/50 rounded-lg">
+                      <div className="w-16 h-16 border-8 rounded-full border-rose-200 border-t-rose-500 animate-spin"></div>
+                    </div>
+                  ) : (
+                    analysisResult?.processed_image_url && (
+                      <div className="flex-1 flex items-center justify-center bg-slate-50 rounded-lg p-2 border border-slate-100 overflow-hidden">
+                        <img
+                          src={analysisResult.processed_image_url}
+                          alt="Processed"
+                          className="max-w-full max-h-[600px] object-contain rounded-lg shadow-sm"
                         />
                         <span className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-400 font-bold">CM</span>
                       </div>
@@ -361,32 +365,46 @@ const AiTrainer = () => {
                     <DetailedMetrics analysisResult={analysisResult} heightCm={heightCm} />
                   </Card>
 
-                  {/* AI SUMMARY ACTION CARD */}
-                  <div className="bg-slate-900 rounded-3xl p-6 text-white flex flex-col md:flex-row gap-6 items-center shadow-lg">
-                    <div className="flex-1 space-y-3">
-                      <div className="flex items-center gap-2 text-blue-400">
-                        <Zap size={18} fill="currentColor" />
-                        <span className="font-bold uppercase tracking-wider text-xs">AI Insight</span>
-                      </div>
-                      <div className="relative">
-                        <p className={`text-base text-slate-200 leading-relaxed ${!isExpanded ? 'line-clamp-2' : ''}`}>
-                          {analysisResult?.analysis_data?.body_analysis || "Dữ liệu tỷ lệ khung xương đã được lưu trữ để tính toán lộ trình."}
-                        </p>
-                        {!isExpanded && (analysisResult?.analysis_data?.body_analysis?.length > 150) && (
-                          <button
-                            onClick={() => setIsExpanded(true)}
-                            className="text-blue-400 hover:text-blue-300 text-sm font-bold mt-1 transition-colors"
-                          >
-                            ... Xem thêm
-                          </button>
+                    {/* Exercise suggestions + create plan */}
+                    <div className="flex flex-col p-6 border shadow-lg border-blue-200 rounded-2xl bg-blue-50/50">
+                      <h4 className="mb-4 text-xl font-extrabold text-blue-700 border-b border-blue-200 pb-2">
+                        Đề xuất bài tập
+                      </h4>
+                      <div className="flex-1">
+                        {Array.isArray(analysisResult.analysis_data?.exercises) &&
+                          analysisResult.analysis_data.exercises.length > 0 ? (
+                          <ul className="mb-6 space-y-3 list-disc list-inside text-slate-800 bg-white/60 p-5 rounded-xl border border-blue-100">
+                            {analysisResult.analysis_data.exercises.map((ex, i) => (
+                              <li key={i} className="leading-relaxed border-b border-blue-50 pb-2 last:border-0">{ex}</li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <div className="mb-6 p-4 bg-white/60 rounded-xl border border-blue-100 text-slate-700">
+                            Chưa có danh sách bài tập gợi ý chi tiết.
+                          </div>
                         )}
-                        {isExpanded && (
-                          <button
-                            onClick={() => setIsExpanded(false)}
-                            className="text-blue-400 hover:text-blue-300 text-sm font-bold mt-2 block transition-colors"
-                          >
-                            Thu gọn
-                          </button>
+                      </div>
+
+                      <div className="pt-4 mt-auto border-t border-blue-200/50">
+                        <button
+                          type="button"
+                          onClick={handleCreatePlanFromAI}
+                          disabled={isCreatingPlan}
+                          className="w-full py-3 px-5 text-lg font-bold text-white transition-all duration-300 rounded-xl bg-orange-500 shadow-md shadow-orange-200 hover:bg-orange-600 hover:shadow-lg disabled:bg-slate-300 disabled:shadow-none disabled:cursor-not-allowed"
+                        >
+                          {isCreatingPlan ? (
+                            <span className="flex items-center justify-center gap-2">
+                              <div className="w-5 h-5 border-4 rounded-full border-white/30 border-t-white animate-spin"></div>
+                              Đang tạo kế hoạch...
+                            </span>
+                          ) : (
+                            "⚡ TẠO KẾ HOẠCH TẬP LÀM THEO GỢI Ý NÀY"
+                          )}
+                        </button>
+                        {planCreateMsg && (
+                          <p className="mt-3 text-center font-medium text-rose-600 bg-rose-50 py-2 rounded-lg">
+                            {planCreateMsg}
+                          </p>
                         )}
                       </div>
                     </div>
@@ -464,15 +482,53 @@ const DetailedMetrics = ({ analysisResult, heightCm }) => {
   ];
 
   return (
-    <div className="grid grid-cols-4 gap-2">
-      {items.map((item, i) => (
-        <div key={i} className="text-center bg-slate-50 py-3 rounded-xl border border-slate-100">
-          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">{item.label}</p>
-          <p className="text-lg font-bold text-slate-800">{item.val}</p>
-        </div>
-      ))}
+    <div className="p-6 bg-blue-50">
+      <h4 className="mb-4 text-xl font-extrabold text-rose-600 border-b border-rose-200 pb-2">
+        Số đo cơ thể (Pixels & Cm)
+      </h4>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
+        <Metric label="Chiều ngang vai" value={fmt("shoulder_width")} />
+        <Metric label="Chiều ngang eo" value={fmt("waist_width")} />
+        <Metric label="Chiều ngang hông" value={fmt("hip_width")} />
+        <Metric label="Ước tính chiều cao" value={fmt("height")} />
+        <Metric label="Độ dài chân" value={fmt("leg_length")} />
+        <Metric
+          label="Tỷ lệ Vai/Hông"
+          value={ratio("shoulder_hip_ratio")}
+        />
+        <Metric label="Tỷ lệ Eo/Hông" value={ratio("waist_hip_ratio")} />
+        <Metric label="Tỷ lệ Chân/Cao" value={legToHeight} />
+      </div>
+      {(analysisResult.analysis_data?.shape_type ||
+        analysisResult.analysis_data?.somatotype) && (
+          <div className="flex gap-6 pt-4 mt-6 border-t border-rose-200/50">
+            {analysisResult.analysis_data.shape_type && (
+              <div className="bg-white px-4 py-2 rounded-lg border border-rose-100 flex-1 text-center">
+                <span className="block text-sm font-semibold text-slate-500 mb-1">Kiểu hình (Body Shape)</span>
+                <span className="text-lg font-bold text-rose-700">
+                  {analysisResult.analysis_data.shape_type}
+                </span>
+              </div>
+            )}
+            {analysisResult.analysis_data.somatotype && (
+              <div className="bg-white px-4 py-2 rounded-lg border border-blue-100 flex-1 text-center">
+                <span className="block text-sm font-semibold text-slate-500 mb-1">Cơ địa (Somatotype)</span>
+                <span className="text-lg font-bold text-blue-700">
+                  {analysisResult.analysis_data.somatotype}
+                </span>
+              </div>
+            )}
+          </div>
+        )}
     </div>
   );
 };
 
-export default AiTrainer;
+function Metric({ label, value }) {
+  return (
+    <div className="flex items-center justify-between px-3 py-2 bg-white border border-blue-100 rounded-md">
+      <span className="text-sm font-semibold text-rose-700">{label}</span>
+      <span className="font-bold text-blue-700">{value}</span>
+    </div>
+  );
+}
