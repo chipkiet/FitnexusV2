@@ -5,6 +5,8 @@ import cors from "cors";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
 
 import workoutRouter from "./routes/workout.routes.js";
 import helmet from "helmet";
@@ -31,7 +33,7 @@ import reviewRouter from "./routes/review.routes.js";
 import muscleRoutes from "./routes/muscle.router.js";
 import contentRoutes from "./routes/content.router.js";
 
-import { FRONTEND_URL, ADDITIONAL_CORS_ORIGINS } from "./config/env.js";
+import { FRONTEND_URL, FRONTEND_PORT, ADDITIONAL_CORS_ORIGINS } from "./config/env.js";
 import { ensureAiApp } from "./ai/index.js";
 
 import activityTracker from "./middleware/activity.tracker.js";
@@ -41,19 +43,23 @@ import mealRouter from "./routes/meal.routes.js";
 
 dotenv.config();
 
-/* -------------------- INIT APP -------------------- */
+/* -------------------- INIT APP & PATHS -------------------- */
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const app = express();
 const isDev = process.env.NODE_ENV !== "production";
 
 /* -------------------- FRONTEND & ALLOWED ORIGINS -------------------- */
 const FRONTEND =
-  FRONTEND_URL || process.env.FRONTEND_URL || "http://localhost:5173";
+  FRONTEND_URL || process.env.FRONTEND_URL || `http://localhost:${FRONTEND_PORT}`;
 
 const defaultDevOrigins = [
+  "http://localhost:5173",
   "http://localhost:5174",
   "http://localhost:5175",
   "http://localhost:5178",
   "http://localhost:5179",
+  `http://localhost:${FRONTEND_PORT}`,
 ];
 
 const envAdditionalOrigins = (
@@ -159,7 +165,7 @@ app.use(
   })
 );
 
-/* -------------------- ROUTES -------------------- */
+/* -------------------- API ROUTES -------------------- */
 
 // ❗ ROUTE DELETE USER – đặt đúng chỗ
 app.use("/api/admin/users", adminUsersRoutes);
@@ -202,19 +208,29 @@ app.get("/api/health", (_req, res) => {
   });
 });
 
-/* -------------------- ROOT -------------------- */
-app.get("/", (_req, res) => {
-  res.json({ message: "Chào mừng các tình yêu đã đến với web của anh 💕" });
-});
 
-/* -------------------- REDIRECT DEV -------------------- */
+/* -------------------- FRONTEND DEPLOYMENT ROUTING -------------------- */
 if (isDev && FRONTEND) {
+  // Môi trường Dev: Redirect các request không thuộc API về server Vite
   app.get(/^\/(?!api|auth|static|assets|uploads).*/, (req, res) => {
     res.redirect(`${FRONTEND}${req.originalUrl}`);
   });
+} else {
+  // Môi trường Production: Phục vụ trực tiếp file tĩnh của React App
+  const distPath = path.join(__dirname, "../frontend/dist");
+  app.use(express.static(distPath));
+
+  // Catch-all: Đẩy toàn bộ frontend routing xuống cho `index.html` của React xử lý (tránh lỗi 404 trang react)
+  app.get("*", (req, res) => {
+    if (req.originalUrl.startsWith("/api")) {
+      return res.status(404).json({ success: false, message: "API route not found" });
+    }
+    res.sendFile(path.join(distPath, "index.html"));
+  });
 }
 
-/* -------------------- 404 -------------------- */
+/* -------------------- 404 FALLBACK -------------------- */
+// Dành cho các Endpoint API không hợp lệ nếu bị lọt (fallback an toàn)
 app.use("*", (_req, res) => {
   res.status(404).json({
     success: false,

@@ -19,8 +19,12 @@ const getEnv = (key, { fallback = null } = {}) => {
   return "";
 };
 
+export const FRONTEND_PORT = getEnv("FRONTEND_PORT", {
+  fallback: "5173",
+});
+
 export const FRONTEND_URL = getEnv("FRONTEND_URL", {
-  fallback: "http://localhost:5173",
+  fallback: `http://localhost:${FRONTEND_PORT}`,
 });
 export const BACKEND_URL = getEnv("BACKEND_URL", {
   fallback: "http://localhost:3001",

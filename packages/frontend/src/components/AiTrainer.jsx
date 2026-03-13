@@ -585,21 +585,7 @@ const AiTrainer = () => {
 
       <div ref={containerRef} className="max-w-5xl mx-auto px-5 py-14 md:py-20">
         {/* Page header */}
-        <motion.div
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-12"
-        >
-          <span className="inline-flex items-center gap-1.5 text-[10px] font-bold tracking-[0.2em] uppercase text-sky-600 bg-sky-50 border border-sky-100 px-3 py-1 rounded-full mb-5">
-            <Sparkles size={10} /> Fitnexus AI
-          </span>
-          <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-3">
-            Phân tích cơ thể
-          </h1>
-          <p className="text-slate-500 text-sm max-w-md mx-auto leading-relaxed">
-            AI tự động đo lường và đưa ra gợi ý tập luyện dựa trên vóc dáng thực tế của bạn.
-          </p>
-        </motion.div>
+
 
         {error && <Alert message={error} />}
 
