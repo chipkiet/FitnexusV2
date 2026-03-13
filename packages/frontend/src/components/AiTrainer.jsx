@@ -577,10 +577,8 @@ const AiTrainer = () => {
   const rawShape = analysisResult?.analysis_data?.shape_type;
   const shapeType = SHAPE_TRANSLATIONS[rawShape] || rawShape || '—';
 
-  // ── Render ──
-
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+    <div className="min-h-screen bg-slate-50 text-slate-900">
       <HeaderLogin />
 
       <div ref={containerRef} className="max-w-5xl mx-auto px-5 py-14 md:py-20">
